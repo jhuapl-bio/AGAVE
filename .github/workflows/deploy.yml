@@ -1,0 +1,25 @@
+name: Deploy BARDA Website
+
+# Trigger when there is a push to the master branch
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js 14.x
+    - uses: actions/setup-node@v1
+      with:
+        node-version: 14.x
+    - uses: actions/cache@v2
+      with:
+        path: "**/node_modules"
+        key: ${{ runner.os }}-node_modules-${{ hashFiles('**/package-lock.json') }}
+    - name: Run `npm install`
+    - run: npm install
+    - name: Run `npm run deploy`
+    - run: npm run deploy
