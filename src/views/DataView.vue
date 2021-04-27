@@ -24,7 +24,7 @@ export default class DataView extends Vue {
 
 </script>
 
-<style scoped>
+<style scoped lang="scss">
   .solid {
       border-top: 2px
   }

@@ -27,7 +27,7 @@ export default class NavigationBar extends Vue {
 
 </script>
 
-<style scoped>
+<style scoped lang="scss">
   .navbar {
     padding-left: 4em;
     padding-right: 4em;

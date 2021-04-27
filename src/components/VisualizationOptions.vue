@@ -29,5 +29,5 @@ export default class VisualizationOptions extends Vue {
 
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 </style>
