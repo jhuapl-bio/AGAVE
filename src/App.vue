@@ -1,10 +1,9 @@
 <template>
   <div>
-    <img class="navbar-image" src="@/assets/jhu-shield.png"/>
     <NavigationBar/>
     <div class="router-outer container">
       <div class="router-inner columns pt-4">
-        <div class="column is-offset-1 is-10">
+        <div class="column is-offset-1 is-10 is-offset-1-mobile">
           <router-view/>
         </div>
       </div>
@@ -33,14 +32,10 @@ export default class App extends Vue {
 </script>
 
 <style scoped lang="scss">
-  .navbar-image {
-    max-height: 8rem;
-    padding: 1rem 9rem;
-  }
   .router-outer {
     display: flex;
     // height of screen - relative height of header + footer
-    min-height: calc(100vh - 21.9rem);
+    min-height: calc(100vh - 21.4rem);
     flex-direction: column;
   }
   .router-inner {

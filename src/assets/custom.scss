@@ -10,7 +10,7 @@ $twitter: #4099FF;
 $twitter-invert: findColorInvert($twitter);
 
 $aplblue: #002D72;
-$aplblue-invert: #002D72;
+$aplblue-invert:findColorInvert($aplblue);
 $aplgrey2: #B4B2AD;
 $aplgrey2-invert: findColorInvert($aplgrey2); 
 
