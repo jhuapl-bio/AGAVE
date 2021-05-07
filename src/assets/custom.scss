@@ -2,19 +2,20 @@
 @import "~bulma/sass/utilities/_all";
 
 // Set your colors
-$primary: #002D72;
-$primary-light: #005EB8;
+
+$aplblue: #002D72;
+$aplblue-invert:findColorInvert($aplblue);
+$aplblue-light: #005Eb8;
+$aplblue-light-invert: findColorInvert($aplblue-light);
+$aplgrey2: #B4B2AD;
+$aplgrey2-invert: findColorInvert($aplgrey2); 
+
+$primary: $aplblue-light;
+$primary-light: findLightColor($primary);
 $primary-dark: findDarkColor($primary);
 $primary-invert: findColorInvert($primary);
 $twitter: #4099FF;
 $twitter-invert: findColorInvert($twitter);
-
-$aplblue: #002D72;
-$aplblue-invert:findColorInvert($aplblue);
-$aplblue-light: findLightColor($aplblue);
-$aplblue-dark: findDarkColor($aplblue);
-$aplgrey2: #B4B2AD;
-$aplgrey2-invert: findColorInvert($aplgrey2); 
 
 // Lists and maps
 $custom-colors: null !default;
@@ -82,8 +83,10 @@ $colors: mergeColorMaps(
         "aplblue": (
             $aplblue,
             $aplblue-invert,
+        ),
+        "aplblue-light": (
             $aplblue-light,
-            $aplblue-dark,
+            $aplblue-light-invert,
         )
     ),
     $custom-colors
