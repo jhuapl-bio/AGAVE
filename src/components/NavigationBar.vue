@@ -3,7 +3,7 @@
     <div class="container pb-3 pt-3 pl-3">
       <img class="navbar-image" src="@/assets/jhu-shield.png"/>
     </div>
-    <nav class="navbar is-primary">
+    <nav class="navbar is-aplblue">
       <div class="container">
         <div class="navbar-brand pl-3">
           <router-link class="navbar-item is-size-1" to="/">
@@ -16,10 +16,10 @@
           </a>
         </div>
         <div class="navbar-menu navbar-end bg-is-inherited" :class="{'is-active': showMenu}">
-          <b-navbar-item class="is-size-4 bg-is-inherited" :class="{'is-active': $route.name === 'Data'}">
+          <b-navbar-item class="is-size-4" :class="{'is-active': $route.name === 'Data'}">
             <router-link to="/"> Data </router-link>
           </b-navbar-item>
-          <b-navbar-item class="is-size-4 bg-is-inherited" :class="{'is-active': $route.name === 'About'}">
+          <b-navbar-item class="is-size-4" :class="{'is-active': $route.name === 'About'}">
             <router-link to="/about"> About </router-link>
           </b-navbar-item>
         </div>
@@ -51,8 +51,8 @@ export default class NavigationBar extends Vue {
     padding-top: 0rem;
   }
   .navbar-burger {
-    height:4.5rem;
-    width:4.5rem;
+    height: 4.5rem;
+    width: 4.5rem;
   }
   a {
     color: white;

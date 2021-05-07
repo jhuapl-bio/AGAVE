@@ -11,6 +11,8 @@ $twitter-invert: findColorInvert($twitter);
 
 $aplblue: #002D72;
 $aplblue-invert:findColorInvert($aplblue);
+$aplblue-light: findLightColor($aplblue);
+$aplblue-dark: findDarkColor($aplblue);
 $aplgrey2: #B4B2AD;
 $aplgrey2-invert: findColorInvert($aplgrey2); 
 
@@ -80,6 +82,8 @@ $colors: mergeColorMaps(
         "aplblue": (
             $aplblue,
             $aplblue-invert,
+            $aplblue-light,
+            $aplblue-dark,
         )
     ),
     $custom-colors

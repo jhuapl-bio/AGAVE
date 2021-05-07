@@ -1,5 +1,5 @@
 <template>
-<section>
+  <section>
     <h2 class="subtitle is-3">Visualization Options</h2>
     <b-field label="Example Dropdown">
       <b-select placeholder="Select a name">
@@ -10,6 +10,9 @@
           {{ option }}
         </option>
       </b-select>
+    </b-field>
+    <b-field label="Example Checkbox">
+      <b-checkbox>Hello</b-checkbox>
     </b-field>
   </section>
 </template>

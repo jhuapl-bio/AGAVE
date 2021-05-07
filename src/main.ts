@@ -4,7 +4,7 @@ import router from './router'
 // import store from './store'   // In the future, we might want to use the store
 
 import Buefy from 'buefy'
-import 'buefy/dist/buefy.css'
+require('@/assets/custom.scss')
 Vue.use(Buefy)
 
 Vue.config.productionTip = false
