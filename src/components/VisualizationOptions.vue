@@ -1,19 +1,21 @@
 <template>
   <section>
     <h2 class="subtitle is-3">Visualization Options</h2>
-    <b-field label="Example Dropdown">
-      <b-select placeholder="Select a name">
-        <option
-          v-for="option in data"
-          :value="option"
-          :key="option">
-          {{ option }}
-        </option>
-      </b-select>
-    </b-field>
-    <b-field label="Example Checkbox">
-      <b-checkbox>Hello</b-checkbox>
-    </b-field>
+    <div class="columns">
+      <b-field label="Example Dropdown" class="column">
+        <b-select placeholder="Select a name">
+          <option
+            v-for="option in data"
+            :value="option"
+            :key="option">
+            {{ option }}
+          </option>
+        </b-select>
+      </b-field>
+      <b-field label="Example Slider" class="column">
+        <b-slider v-model="sliderValue"></b-slider>
+      </b-field>
+    </div>
   </section>
 </template>
 
@@ -27,7 +29,9 @@ export default class VisualizationOptions extends Vue {
     'Hannah',
     'Tom',
     'Brian'
-  ]
+  ];
+
+  private sliderValue = 42;
 }
 
 </script>
