@@ -1,14 +1,14 @@
 module.exports = {
-    publicPath: process.env.NODE_ENV === 'production'
+  publicPath: process.env.NODE_ENV === 'production'
     ? '/BARDA/'
     : '/',
-    css: {
-      loaderOptions: {
-        sass: {
-            prependData: `
+  css: {
+    loaderOptions: {
+      sass: {
+        prependData: `
             @import "@/assets/custom.scss";
             `
-        }
       }
     }
+  }
 }
