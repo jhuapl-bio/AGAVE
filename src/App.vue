@@ -1,27 +1,50 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js + TypeScript App"/>
+  <div>
+    <NavigationBar/>
+    <div class="router-outer container">
+      <div class="router-inner columns pt-4">
+        <div class="column is-offset-1 is-10 is-offset-1-mobile">
+          <router-view/>
+        </div>
+      </div>
+    </div>
+    <footer class="footer">
+      <div class="content has-text-centered">
+        The work of JHU, JHU/APL, and BARDA. Not sure what content needs to legally be here.
+      </div>
+    </footer>
+  </div>
 </template>
 
 <script lang="ts">
-import { Options, Vue } from 'vue-class-component';
-import HelloWorld from './components/HelloWorld.vue';
+import { Component, Vue } from 'vue-property-decorator'
+import NavigationBar from './components/NavigationBar.vue'
 
-@Options({
+@Component({
   components: {
-    HelloWorld,
-  },
+    NavigationBar
+  }
 })
-export default class App extends Vue {}
+export default class App extends Vue {
+
+}
+
 </script>
 
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
+<style scoped lang="scss">
+  .router-outer {
+    display: flex;
+    // height of screen - relative height of header + footer
+    min-height: calc(100vh - 21.4rem);
+    flex-direction: column;
+  }
+  .router-inner {
+    flex: 1;
+  }
+  .footer {
+    height: 3rem;
+    width: 100%;
+    background-color: $aplgrey2;
+    // padding: 1rem;
+  }
 </style>
