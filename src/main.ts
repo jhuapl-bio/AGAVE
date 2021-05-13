@@ -7,10 +7,10 @@ import Buefy from 'buefy'
 
 import { BootstrapVue } from 'bootstrap-vue'
 Vue.use(BootstrapVue)
-import * as d3 from 'd3'
+// import * as d3 from 'd3'
 // Vue.use(d3)
 
-require('@/assets/custom.scss')
+require('@/assets/scss/custom.scss')
 Vue.use(Buefy)
 
 Vue.config.productionTip = false

@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="container pb-3 pt-3 pl-3">
-      <img class="navbar-image" src="@/assets/jhu-shield.png"/>
+      <img class="navbar-image" src="@/assets/images/jhu-shield.png"/>
     </div>
     <nav class="navbar is-aplblue">
       <div class="container">

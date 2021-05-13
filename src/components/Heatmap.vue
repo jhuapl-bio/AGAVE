@@ -13,6 +13,7 @@
 import { Component, Vue } from 'vue-property-decorator'
 import * as d3 from 'd3'
 import fs from 'file-system'
+
 @Component({})
 export default class Heatmap extends Vue {
   $refs!: {
