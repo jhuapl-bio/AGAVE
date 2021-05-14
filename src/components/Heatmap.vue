@@ -11,11 +11,16 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
+import LocalDataHelper from '@/shared/LocalDataHelper'
 import * as d3 from 'd3'
-import fs from 'file-system'
+// import { local } from 'd3';
+// import fs from 'file-system'
 
 @Component({})
 export default class Heatmap extends Vue {
+
+  private localDataHelper = new LocalDataHelper();
+
   $refs!: {
     heatmapDiv:HTMLElement
   }
@@ -47,14 +52,14 @@ export default class Heatmap extends Vue {
   }
 
   // need annotation due to `this` in return type
-  greet (): string {
+  greet(): string {
     return this.msg + ' world'
   }
-  mounted () {
+  mounted() {
     this.makeHeatmap()
   }
 
-  makeHeatmap () {
+  makeHeatmap() {
     // const $this = this
     this.height = Math.min(this.chartHeight)
     console.log(this.$refs.heatmapDiv, '_________________________')
@@ -90,21 +95,24 @@ export default class Heatmap extends Vue {
     // this.yAxisDivision[element] = { L2: null, AUPRC: null }
     this.updateHeatmap()
   }
-  updateHeatmap () {
+  updateHeatmap() {
     console.log('Updating Heatmap now...')
     console.log("Reading in data files of example data...")
     // const exts = ['A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'T', 'V', 'X', 'Y']
     const exts = ['A']
-    const promises: any[] = []
+    // const promises: any[] = []
+    const data: Object[] = []
     exts.forEach((d) => {
-      promises.push(d3.tsv(`/assets/data/Gaydos/grouped/${d}.subset.txt`))
+      // promises.push(d3.tsv(`/assets/data/Gaydos/grouped/${d}.subset.txt`))
+      data.push(this.localDataHelper.readTSV('Gaydos/grouped/HA/C.subset.txt'))
     })
-    Promise.all(promises).then((data) => {
-      console.log('Done fetching promises')
-      console.log(data, 'ssss')
-    }).catch((err) => {
-      console.error(err, 'error in fetching text files')
-    })
+    // Promise.all(promises).then((data) => {
+    //   console.log('Done fetching promises')
+    //   console.log(data, 'ssss')
+    // }).catch((err) => {
+    //   console.error(err, 'error in fetching text files')
+    // })
+    console.log(data, 'ssss')
     console.log(process.env.BASE_URL)
   }
 }

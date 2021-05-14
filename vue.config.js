@@ -10,5 +10,19 @@ module.exports = {
             `
       }
     }
+  },
+  chainWebpack: config => {
+    config
+      .module
+      .rule("csv")
+      .test(/\.(csv|tsv|txt)$/)
+      .use("csv-loader")
+      .loader("csv-loader")
+      .options({
+        dynamicTyping: true,
+        header: true,
+        skipEmptyLines: true
+      })
+      .end();
   }
 }

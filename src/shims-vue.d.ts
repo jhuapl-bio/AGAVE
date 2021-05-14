@@ -6,3 +6,6 @@ declare module '*.vue' {
 }
 
 declare module 'file-system';
+declare module '@/assets/data/*.csv';
+declare module '@/assets/data/*.tsv';
+declare module '@/assets/data/*.txt';
