@@ -100,20 +100,18 @@ export default class Heatmap extends Vue {
     console.log("Reading in data files of example data...")
     // const exts = ['A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'T', 'V', 'X', 'Y']
     const exts = ['A']
-    // const promises: any[] = []
+    const segments = ['NP']
+    const promises: Object[] = []
     const data: Object[] = []
-    exts.forEach((d) => {
-      // promises.push(d3.tsv(`/assets/data/Gaydos/grouped/${d}.subset.txt`))
-      data.push(this.localDataHelper.readTSV('Gaydos/grouped/HA/C.subset.txt'))
+    segments.forEach((segment)=>{
+      promises.push(this.localDataHelper.readTSVNoHeader(`Gaydos/grouped/${segment}/ann-condition.txt`, ["APLSample", "Group","Experiment"]))
+      exts.forEach((d) => {
+        promises.push(this.localDataHelper.readTSV(`Gaydos/grouped/${segment}/${d}.subset.txt`))
+      })
+    })    
+    Promise.all(promises).then((data)=>{
+      console.log(data, "______________")
     })
-    // Promise.all(promises).then((data) => {
-    //   console.log('Done fetching promises')
-    //   console.log(data, 'ssss')
-    // }).catch((err) => {
-    //   console.error(err, 'error in fetching text files')
-    // })
-    console.log(data, 'ssss')
-    console.log(process.env.BASE_URL)
   }
 }
 </script>

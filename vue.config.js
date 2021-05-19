@@ -12,8 +12,7 @@ module.exports = {
     }
   },
   chainWebpack: config => {
-    config
-      .module
+    config.module
       .rule("csv")
       .test(/\.(csv|tsv|txt)$/)
       .use("csv-loader")
