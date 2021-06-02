@@ -1,6 +1,6 @@
 <template>
   <div class="columns mb-6 mt-6">
-    <div id="jsmol" class="viewer"></div>
+    <div id="viewer" class="viewer"></div>
     <div id="button">
       <b-button outlined @click="focus">Focus</b-button>
       <b-button outlined @click="reset">Reset</b-button>
@@ -11,9 +11,6 @@
 <script lang="ts">
 
 import { Component, Vue } from 'vue-property-decorator'
-// import { PDBeMolstarPlugin } from 'pdbe-molstar/build/pdbe-molstar-plugin-1.1.0-dev.4'
-// import { PDBeMolstarPlugin } from 'pdbe-molstar/build/pdbe-molstar-plugin-1.1.0-dev.4'
-// const a = require('lib/pdbe-molstar-plugin-1.1.0.js')
 
 @Component({
   components: {
@@ -25,17 +22,19 @@ export default class MoleculeViewer extends Vue {
 
   mounted() {
 
+    // @ts-ignore
     this.viewer = new PDBeMolstarPlugin();
-      //Set options (Checkout available options list in the documentation)
-      const options = {
-        moleculeId: '4o5n',
-        hideControls: true,
-        bgColor: {r:255, g:255, b:255}
-      }
-      
-      const viewerContainer = document.getElementById('jsmol');
-  
-      this.viewer.render(viewerContainer, options);
+
+    // Available options here: https://github.com/PDBeurope/pdbe-molstar/wiki/1.-PDBe-Molstar-as-JS-plugin
+    const options = {
+      moleculeId: '4o5n',
+      hideControls: true,
+      bgColor: {r:255, g:255, b:255}
+    }
+    
+    const viewerContainer = document.getElementById('viewer');
+
+    this.viewer.render(viewerContainer, options);
   }
 
   focus() {
