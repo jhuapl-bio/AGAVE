@@ -6,7 +6,10 @@ export default class LocalDataHelper {
   {
 
     // const data = require("/data/" + filepath)
-    const data_tsv = await d3.tsv(`/data/${filepath}`)
+    let data = await d3.tsv(`/data/${filepath}`)
+    
+    return data.slice(0, 20)
+
     // Tom's D3 code for parsing data before consuming it. This could be useful?
 
     //    	let temp = filepath.responseText;
@@ -30,22 +33,23 @@ export default class LocalDataHelper {
     //     });
 
     //     return ret;
-
-    return data_tsv
+    
 
   }
-  public async  readTSVNoHeader(filepath: string, header: [])
+  public async  readTSVNoHeader(filepath: string, header: [string, string, string])
   {
     // const data_tsv = await d3.tsv(`/data/${filepath}`)
     let text = await d3.text(`/data/${filepath}`)
     // text = header + "\n" + text
     var data = d3.tsvParseRows(text)
     var objects = data.map(function(values) {
-      return header.reduce(function(o, k, i) {
+      return header.reduce(function(o: {[k: string]: any}, k, i) {
         o[k] = values[i];
-          return o;
+        return o;
       }, {});
     });
+
+    
     
     return objects
   }

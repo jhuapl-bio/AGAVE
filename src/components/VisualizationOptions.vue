@@ -12,8 +12,14 @@
           </option>
         </b-select>
       </b-field>
-      <b-field label="Example Slider" class="column">
-        <b-slider v-model="sliderValue"></b-slider>
+      <b-field label="Depth Threshold" class="column">
+        <b-slider v-model="depth_threshold"></b-slider>
+      </b-field>
+      <b-field label="Frequency Threshold" class="column">
+        <b-slider v-model="frequency_threshold"></b-slider>
+      </b-field>
+      <b-field label="Column Width" class="column">
+        <b-slider v-model="column_width"></b-slider>
       </b-field>
     </div>
   </section>
@@ -21,9 +27,11 @@
 
 <script lang="ts">
 
-import { Component, Vue } from 'vue-property-decorator'
+import { Component, Vue, Watch } from 'vue-property-decorator'
 
-@Component({})
+@Component({
+  
+})
 export default class VisualizationOptions extends Vue {
   private data: Array<string> = [
     'Hannah',
@@ -32,6 +40,25 @@ export default class VisualizationOptions extends Vue {
   ];
 
   private sliderValue = 42;
+  depth_threshold = 10
+  frequency_threshold = 0.2
+  column_width = 7
+
+  @Watch('depth_threshold')
+  onDepthChanged(value: number, oldValue: number) {
+    this.$emit('sliderUpdate', {value: value, target: 'depth_threshold'})
+  }
+  @Watch('frequency_threshold')
+  onFrequencyChanged(value: number, oldValue: number) {
+    this.$emit('sliderUpdate', {value: value, target: 'frequency_threshold'})
+  }
+  @Watch('column_width')
+  onColWidthChanged(value: number, oldValue: number) {
+    this.$emit('sliderUpdate', {value: value, target: 'column_width'})
+  }
+  
+
+
 }
 
 </script>
