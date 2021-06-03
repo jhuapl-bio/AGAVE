@@ -4,6 +4,7 @@
       The visualization will go here
     </p>
     <Heatmap></Heatmap>
+    <MoleculeViewer></MoleculeViewer>
   </div>
 </template>
 
@@ -11,9 +12,12 @@
 
 import { Component, Vue } from 'vue-property-decorator'
 import Heatmap from './Heatmap.vue'
+import MoleculeViewer from './MoleculeViewer.vue'
+
 @Component({
   components: {
-    Heatmap
+    Heatmap,
+    MoleculeViewer
   }
 })
 export default class Visualization extends Vue {
