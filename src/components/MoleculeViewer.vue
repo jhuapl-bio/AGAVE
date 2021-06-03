@@ -1,7 +1,7 @@
 <template>
   <div class="columns mb-6 mt-6">
-    <div id="viewer" class="viewer"></div>
-    <div id="buttons">
+    <div ref="viewer" class="viewer"></div>
+    <div>
       <b-button outlined @click="focus">Focus</b-button>
       <b-button outlined @click="reset">Reset</b-button>
     </div>
@@ -34,9 +34,10 @@ export default class MoleculeViewer extends Vue {
       bgColor: {r:255, g:255, b:255}
     }
     
-    const viewerContainer = document.getElementById('viewer');
+    this.viewer.render(this.$refs.viewer, options);
 
-    this.viewer.render(viewerContainer, options);
+    // Remove some buttons that break everything
+    this.removeButtons();
   }
 
   // Example of focus ability. In the future let's rig this to the d3 heatmap so that when an amino acid is clicked, the molecule focuses on it
@@ -48,6 +49,18 @@ export default class MoleculeViewer extends Vue {
 
   reset() {
     this.viewer.visual.reset({ camera: true})
+  }
+
+  private removeButtons() {
+    // TODO: find better way to do this than directly accessing the DOM
+    const button1 = document.querySelector('[title="Toggle Controls Panel"]')
+    const button2 = document.querySelector('[title="Toggle Expanded Viewport"]')
+    if(button1){
+      button1.remove()
+    }
+    if(button2){
+      button2.remove()
+    }
   }
 }
 
