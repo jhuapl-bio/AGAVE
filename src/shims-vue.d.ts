@@ -6,8 +6,6 @@ declare module '*.vue' {
 }
 
 declare module 'file-system';
-// declare module 'lib/pdbe-molstar-plugin-1.1.0.js';
-declare module 'pdbe-molstar/build/pdbe-molstar-plugin-1.1.0-dev.4';
 declare module '@/assets/data/*.csv';
 declare module '@/assets/data/*.tsv';
 declare module '@/assets/data/*.txt';
