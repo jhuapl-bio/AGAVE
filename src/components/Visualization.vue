@@ -8,17 +8,22 @@
       :column_width=column_width 
     >
     </Heatmap>
+    <MoleculeViewer></MoleculeViewer>
   </b-container>
+
 </template>
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
 import VisualizationOptions from '@/components/VisualizationOptions.vue'
 import Heatmap from './Heatmap.vue'
+import MoleculeViewer from './MoleculeViewer.vue'
+
 @Component({
   components: {
     Heatmap,
-    VisualizationOptions
+    VisualizationOptions,
+    MoleculeViewer
   }
 })
 export default class Visualization extends Vue {

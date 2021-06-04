@@ -1,3 +1,4 @@
+const path = require('path');
 module.exports = {
   publicPath: process.env.NODE_ENV === 'production'
     ? '/BARDA/'
@@ -23,5 +24,12 @@ module.exports = {
         skipEmptyLines: true
       })
       .end();
+  }, 
+  configureWebpack: {
+    resolve: {
+      alias: {
+        lib: path.resolve(__dirname, 'public/lib')
+      }
+    } 
   }
 }

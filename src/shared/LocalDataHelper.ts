@@ -1,5 +1,7 @@
 import * as d3 from 'd3'
 
+interface StringMap { [key: string]: string; }
+
 export default class LocalDataHelper {
 
   public async readTSV(filepath: string)
@@ -36,7 +38,8 @@ export default class LocalDataHelper {
     
 
   }
-  public async  readTSVNoHeader(filepath: string, header: [string, string, string])
+
+  public async readTSVNoHeader(filepath: string, header: string[])
   {
     // const data_tsv = await d3.tsv(`/data/${filepath}`)
     let text = await d3.text(`/data/${filepath}`)
@@ -46,6 +49,7 @@ export default class LocalDataHelper {
       return header.reduce(function(o: {[k: string]: any}, k, i) {
         o[k] = values[i];
         return o;
+
       }, {});
     });
 
