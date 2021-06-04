@@ -8,7 +8,7 @@
       :column_width=column_width 
     >
     </Heatmap>
-    <MoleculeViewer></MoleculeViewer>
+    <!-- <MoleculeViewer></MoleculeViewer> -->
   </b-container>
 
 </template>
