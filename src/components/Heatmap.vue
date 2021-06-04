@@ -157,8 +157,9 @@ export default class Heatmap extends Vue {
       const spacing = this.boxHeight / 2
       return (i * this.boxHeight) + spacing + this.margin.top
     }))
-    let color_array: string[] = [$this.colors.start, $this.colors.end]
-    let range = [0, d3.max(cells, (d:any) => { return +d.value})]
+    let color_array: any[] = [$this.colors.start, $this.colors.end]
+    let range: any[] = [0, d3.max(cells, (d:any) => { return +d.value})]
+    console.log(range,":::")
     this.scaleColor.domain(range).range(color_array)
     console.log(this.scaleColor.domain(), this.scaleColor.range())
     const blocks = g.selectAll(".block").data(cells)
@@ -176,29 +177,34 @@ export default class Heatmap extends Vue {
       .style("rx", "2px")
       .style("stroke", "black")
       .style("stroke-width", "0.5")
+      
       .append("rect")
+      .attr("id", (d:any) => {
+        return d.attr.replaceAll(".", "_") + "-" + d.prep_id.replaceAll(".", "_")
+      })
       .attr("fill", (d: any) => {
         return $this.scaleColor(d.value)
       })
       .attr("width", this.boxWidth*40)
       .attr("height", this.boxHeight)
-      .attr("id", (d:any) => {
-        return d.attr.replaceAll(".", "_") + "-" + d.prep_id.replaceAll(".", "_")
-      })
-      .on("mouseover", (d:any, u: any)=> {
-        d3.selectAll('#'+u.attr.replaceAll(".", "_") + "-" + u.prep_id.replaceAll(".", "_")).attr("fill", 'black')
-        d3.select("#heatmapDiv").append("div").attr("id", "tooltip")
-        .html('<b-tooltip target="'+`${u.attr.replaceAll(".", "_")}-${u.prep_id.replaceAll(".", "_")}`+'" triggers="hover">'+`Attribute: ${u.attr}, Prep: ${u.prep_id}`+'</b-tooltip>')
-      
+      .on("mousemove", (d:any, u: any)=> {
+        d3.selectAll('#'+u.attr.replaceAll(".", "_") + "-" + u.prep_id.replaceAll(".", "_")).attr("fill", 'yellow')
+        // d3.select("#heatmapDiv").append("div").attr("id", "tooltip")
+        // .html('<b-tooltip target="'+`${u.attr.replaceAll(".", "_")}-${u.prep_id.replaceAll(".", "_")}`+'" triggers="hover">'+`Attribute: ${u.attr}, Prep: ${u.prep_id}`+'</b-tooltip>')
+        console.log(d.x)
+        d3.select('#tooltip')
+        .html(`Attribute: ${u.attr}, Prep: ${u.prep_id}`)
+        .style("left", (d.clientX - $this.margin.left - $this.margin.right)+"px")
+        .style("top", (d.clientY + $this.margin.top - $this.margin.bottom)+"px").style("opacity", "1")     
       }).on("mouseleave", (d:any, u: any)=> {
         d3.selectAll('#'+u.attr.replaceAll(".", "_") + "-" + u.prep_id.replaceAll(".", "_")).attr("fill", (d: any) => {
           return $this.scaleColor(d.value)
         })
-        d3.selectAll("#tooltip").remove()
+        d3.selectAll("#tooltip").style("opacity", "0")
       })
 
 
-      const xAxis = d3.axisTop()
+      const xAxis = d3.axisTop(this.scaleX)
           .scale(this.scaleX).tickSizeOuter(0).ticks(firstObj.length)
 
       // .append("title").text(function (d) {
