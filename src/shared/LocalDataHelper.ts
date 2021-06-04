@@ -8,7 +8,7 @@ export default class LocalDataHelper {
     // const data = require("/data/" + filepath)
     let data = await d3.tsv(`/data/${filepath}`)
     
-    return data.slice(0, 20)
+    return data.slice(0, 2)
 
     // Tom's D3 code for parsing data before consuming it. This could be useful?
 

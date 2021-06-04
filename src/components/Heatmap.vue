@@ -3,6 +3,7 @@
     <b-row>
       <b-col sm="12">
         <div id="heatmapDiv" ref="heatmapDiv">
+          <div class="tooltip" id="tooltip" style="opacity:0"></div>
         </div>
       </b-col>
     </b-row>
@@ -169,7 +170,7 @@ export default class Heatmap extends Vue {
       }).attr("class", function (d) {
         return "block"
       }).attr("id", function (d: any) {
-        return "g" + "-" + d.prep_id
+        return "g" + "-" + d.prep_id.replaceAll(".", "_")
       })
       .attr('class', "blockRect")
       .style("rx", "2px")
@@ -179,18 +180,27 @@ export default class Heatmap extends Vue {
       .attr("fill", (d: any) => {
         return $this.scaleColor(d.value)
       })
-      .attr("width", this.boxWidth)
+      .attr("width", this.boxWidth*40)
       .attr("height", this.boxHeight)
       .attr("id", (d:any) => {
-        return d.attr + "-" + d.prep_id
+        return d.attr.replaceAll(".", "_") + "-" + d.prep_id.replaceAll(".", "_")
       })
       .on("mouseover", (d:any, u: any)=> {
-        console.log(u,'over')
-        // d3.select(u.attr + "-" + u.prep_id).attr("fill", 'red')
-      }).on("mouseout", (d:any, u: any)=> {
-        console.log(u, 'out')
-        d3.select('#'+u.attr + "-" + u.prep_id).style("fill", 'yellow')
+        d3.selectAll('#'+u.attr.replaceAll(".", "_") + "-" + u.prep_id.replaceAll(".", "_")).attr("fill", 'black')
+        d3.select("#heatmapDiv").append("div").attr("id", "tooltip")
+        .html('<b-tooltip target="'+`${u.attr.replaceAll(".", "_")}-${u.prep_id.replaceAll(".", "_")}`+'" triggers="hover">'+`Attribute: ${u.attr}, Prep: ${u.prep_id}`+'</b-tooltip>')
+      
+      }).on("mouseleave", (d:any, u: any)=> {
+        d3.selectAll('#'+u.attr.replaceAll(".", "_") + "-" + u.prep_id.replaceAll(".", "_")).attr("fill", (d: any) => {
+          return $this.scaleColor(d.value)
+        })
+        d3.selectAll("#tooltip").remove()
       })
+
+
+      const xAxis = d3.axisTop()
+          .scale(this.scaleX).tickSizeOuter(0).ticks(firstObj.length)
+
       // .append("title").text(function (d) {
       //   return "Classifier: " + d.classifier_name + "\nRank: " + d.rank + "\nRead Type: " + d.read_type +
       //     "\n" + element + ": " + d[element]
@@ -202,7 +212,7 @@ export default class Heatmap extends Vue {
           
   } 
   updateHeatmap(data: any) {
-    // console.log('Updating Heatmap now...', data)
+    console.log('Updating Heatmap now...', data)
     
   }
 }
