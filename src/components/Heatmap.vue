@@ -66,7 +66,7 @@ export default class Heatmap extends Vue {
   border = 0;
   svgs = {};
   scaleX = d3.scaleBand();
-  scaleColor = d3.scaleLinear();
+  scaleColor = d3.scaleLog();
   colors = { start: "fff", end: "#666699" };
   xAxisInner = {};
   xAxisGroup = {};
@@ -242,7 +242,7 @@ export default class Heatmap extends Vue {
       .attr("fill", (d: any) => {
         return $this.scaleColor(d.count / d.total);
       })
-      .attr("width", this.boxWidth * 40)
+      .attr("width", this.boxWidth )
       .attr("height", this.boxHeight)
       .on("mouseenter", (d: any, u: any) => {
         d3.select(
@@ -262,7 +262,7 @@ export default class Heatmap extends Vue {
           .style("opacity", "1");
       })
       .on("mouseleave", (d: any, u: any) => {
-        d3.selectAll(
+        d3.select(
           "#" +
             
             u.prep_id.replaceAll(".", "_") + u.position
@@ -270,7 +270,7 @@ export default class Heatmap extends Vue {
         .attr("fill", (d: any) => {
           return $this.scaleColor(d.count / d.total );
         });
-        d3.selectAll("#tooltip").style("opacity", "0");
+        d3.select("#tooltip").style("opacity", "0");
       });
 
     const xAxis = d3
@@ -284,7 +284,18 @@ export default class Heatmap extends Vue {
           .selectAll('text')
           .style('text-anchor', 'middle')
           .attr('transform', 'rotate(0)').style("font-size", "0.9em");
-        
+    const yAxis = d3.axisLeft(this.scaleY)
+          .scale(this.scaleY)
+          .ticks(preps);
+    const yAxisG = g.append("g").attr("class", "yAxis")
+          .attr("transform", "translate(" + this.margin.left + "," + (this.margin.top - this.boxHeight/4)+ ")")
+          .style("stroke-width", 0)
+          .call(yAxis)
+          .call(g => g.select(".domain").remove())
+          .selectAll('text')
+          .style('text-anchor', 'end')
+          .attr('transform', 'rotate(0)').style("font-size", "1.2em")
+  
     // .append("title").text(function (d) {
     //   return "Classifier: " + d.classifier_name + "\nRank: " + d.rank + "\nRead Type: " + d.read_type +
     //     "\n" + element + ": " + d[element]
