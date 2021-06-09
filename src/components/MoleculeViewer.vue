@@ -2,7 +2,7 @@
   <div class="columns mb-6 mt-6">
     <div ref="viewer" class="viewer"></div>
     <div>
-      <b-input type="number" v-model="position"></b-input>
+      <b-input type="text" v-model="localPosition"></b-input>
       <b-button outlined @click="focus">Focus</b-button>
       <b-button outlined @click="reset">Reset</b-button>
     </div>
@@ -11,7 +11,7 @@
 
 <script lang="ts">
 
-import { Component, Vue } from 'vue-property-decorator'
+import { Component, Vue, Watch, Prop } from 'vue-property-decorator'
 
 @Component({
   components: {
@@ -20,8 +20,16 @@ import { Component, Vue } from 'vue-property-decorator'
 export default class MoleculeViewer extends Vue {
 
   public viewer: any;
-  public position: number = 55;
+  public localPosition: any =  55;
 
+  @Prop({ required: true, default: 55 })
+  public position!: string;
+
+  @Watch('position')
+  onPositionChanged(value: number, oldValue: number) {
+    this.localPosition = value
+    this.focus()
+  }
   mounted() {
 
     // this object is being imported in index.html so ignore the syntax error it throws
@@ -47,8 +55,8 @@ export default class MoleculeViewer extends Vue {
     this.viewer.visual.clearSelection();
     this.viewer.visual.select({
       data: [{
-        start_residue_number: +this.position,
-        end_residue_number: +this.position,
+        start_residue_number: +this.localPosition,
+        end_residue_number: +this.localPosition,
         focus: true,
         color: {r:255, g:255, b:0}
       }]

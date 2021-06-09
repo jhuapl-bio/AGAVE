@@ -8,9 +8,10 @@
       :column_width=column_width 
       :segment=segment
       :group=group
+      @changePosition="changePosition"
     >
     </Heatmap>
-    <MoleculeViewer></MoleculeViewer>
+    <MoleculeViewer :position=position></MoleculeViewer>
   </b-container>
 
 </template>
@@ -33,11 +34,16 @@ export default class Visualization extends Vue {
   frequency_threshold = 0.2
   column_width = 7
   segment = 'NP'
+  position = 54
   group = '3C.2 - 3 dpi hNEC'
   sliderUpdate(gh: {target: string, value: number}) {
     const target = gh.target
     const value = gh.value
     this.$set(this, target, value)
+  }
+  changePosition(value: number){
+    console.log(value, "new postiion")
+    this.position = value
   }
   
 }

@@ -92,14 +92,14 @@ export default class Heatmap extends Vue {
   color_range = 4;
   divisionYScale = {};
   yAxisDivision = {};
-  scaleY = d3.scaleOrdinal();
+  scaleY: any= d3.scaleOrdinal();
   yAxis = {};
   containerHeight = 500;
   chartHeight = this.containerHeight * 0.55;
   margin = {
-    top: 0.05 * this.chartHeight,
-    bottom: 0.05 * this.chartHeight,
-    left: 0.05 * this.width,
+    top: 0.075 * this.chartHeight,
+    bottom: 0.1 * this.chartHeight,
+    left: 0.125 * this.width,
     right: 0.05 * this.width,
   };
 
@@ -128,8 +128,6 @@ export default class Heatmap extends Vue {
 
     // const bottomPosition = Math.min((this.height - margin.top-margin.bottom), this.classifiers.length * 70)
     // const boxHeight = (((this.height - margin.top - margin.bottom) / this.classifiers.length) - border)
-    const boxHeight = 20;
-    this.boxHeight = boxHeight;
 
     const divisionYScale = d3
       .scaleBand<string>()
@@ -162,20 +160,17 @@ export default class Heatmap extends Vue {
   }
 
   makeHeatmap(raw_data: any) {
-    const svg = d3
-      .select("#heatmapDiv")
-      .append("svg")
-      .attr("id", "heatmapSVG")
-      .attr("viewBox", `0 0 ${this.width} ${this.chartHeight}`);
-    const $this = this;
-    const g = svg.append("g").attr("class", "svgG");
 
     let data = raw_data.filter( (d:any) => {
       return d.group == this.group;
     })
-
-    console.log("data", data)
-
+    // Get unique preps in order to calculate y axis
+    let preps: any = [...new Set(data.map((d: any) => d.prep_id))];
+    // Get unique positions in order to calculate x axis
+    const positions_unique: any[] = [...new Set(data[0].residues.map((d:any)=>{
+      return d.position
+    }))];
+    
     // Format data into cells
     let cells: any[] = [];
     data.forEach((prep:any)=>{
@@ -183,25 +178,51 @@ export default class Heatmap extends Vue {
         cells.push({ prep_id: prep.prep_id, position: +residue.position, total:+residue.depth, count: residue.counts.length, aa: residue.consensus_aa, consensus_count: residue.consensus_aa_count  })
       })
     })
-    console.log(cells)
-
-    // Get unique positions in order to calculate x axis
-    const positions_unique: any[] = [...new Set(data[0].residues.map((d:any)=>{
-      return d.position
-    }))];
-    console.log(positions_unique)
+    const x: any = d3.scaleLinear()
+    .domain([0, positions_unique.length])
+    .range([this.margin.left, this.width * 6 - this.margin.right])
+    const axisPadding = 10
+    const minX = x(0);
+    const maxX = x(positions_unique.length);
+    const overwidth = maxX - minX + this.margin.left + this.margin.right;
+    const boxHeight = (this.height - this.margin.top - this.margin.bottom - axisPadding)/ preps.length 
+    this.boxHeight = boxHeight;
     const boxWidth =
-      (this.width - this.margin.left - this.margin.right) / positions_unique.length -
+      (overwidth - this.margin.left - this.margin.right) / positions_unique.length -
       this.border;
     this.boxWidth = boxWidth;
-    // const firstObj : any = [...new Set(data.positions.map( (d:any) => d.attr))];
-    // const firstObj = filtered_attrs
+    
+    const heatmapdiv = d3.select("#heatmapDiv")
+    const svg = heatmapdiv.append("svg")
+      .attr("id", "heatmapSVG")
+      .attr("width", this.width)
+      .attr("height", this.chartHeight)
+      .style("position", "absolute")
+      .style("pointer-events", "none")
+      .style("z-index", 1)
+      // .attr("viewBox", `0 0 ${this.width} ${this.chartHeight}`)
+    const body = heatmapdiv.append("div")
+      .style("overflow-x", "scroll")
+      .style("-webkit-overflow-scrolling", "touch");
 
-    // Get unique preps in order to calculate y axis
-    let preps: any = [...new Set(data.map((d: any) => d.prep_id))];
+    const innerSvg = body.append("svg")
+      .attr("width", overwidth)
+      .attr("height", this.chartHeight)
+      .style("display", "block")
+    const g = innerSvg.append("g").attr("class", "svgG")
+      // .call(svg => svg.append("g").call(xAxis))
+    // body.node().scrollBy(overwidth, 0);
+    const $this = this;
+
+    console.log("data", data)
+
+    
+    console.log(cells)
+
+    
     this.scaleX
       .domain(positions_unique)
-      .range([this.margin.left, this.width - this.margin.right]);
+      .range([this.margin.left, overwidth - this.margin.right]);
 
     this.scaleY.domain(preps).range(
       preps.map((d: any, i: number) => {
@@ -256,15 +277,21 @@ export default class Heatmap extends Vue {
       .attr("fill", (d: any) => {
         return this.calculateColor(d)
       })
+      .style("cursor", "pointer")
       .attr("width", this.boxWidth )
       .attr("height", this.boxHeight)
+      .on("click", (d:any, u:any)=>{
+        console.log(d)
+        $this.$emit("changePosition", u.position)
+      })
       .on("mouseenter", (d: any, u: any) => {
         d3.select(
           "#" +
             u.prep_id.replaceAll(".", "_") + u.position 
         ).attr("fill", "yellow");
+        
         d3.select("#tooltip")
-          .html(`Attribute: ${String(u.position)}, Prep: ${u.prep_id}, Count: ${u.count}, Total: ${u.total}`)
+          .html(`Pos: ${u.aa+"."+u.position}<br> Prep: ${u.prep_id}<br>Count: ${u.count}, Total: ${u.total}`)
           .style(
             "left",
             d.clientX - $this.margin.left - $this.margin.right + "px"
@@ -287,23 +314,40 @@ export default class Heatmap extends Vue {
         d3.select("#tooltip").style("opacity", "0");
       });
 
-    // Add everything on
-    const xAxis = d3
+    const xAxisT = d3
       .axisTop(this.scaleX)
-      .scale(this.scaleX)
       .tickSizeOuter(0)
-      .ticks(positions_unique);
-    const xAxisG = g.append("g").attr("class", "xAxis")
-          .attr("transform", "translate(" + 0 + "," + (this.margin.top) + ")")
-          .call(xAxis)
+      .ticks(positions_unique)
+      .tickFormat((interval:any,i:any) => {
+        return i%2 !== 0 ? " ": interval;
+      });
+    const xAxisB = d3
+    .axisBottom(this.scaleX)
+    .tickSizeOuter(0)
+    .ticks(positions_unique)
+    .tickFormat((interval:any,i:any) => {
+      return i%2 !== 1 ? " ": interval;
+    });
+    const xAxisGT = g.append("g").attr("class", "xAxis")
+          .attr("transform", "translate(" + (0) + "," + (this.margin.top) + ")")
+          .style("fill", null)
+          .style("stroke-width", 0.2)
+          .call(xAxisT)
           .selectAll('text')
           .style('text-anchor', 'middle')
-          .attr('transform', 'rotate(0)').style("font-size", "0.9em");
+          .attr('transform', 'rotate(0)').style("font-size", "0.99em");
+    const xAxisGB = g.append("g").attr("class", "xAxis")
+          .attr("transform", "translate(" + (0) + "," + (this.chartHeight - this.margin.bottom) + ")")
+          .style("fill", null)
+          .style("stroke-width", 0.2)
+          .call(xAxisB)
+          .selectAll('text')
+          .style('text-anchor', 'middle')
+          .attr('transform', 'rotate(0)').style("font-size", "0.99em");
     const yAxis = d3.axisLeft(this.scaleY)
-          .scale(this.scaleY)
           .ticks(preps);
     const yAxisG = g.append("g").attr("class", "yAxis")
-          .attr("transform", "translate(" + this.margin.left + "," + (this.margin.top - this.boxHeight/4)+ ")")
+          .attr("transform", "translate(" + this.margin.left + "," + (this.boxHeight/2)+ ")")
           .style("stroke-width", 0)
           .call(yAxis)
           .call(g => g.select(".domain").remove())
