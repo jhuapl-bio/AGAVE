@@ -7,9 +7,9 @@
       :frequency_threshold=frequency_threshold 
       :column_width=column_width 
       :segment=segment
+      :group=group
     >
     </Heatmap>
-    
     <MoleculeViewer></MoleculeViewer>
   </b-container>
 
@@ -29,10 +29,11 @@ import MoleculeViewer from './MoleculeViewer.vue'
   }
 })
 export default class Visualization extends Vue {
-  depth_threshold = 10
+  depth_threshold = 0
   frequency_threshold = 0.2
   column_width = 7
   segment = 'NP'
+  group = '3C.2 - 3 dpi hNEC'
   sliderUpdate(gh: {target: string, value: number}) {
     const target = gh.target
     const value = gh.value

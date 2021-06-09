@@ -2,6 +2,7 @@
   <div class="columns mb-6 mt-6">
     <div ref="viewer" class="viewer"></div>
     <div>
+      <b-input type="number" v-model="position"></b-input>
       <b-button outlined @click="focus">Focus</b-button>
       <b-button outlined @click="reset">Reset</b-button>
     </div>
@@ -19,6 +20,7 @@ import { Component, Vue } from 'vue-property-decorator'
 export default class MoleculeViewer extends Vue {
 
   public viewer: any;
+  public position: number = 55;
 
   mounted() {
 
@@ -42,13 +44,20 @@ export default class MoleculeViewer extends Vue {
 
   // Example of focus ability. In the future let's rig this to the d3 heatmap so that when an amino acid is clicked, the molecule focuses on it
   focus() {
-    this.viewer.visual.focus([{
-      residue_number: 31
-    }])
+    this.viewer.visual.clearSelection();
+    this.viewer.visual.select({
+      data: [{
+        start_residue_number: +this.position,
+        end_residue_number: +this.position,
+        focus: true,
+        color: {r:255, g:255, b:0}
+      }]
+    })
   }
 
   reset() {
     this.viewer.visual.reset({ camera: true})
+    this.viewer.visual.clearSelection();
   }
 
   private removeButtons() {

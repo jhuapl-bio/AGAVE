@@ -44,7 +44,6 @@ export default class LocalDataHelper {
 
     // const data = require("/data/" + filepath)
     let data = await d3.json(`/data/${filepath}`)
-    console.log(data)
     return data
 
     // Tom's D3 code for parsing data before consuming it. This could be useful?

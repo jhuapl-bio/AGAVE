@@ -3,7 +3,7 @@
     <NavigationBar/>
     <div class="router-outer container">
       <div class="router-inner columns pt-4">
-        <div class="column is-offset-1 is-10 is-offset-1-mobile">
+        <div class="column is-offset-1-mobile add-padding">
           <router-view/>
         </div>
       </div>
@@ -46,5 +46,9 @@ export default class App extends Vue {
     width: 100%;
     background-color: $aplgrey2;
     // padding: 1rem;
+  }
+  .add-padding {
+    padding-left: 30px;
+    padding-right: 30px;
   }
 </style>
