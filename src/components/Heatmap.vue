@@ -23,7 +23,7 @@ import { BIconArrowReturnRight } from "bootstrap-vue";
 export default class Heatmap extends Vue {
 
   private localDataHelper = new LocalDataHelper();
-  private Parsing = new Parsing();
+  private parsing = new Parsing();
 
   $refs!: {
     heatmapDiv: HTMLElement;
@@ -63,7 +63,6 @@ export default class Heatmap extends Vue {
   onSegChanged(value: string, oldValue: string) {
     d3.select("#heatmapDiv").html("");
     this.defineHeatmap();
-    console.log(oldValue, value);
   }
 
   @Watch("group")
@@ -84,8 +83,8 @@ export default class Heatmap extends Vue {
   border = 0;
   svgs = {};
   scaleX = d3.scaleBand();
-  scaleColor = d3.scaleLog();
-  colors = { start: "fff", end: "#666699" };
+  scaleColor = d3.scaleLinear();
+  colors = { start: "#fff", end: "#666699" };
   xAxisInner = {};
   xAxisGroup = {};
 
@@ -133,17 +132,8 @@ export default class Heatmap extends Vue {
       .scaleBand<string>()
       .domain(["a", "b"])
       .range([this.margin.left, this.width - this.margin.right]);
-    // const yAxisDivision = d3.axisLeft<string>().scale(divisionYScale).tickSizeOuter(0)
-    //   .ticks(0);
-    // this.yAxisDivision[element] = { L2: null, AUPRC: null }
 
     const promises: Object[] = [];
-    // const data: {groups: Object[], positions: Object[]} = {
-    //   groups: [],
-    //   positions: []
-    // };
-
-    // promises.push(this.localDataHelper.readTSVNoHeader(`Gaydos/grouped/${this.segment}/ann-condition.txt`, ["APLSample", "Group","Experiment"]))
     segments.forEach((segment: string) => {
       promises.push(
         this.localDataHelper.readJSON(`Gaydos/grouped/${this.segment}.json`)
@@ -152,7 +142,6 @@ export default class Heatmap extends Vue {
     const $this = this;
     Promise.all(promises).then((l) => {
       let data = l[0];
-      // let data = {groups: l[0], positions: l[1]};
 
       $this.makeHeatmap(data);
       // $this.updateHeatmap(data)
@@ -248,7 +237,7 @@ export default class Heatmap extends Vue {
 
     // Add styling to the heatmap blocks
     const blocks = g.selectAll(".block").data(cells);
-
+    
     const blockEnter = blocks
       .enter()
       .append("g")
@@ -298,7 +287,7 @@ export default class Heatmap extends Vue {
           )
           .style(
             "top",
-            d.clientY + $this.margin.top - $this.margin.bottom + "px"
+            d.clientY - $this.margin.top - $this.margin.bottom + "px"
           )
           .style("opacity", "1");
       })
@@ -354,7 +343,12 @@ export default class Heatmap extends Vue {
           .selectAll('text')
           .style('text-anchor', 'end')
           .attr('transform', 'rotate(0)').style("font-size", "1.2em")
-  
+    function zoomed({transform}: any) {
+      blocks.attr("transform", transform);
+    }
+    // const ext: any[] = [[0, 0], [$this.width, $this.height]]
+    // svg.call(d3.zoom().extent(ext))
+      
     // .append("title").text(function (d) {
     //   return "Classifier: " + d.classifier_name + "\nRank: " + d.rank + "\nRead Type: " + d.read_type +
     //     "\n" + element + ": " + d[element]
