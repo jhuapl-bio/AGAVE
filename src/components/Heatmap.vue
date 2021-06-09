@@ -23,7 +23,7 @@ import { BIconArrowReturnRight } from "bootstrap-vue";
 export default class Heatmap extends Vue {
 
   private localDataHelper = new LocalDataHelper();
-  private Parsing = new Parsing();
+  private parsing = new Parsing();
 
   $refs!: {
     heatmapDiv: HTMLElement;
@@ -63,7 +63,6 @@ export default class Heatmap extends Vue {
   onSegChanged(value: string, oldValue: string) {
     d3.select("#heatmapDiv").html("");
     this.defineHeatmap();
-    console.log(oldValue, value);
   }
 
   @Watch("group")
@@ -84,15 +83,15 @@ export default class Heatmap extends Vue {
   border = 0;
   svgs = {};
   scaleX = d3.scaleBand();
-  scaleColor = d3.scaleLog();
-  colors = { start: "fff", end: "#666699" };
+  scaleColor = d3.scaleLinear();
+  colors = { start: "#fff", end: "#666699" };
   xAxisInner = {};
   xAxisGroup = {};
 
   color_range = 4;
   divisionYScale = {};
   yAxisDivision = {};
-  scaleY = d3.scaleOrdinal();
+  scaleY: any = d3.scaleOrdinal();
   yAxis = {};
   containerHeight = 500;
   chartHeight = this.containerHeight * 0.55;
@@ -135,17 +134,8 @@ export default class Heatmap extends Vue {
       .scaleBand<string>()
       .domain(["a", "b"])
       .range([this.margin.left, this.width - this.margin.right]);
-    // const yAxisDivision = d3.axisLeft<string>().scale(divisionYScale).tickSizeOuter(0)
-    //   .ticks(0);
-    // this.yAxisDivision[element] = { L2: null, AUPRC: null }
 
     const promises: Object[] = [];
-    // const data: {groups: Object[], positions: Object[]} = {
-    //   groups: [],
-    //   positions: []
-    // };
-
-    // promises.push(this.localDataHelper.readTSVNoHeader(`Gaydos/grouped/${this.segment}/ann-condition.txt`, ["APLSample", "Group","Experiment"]))
     segments.forEach((segment: string) => {
       promises.push(
         this.localDataHelper.readJSON(`Gaydos/grouped/${this.segment}.json`)
@@ -154,7 +144,6 @@ export default class Heatmap extends Vue {
     const $this = this;
     Promise.all(promises).then((l) => {
       let data = l[0];
-      // let data = {groups: l[0], positions: l[1]};
 
       $this.makeHeatmap(data);
       // $this.updateHeatmap(data)
@@ -162,6 +151,7 @@ export default class Heatmap extends Vue {
   }
 
   makeHeatmap(raw_data: any) {
+    let zoom = d3.zoom()
     const svg = d3
       .select("#heatmapDiv")
       .append("svg")
@@ -189,16 +179,16 @@ export default class Heatmap extends Vue {
     const positions_unique: any[] = [...new Set(data[0].residues.map((d:any)=>{
       return d.position
     }))];
-    console.log(positions_unique)
     const boxWidth =
       (this.width - this.margin.left - this.margin.right) / positions_unique.length -
       this.border;
     this.boxWidth = boxWidth;
+    
     // const firstObj : any = [...new Set(data.positions.map( (d:any) => d.attr))];
     // const firstObj = filtered_attrs
 
     // Get unique preps in order to calculate y axis
-    let preps: any = [...new Set(data.map((d: any) => d.prep_id))];
+    let preps: any[] = [...new Set(data.map((d: any) => d.prep_id))];
     this.scaleX
       .domain(positions_unique)
       .range([this.margin.left, this.width - this.margin.right]);
@@ -209,25 +199,23 @@ export default class Heatmap extends Vue {
         return i * this.boxHeight + spacing + this.margin.top;
       })
     );
-
-    // Do some stuff with colors
-    // let color_array: any[] = [$this.colors.start, $this.colors.end];
-    // let range: any[] = [
-    //   0,
-    //   d3.max(cells, (d: any) => {
-    //     return +d.value;
-    //   }),
-    // ];
-    // const extentcolor: any = d3.extent(cells.map((d:any)=>{
-    //   return d.count / d.total
-    // }))
-    // console.log(extentcolor, color_array)
-    // console.log(cells.map((d:any) => { return d.total}))
+    let color_array: any[] = [$this.colors.start, $this.colors.end];
+    let range: any[] = [
+      0,
+      d3.max(cells, (d: any) => {
+        return +d.value;
+      }),
+    ];
+    // let ext: number[] = cells.map((d:any)=>{
+    //   let num: number =  d.count / d.total;
+    //   // return ( num ? num : 0) 
+    //   return getColor(d)
+    // })
+    // let ext2: any = d3.extent(ext)
+    // const extentcolor: [number, number] = ext2
     // this.scaleColor.domain(extentcolor).range(color_array);
-
-    // Add styling to the heatmap blocks
     const blocks = g.selectAll(".block").data(cells);
-
+    
     const blockEnter = blocks
       .enter()
       .append("g")
@@ -254,7 +242,7 @@ export default class Heatmap extends Vue {
         );
       })
       .attr("fill", (d: any) => {
-        return this.calculateColor(d)
+        return this.parsing.calculateColor(d, this.depth_threshold, this.frequency_threshold)
       })
       .attr("width", this.boxWidth )
       .attr("height", this.boxHeight)
@@ -271,7 +259,7 @@ export default class Heatmap extends Vue {
           )
           .style(
             "top",
-            d.clientY + $this.margin.top - $this.margin.bottom + "px"
+            d.clientY - $this.margin.top - $this.margin.bottom + "px"
           )
           .style("opacity", "1");
       })
@@ -282,7 +270,7 @@ export default class Heatmap extends Vue {
             u.prep_id.replaceAll(".", "_") + u.position
         )
         .attr("fill", (d: any) => {
-          return this.calculateColor(d)
+          return this.parsing.calculateColor(d, this.depth_threshold, this.frequency_threshold)
         });
         d3.select("#tooltip").style("opacity", "0");
       });
@@ -290,7 +278,6 @@ export default class Heatmap extends Vue {
     // Add everything on
     const xAxis = d3
       .axisTop(this.scaleX)
-      .scale(this.scaleX)
       .tickSizeOuter(0)
       .ticks(positions_unique);
     const xAxisG = g.append("g").attr("class", "xAxis")
@@ -300,7 +287,6 @@ export default class Heatmap extends Vue {
           .style('text-anchor', 'middle')
           .attr('transform', 'rotate(0)').style("font-size", "0.9em");
     const yAxis = d3.axisLeft(this.scaleY)
-          .scale(this.scaleY)
           .ticks(preps);
     const yAxisG = g.append("g").attr("class", "yAxis")
           .attr("transform", "translate(" + this.margin.left + "," + (this.margin.top - this.boxHeight/4)+ ")")
@@ -310,7 +296,12 @@ export default class Heatmap extends Vue {
           .selectAll('text')
           .style('text-anchor', 'end')
           .attr('transform', 'rotate(0)').style("font-size", "1.2em")
-  
+    function zoomed({transform}: any) {
+      blocks.attr("transform", transform);
+    }
+    // const ext: any[] = [[0, 0], [$this.width, $this.height]]
+    // svg.call(d3.zoom().extent(ext))
+      
     // .append("title").text(function (d) {
     //   return "Classifier: " + d.classifier_name + "\nRank: " + d.rank + "\nRead Type: " + d.read_type +
     //     "\n" + element + ": " + d[element]
@@ -323,49 +314,6 @@ export default class Heatmap extends Vue {
 
   updateHeatmap(data: any) {
     console.log("Updating Heatmap now...", data);
-  }
-
-  // pretty close to exactly Tom's color code
-  calculateColor(d: any) {
-
-   	const depth_thresh = this.depth_threshold
-    const freq_thresh = this.frequency_threshold/1000
-    const log_scale = 4
-    const max = d.consensus_count
-    let color = '';
-
-    if ( d.total === 0 ) {
-      // there is no data at this point: total = 0
-      color = 'rgb(' + Math.round(235) + ',' + Math.round(235) + ',' + Math.round(235) + ')';
-
-    } else if ( d.total < depth_thresh && (1-max/d.total) < freq_thresh) {
-      // there is little data at this point: 0 < total < depth_thresh
-      color = 'rgb(' + Math.round(185) + ',' + Math.round(185) + ',' + Math.round(185) + ')';
-
-    } else if ( max == d.total && d.total >= depth_thresh ) {
-      // there is enough data at this point, but zero mutations: total >= depth_thresh; wt = total
-      color = 'rgb(' + Math.round(165) + ',' + Math.round(165) + ',' + Math.round(165) + ')';
-
-    } else if ( max != d.total && d.total < depth_thresh && (1-max/d.total) >= freq_thresh ) {
-      // there is little data at this point, but a lot of mutations: total < depth_thresh; 1-wt/total > freq_thresh
-      color = 'rgb(' + Math.round(65) + ',' + Math.round(65) + ',' + Math.round(65) + ')';
-
-    } else {
-      const frac = (log_scale+Math.log10(1-max/d.total))/log_scale;
-      // there is data at this point, and at least one mutation: total > 0; wt != total
-      const x = 0.25 + 0.75*frac;
-      const r = 255 * (0.472 - 0.567*x + 4.05*Math.pow(x,2)) / (1 + 8.72*x - 19.17*Math.pow(x,2) + 14.1*Math.pow(x,3));
-      const g = 255 * (0.108932 - 1.22635*x + 27.284*Math.pow(x,2) - 98.577*Math.pow(x,3) + 163.3*Math.pow(x,4) - 131.395*Math.pow(x,5) + 40.634*Math.pow(x,6));
-      const b = 255 / (1.97 + 3.54*x - 68.5*Math.pow(x,2) + 243*Math.pow(x,3) - 297*Math.pow(x,4) + 125*Math.pow(x,5));
-      if( r < 0 || g < 0 || b < 0 ){
-        color = 'rgb(253,64,160)';
-      } else {
-        color = 'rgb(' + Math.round(r) + ',' + Math.round(g) + ',' + Math.round(b) + ')';
-      }
-
-    }
-    return color;
-
   }
 
 }
