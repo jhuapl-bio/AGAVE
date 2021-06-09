@@ -22,7 +22,7 @@ import { BIconArrowReturnRight } from "bootstrap-vue";
 @Component({})
 export default class Heatmap extends Vue {
   private localDataHelper = new LocalDataHelper();
-  private Parsing = new Parsing();
+  private parsing = new Parsing();
 
   $refs!: {
     heatmapDiv: HTMLElement;
@@ -53,7 +53,6 @@ export default class Heatmap extends Vue {
   onSegChanged(value: string, oldValue: string) {
     d3.select("#heatmapDiv").html("");
     this.defineHeatmap();
-    console.log(oldValue, value);
   }
   test = null;
   showMenu = false;
@@ -66,15 +65,15 @@ export default class Heatmap extends Vue {
   border = 0;
   svgs = {};
   scaleX = d3.scaleBand();
-  scaleColor = d3.scaleLog();
-  colors = { start: "fff", end: "#666699" };
+  scaleColor = d3.scaleLinear();
+  colors = { start: "#fff", end: "#666699" };
   xAxisInner = {};
   xAxisGroup = {};
 
   color_range = 4;
   divisionYScale = {};
   yAxisDivision = {};
-  scaleY = d3.scaleOrdinal();
+  scaleY: any = d3.scaleOrdinal();
   yAxis = {};
   containerHeight = 500;
   chartHeight = this.containerHeight * 0.55;
@@ -117,17 +116,8 @@ export default class Heatmap extends Vue {
       .scaleBand<string>()
       .domain(["a", "b"])
       .range([this.margin.left, this.width - this.margin.right]);
-    // const yAxisDivision = d3.axisLeft<string>().scale(divisionYScale).tickSizeOuter(0)
-    //   .ticks(0);
-    // this.yAxisDivision[element] = { L2: null, AUPRC: null }
 
     const promises: Object[] = [];
-    // const data: {groups: Object[], positions: Object[]} = {
-    //   groups: [],
-    //   positions: []
-    // };
-
-    // promises.push(this.localDataHelper.readTSVNoHeader(`Gaydos/grouped/${this.segment}/ann-condition.txt`, ["APLSample", "Group","Experiment"]))
     segments.forEach((segment: string) => {
       promises.push(
         this.localDataHelper.readJSON(`Gaydos/grouped/${this.segment}.json`)
@@ -136,60 +126,60 @@ export default class Heatmap extends Vue {
     const $this = this;
     Promise.all(promises).then((l) => {
       let data = l[0];
-      // let data = {groups: l[0], positions: l[1]};
 
       $this.makeHeatmap(data);
       // $this.updateHeatmap(data)
     });
   }
   makeHeatmap(data: any) {
+    let zoom = d3.zoom()
     const svg = d3
       .select("#heatmapDiv")
       .append("svg")
       .attr("id", "heatmapSVG")
       .attr("id", "heatmapSVG")
-      .attr("viewBox", `0 0 ${this.width} ${this.chartHeight}`);
+      .attr("viewBox", `0 0 ${this.width} ${this.chartHeight}`)
+      
     const $this = this;
-    const g = svg.append("g").attr("class", "svgG");
-
-    // let filtered_attrs = Object.keys(data.map((d:any)=>{return d.experiment})).filter((d:any)=>{return d !== 'prep_id'})
-    console.log("data", data)
+    const g = svg.append("g").attr("class", "svgG")
+    
+    function getColor(d:any){
+      const frac = $this.parsing.totalwt2frac(d, $this.frequency_threshold, $this.depth_threshold  )
+      return $this.parsing.frac2rainbow(frac)
+    }
     let cells: any[] = [];
-    // let cells: any = [].concat.apply(
-    //   [],
-    //   data.map((d: any) => {
-    //     return d.positions.map((f: string) => {
-    //       // return { prep_id: d.prep_id, count: d[f], aa: f };
-    //     });
-    //   })
-    // );
     data.forEach((prep:any)=>{
       prep.residues.forEach((residue:any)=>{
         if (residue.length == 0){
-          cells.push({ prep_id: prep.prep_id, position: +residue.position, total:0, count: 0, aa: residue.consensus_aa  })
+          cells.push({ prep_id: prep.prep_id, max: 0, position: +residue.position, total:0, count: 0, aa: residue.consensus_aa  })
         }
         else{
           let sum =0
+          let specific = 0
           residue.counts.forEach((count:any)=>{
             sum+=count.count
+            if (count.aa == residue.consensus_aa){
+              specific = count.count
+            }
           })
-          cells.push({ prep_id: prep.prep_id, position: +residue.position, total:sum, count: residue.counts.length, aa: residue.consensus_aa  })
+          const max = ( residue.counts.length > 0 ? d3.max(residue.counts.map((d:any)=>{
+            return d.count
+          })) : 0)
+          cells.push({ prep_id: prep.prep_id, max: max, position: +residue.position, total:sum, count: specific, aa: residue.consensus_aa  })
         }
       })
     })
-    console.log(cells)
-    // return;
     const positions_unique: any[] = [...new Set(data[0].residues.map((d:any)=>{
       return d.position
     }))];
-    console.log(positions_unique)
     const boxWidth =
       (this.width - this.margin.left - this.margin.right) / positions_unique.length -
       this.border;
     this.boxWidth = boxWidth;
+    
     // const firstObj : any = [...new Set(data.positions.map( (d:any) => d.attr))];
     // const firstObj = filtered_attrs
-    let preps: any = [...new Set(data.map((d: any) => d.prep_id))];
+    let preps: any[] = [...new Set(data.map((d: any) => d.prep_id))];
     this.scaleX
       .domain(positions_unique)
       .range([this.margin.left, this.width - this.margin.right]);
@@ -207,13 +197,16 @@ export default class Heatmap extends Vue {
         return +d.value;
       }),
     ];
-    const extentcolor = d3.extent(cells.map((d:any)=>{
-      return d.count / d.total
-    }))
-    console.log(extentcolor, color_array)
-    this.scaleColor.domain(extentcolor).range(color_array);
+    // let ext: number[] = cells.map((d:any)=>{
+    //   let num: number =  d.count / d.total;
+    //   // return ( num ? num : 0) 
+    //   return getColor(d)
+    // })
+    // let ext2: any = d3.extent(ext)
+    // const extentcolor: [number, number] = ext2
+    // this.scaleColor.domain(extentcolor).range(color_array);
     const blocks = g.selectAll(".block").data(cells);
-
+    
     const blockEnter = blocks
       .enter()
       .append("g")
@@ -240,7 +233,8 @@ export default class Heatmap extends Vue {
         );
       })
       .attr("fill", (d: any) => {
-        return $this.scaleColor(d.count / d.total);
+        return getColor(d  )
+        // return $this.scaleColor( (d.total > 0 ? d.count / d.total : 0 )    );
       })
       .attr("width", this.boxWidth )
       .attr("height", this.boxHeight)
@@ -257,7 +251,7 @@ export default class Heatmap extends Vue {
           )
           .style(
             "top",
-            d.clientY + $this.margin.top - $this.margin.bottom + "px"
+            d.clientY - $this.margin.top - $this.margin.bottom + "px"
           )
           .style("opacity", "1");
       })
@@ -268,14 +262,14 @@ export default class Heatmap extends Vue {
             u.prep_id.replaceAll(".", "_") + u.position
         )
         .attr("fill", (d: any) => {
-          return $this.scaleColor(d.count / d.total );
+          return getColor(d  )
+          // return $this.scaleColor(d.count / d.total );
         });
         d3.select("#tooltip").style("opacity", "0");
       });
 
     const xAxis = d3
       .axisTop(this.scaleX)
-      .scale(this.scaleX)
       .tickSizeOuter(0)
       .ticks(positions_unique);
     const xAxisG = g.append("g").attr("class", "xAxis")
@@ -285,7 +279,6 @@ export default class Heatmap extends Vue {
           .style('text-anchor', 'middle')
           .attr('transform', 'rotate(0)').style("font-size", "0.9em");
     const yAxis = d3.axisLeft(this.scaleY)
-          .scale(this.scaleY)
           .ticks(preps);
     const yAxisG = g.append("g").attr("class", "yAxis")
           .attr("transform", "translate(" + this.margin.left + "," + (this.margin.top - this.boxHeight/4)+ ")")
@@ -295,7 +288,12 @@ export default class Heatmap extends Vue {
           .selectAll('text')
           .style('text-anchor', 'end')
           .attr('transform', 'rotate(0)').style("font-size", "1.2em")
-  
+    function zoomed({transform}: any) {
+      blocks.attr("transform", transform);
+    }
+    // const ext: any[] = [[0, 0], [$this.width, $this.height]]
+    // svg.call(d3.zoom().extent(ext))
+      
     // .append("title").text(function (d) {
     //   return "Classifier: " + d.classifier_name + "\nRank: " + d.rank + "\nRead Type: " + d.read_type +
     //     "\n" + element + ": " + d[element]
