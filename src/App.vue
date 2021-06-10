@@ -1,5 +1,6 @@
 <template>
   <div>
+    
     <NavigationBar/>
     <div class="router-outer container">
       <div class="router-inner columns pt-4">
@@ -19,7 +20,8 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
 import NavigationBar from './components/NavigationBar.vue'
-
+import 'bootstrap/dist/css/bootstrap.css'
+import 'bootstrap-vue/dist/bootstrap-vue.css'
 @Component({
   components: {
     NavigationBar
