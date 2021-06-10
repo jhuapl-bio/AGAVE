@@ -48,7 +48,7 @@ export default class App extends Vue {
     // padding: 1rem;
   }
   .add-padding {
-    padding-left: 30px;
-    padding-right: 30px;
+    padding-left: 26px;
+    padding-right: 26px;
   }
 </style>

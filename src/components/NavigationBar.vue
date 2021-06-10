@@ -7,7 +7,7 @@
       <div class="container">
         <div class="navbar-brand pl-3">
           <router-link class="navbar-item is-size-1" to="/">
-            Untitled Data Viz
+            Influenza Variant Explorer
           </router-link>
           <a role="button" class="navbar-burger" :class="{'is-active': showMenu}" v-on:click="showMenu = !showMenu">
             <span aria-hidden="true"></span>

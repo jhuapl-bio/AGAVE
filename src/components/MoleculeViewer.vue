@@ -1,10 +1,15 @@
 <template>
-  <div class="columns mb-6 mt-6">
-    <div ref="viewer" class="viewer"></div>
-    <div>
-      <b-input type="text" v-model="localPosition"></b-input>
-      <b-button outlined @click="focus">Focus</b-button>
-      <b-button outlined @click="reset">Reset</b-button>
+  <div class="columns mt-6 mb-6">
+    <div class="column is-12">
+      <h2 class="subtitle is-3">
+        Crystal structure of A/Victoria/361/2011 (H3N2) influenza virus hemagglutinin
+      </h2>
+      <div ref="viewer" class="viewer"></div>
+      <!-- <div>
+        <b-input type="text" v-model="localPosition"></b-input>
+        <b-button outlined @click="focus">Focus</b-button>
+        <b-button outlined @click="reset">Reset</b-button>
+      </div> -->
     </div>
   </div>
 </template>
@@ -13,6 +18,11 @@
 
 import { Component, Vue, Watch, Prop } from 'vue-property-decorator'
 
+interface Residue {
+  chain: string
+  position: number
+}
+
 @Component({
   components: {
   }
@@ -20,7 +30,7 @@ import { Component, Vue, Watch, Prop } from 'vue-property-decorator'
 export default class MoleculeViewer extends Vue {
 
   public viewer: any;
-  public localPosition: any =  55;
+  public localPosition: number =  55;
 
   @Prop({ required: true, default: 55 })
   public position!: string;
@@ -30,6 +40,7 @@ export default class MoleculeViewer extends Vue {
     this.localPosition = value
     this.focus()
   }
+
   mounted() {
 
     // this object is being imported in index.html so ignore the syntax error it throws
@@ -37,7 +48,7 @@ export default class MoleculeViewer extends Vue {
     this.viewer = new PDBeMolstarPlugin();
 
     // Available options here: https://github.com/PDBeurope/pdbe-molstar/wiki/1.-PDBe-Molstar-as-JS-plugin
-    // Our H3 protein is 4o5n and our H1 protein is 3lzg
+    // Our H3N2 HA protein is 4o5n and our H1N1 HA protein is 3lzg
     const options = {
       moleculeId: '4o5n',
       hideControls: true,
@@ -53,14 +64,25 @@ export default class MoleculeViewer extends Vue {
   // Example of focus ability. In the future let's rig this to the d3 heatmap so that when an amino acid is clicked, the molecule focuses on it
   focus() {
     this.viewer.visual.clearSelection();
-    this.viewer.visual.select({
-      data: [{
-        start_residue_number: +this.localPosition,
-        end_residue_number: +this.localPosition,
-        focus: true,
-        color: {r:255, g:255, b:0}
-      }]
-    })
+    let residue: Residue;
+    if ( this.localPosition >= 25 && this.localPosition <= 341 ) {
+      residue = { chain: 'A', position: this.localPosition - 22 }
+    } else if ( this.localPosition >= 346 && this.localPosition <= 518 ) {
+      residue = { chain: 'B', position: this.localPosition - 345 }
+    } else {
+      residue = { chain: '', position: 0 }
+    }
+    if(residue.chain !== '') {
+      this.viewer.visual.select({
+        data: [{
+          struct_asym_id: residue.chain,
+          start_residue_number: residue.position,
+          end_residue_number: residue.position,
+          focus: true,
+          color: {r:255, g:255, b:0}
+        }]
+      })
+    }
   }
 
   reset() {

@@ -1,8 +1,8 @@
 <template>
   <section>
-    <h2 class="subtitle is-3">Visualization Options</h2>
+    <h2 class="subtitle is-3">Local Variants Per Sample</h2>
     <div class="columns">
-      <b-field label="Segment" class="column">
+      <b-field label="Segment" class="column is-1">
         <b-select placeholder="Segment" v-model="segment">
           <option 
             v-for="segment in segments" 
@@ -90,4 +90,7 @@ export default class VisualizationOptions extends Vue {
 </script>
 
 <style scoped lang="scss">
+  .b-slider {
+    margin: 1.5em 0;
+  }
 </style>

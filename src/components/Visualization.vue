@@ -1,7 +1,7 @@
 <template>
   <b-container>
     <VisualizationOptions @sliderUpdate="sliderUpdate"/>
-    <hr class="solid">
+    <!-- <hr class="solid"> -->
     <Heatmap 
       :depth_threshold=depth_threshold 
       :frequency_threshold=frequency_threshold 
