@@ -1,7 +1,11 @@
 <template>
-  <div style="padding-top: 10px; width: 97%">
+  <div style="padding-top: 10px; width: 97%; ">
+    
     <b-row>
-      <b-col sm="12">
+      <b-col sm="1">
+        <div id="heatmapLegend" ref="heatmapLegend"></div>
+      </b-col>
+      <b-col sm="11">
         <div id="heatmapDiv" ref="heatmapDiv">
           <div class="tooltip" id="tooltip" style="opacity: 0"></div>
         </div>
@@ -27,6 +31,7 @@ export default class Heatmap extends Vue {
 
   $refs!: {
     heatmapDiv: HTMLElement;
+    heatmapLegend: HTMLElement;
   };
 
   @Prop({ required: false, default: 0 })
@@ -109,6 +114,8 @@ export default class Heatmap extends Vue {
   positions_unique: any[] = [];
   containerHeight = 500;
   chartHeight = this.containerHeight * 0.55;
+  legendWidth = 0;
+  legendHeight = 0;
   margin = {
     top: 0.075 * this.chartHeight,
     bottom: 0.1 * this.chartHeight,
@@ -126,7 +133,9 @@ export default class Heatmap extends Vue {
   }
 
   defineHeatmap() {
-    // const $this = this
+
+    this.legendWidth = this.$refs.heatmapLegend.clientWidth;
+    this.legendHeight = this.chartHeight
     this.height = Math.min(this.chartHeight);
     this.width = this.$refs.heatmapDiv.clientWidth;
     const border = this.border;
@@ -254,6 +263,74 @@ export default class Heatmap extends Vue {
           .selectAll('text')
           .style('text-anchor', 'end')
           .attr('transform', 'rotate(0)').style("font-size", "1.2em")
+
+    let legendVals = [];
+    for (let i = -5; i <= 0; i+=0.25) {
+      legendVals.push(i)
+    }
+
+
+    d3.select('#heatmapLegend')
+    .append("svg")
+    .attr("width", this.legendWidth)
+    .attr("height", this.legendHeight)
+    .append("g").selectAll("rect")
+    .data(legendVals).enter().append("rect")
+    .attr("stroke-width", 0)
+    .attr("y", (d:any, i:number)=>{
+      return (((this.legendHeight / legendVals.length)) * i ) 
+    })
+    .attr("x", 10)
+    .attr("id", (d:any)=>{
+      return "_"+String(d).replace("-", "_").replace(".", "_")
+    })
+    .attr("width", this.legendWidth)
+    .attr("height", (this.legendHeight - 0 ) / legendVals.length) 
+    .style("fill", (d:any)=>{
+      const frac = (d + 3.5 ) / 3.5    
+      let col = this.frac2Color(frac)
+      return col
+    })
+    .on("mouseenter", (d:any, u:any)=>{
+      d3.select("#_"+String(u).replace("-", "_").replace(".", "_"))
+      .attr("stroke-width", 2)
+      .attr("stroke", "#000")
+    })
+    .on("mouseleave", (d:any, u:any)=>{
+      d3.select("#_"+String(u).replace("-", "_").replace(".", "_"))
+      .attr("stroke-width", 0)
+    })
+    .append("title")
+    .attr("class", "tt").text((d:number)=>{
+      let cutoff = Math.round(3-Math.log10(Math.pow(10,d)));
+      return (Math.pow(10,d)*100).toString().substring(0,cutoff)+"%";
+    })
+
+    let min_x = this.margin.left - 1;
+    let max_x = min_x + legendVals.length * this.legendWidth
+    let min_y = this.margin.top
+    let max_y = this.margin.top + (this.legendHeight - 0 ) / legendVals.length
+
+
+    let text:any = d3.select("#heatmapLegend").select("svg")
+    .append("g").selectAll("text")
+    .data([-5,-4,-3,-2,-1,0])
+    .enter()
+    .append("text")
+    let textHeight = ((this.legendHeight - this.margin.top - this.margin.bottom ) / (text._groups[0].length+1) ) + ( (this.legendHeight  / legendVals.length) /4 ) 
+    
+    
+    
+    text.attr("class", "legendText")
+    .attr("y", (d:any, i:number)=>{
+      return ((textHeight + this.margin.top) * i ) 
+    })
+    .attr("x",0)
+    .text((d:any)=>{
+      return Math.pow(10,d)*100 + "%"
+    })
+    
+
     this.updateHeatmap(cells)
   }
 
@@ -370,7 +447,7 @@ export default class Heatmap extends Vue {
           function (update: any) {
             return update
 
-            .call((update: any)=>update.transition().duration(1000).style("fill", (d: any) => {
+            .call((update: any)=>update.transition().duration(1000).attr("fill", (d: any) => {
               return $this.calculateColor(d)
             })
             .attr("transform", (d: any) => {
@@ -394,7 +471,19 @@ export default class Heatmap extends Vue {
 
       
   }
-
+  frac2Color(frac: number){
+    let color = '';
+    const x = 0.25 + 0.75*frac;
+    const r = 255 * (0.472 - 0.567*x + 4.05*Math.pow(x,2)) / (1 + 8.72*x - 19.17*Math.pow(x,2) + 14.1*Math.pow(x,3));
+    const g = 255 * (0.108932 - 1.22635*x + 27.284*Math.pow(x,2) - 98.577*Math.pow(x,3) + 163.3*Math.pow(x,4) - 131.395*Math.pow(x,5) + 40.634*Math.pow(x,6));
+    const b = 255 / (1.97 + 3.54*x - 68.5*Math.pow(x,2) + 243*Math.pow(x,3) - 297*Math.pow(x,4) + 125*Math.pow(x,5));
+    if( r < 0 || g < 0 || b < 0 ){
+      color = 'rgb(253,64,160)'
+    } else {
+      color = 'rgb(' + Math.round(r) + ',' + Math.round(g) + ',' + Math.round(b) + ')';
+    }
+    return color
+  }
   // pretty close to exactly Tom's color code
   calculateColor(d: any) {
 
@@ -403,36 +492,39 @@ export default class Heatmap extends Vue {
     const log_scale = 4
     const max = d.max
     let color = '';
-
+    let colors: string[] = [
+      'rgb(' + Math.round(235) + ',' + Math.round(235) + ',' + Math.round(235) + ')',
+      'rgb(' + Math.round(185) + ',' + Math.round(185) + ',' + Math.round(185) + ')',
+      'rgb(' + Math.round(165) + ',' + Math.round(165) + ',' + Math.round(165) + ')',
+      'rgb(' + Math.round(65) + ',' + Math.round(65) + ',' + Math.round(65) + ')',
+      'rgb(253,64,160)'
+    ] 
     if ( d.total === 0 ) {
       // there is no data at this point: total = 0
-      color = 'rgb(' + Math.round(235) + ',' + Math.round(235) + ',' + Math.round(235) + ')';
+      color = colors[0]
 
     // } else if ((1-max/d.total) < freq_thresh) {
     } else if ( d.total < depth_thresh && (1-max/d.total) < freq_thresh) {
       // there is little data at this point: 0 < total < depth_thresh
-      color = 'rgb(' + Math.round(185) + ',' + Math.round(185) + ',' + Math.round(185) + ')';
+      color = colors[1]
 
     } else if ( max == d.total && d.total >= depth_thresh ) {
       // there is enough data at this point, but zero mutations: total >= depth_thresh; wt = total
-      color = 'rgb(' + Math.round(165) + ',' + Math.round(165) + ',' + Math.round(165) + ')';
+      color = colors[2]
 
     } else if ( max != d.total && d.total < depth_thresh && (1-max/d.total) >= freq_thresh ) {
       // there is little data at this point, but a lot of mutations: total < depth_thresh; 1-wt/total > freq_thresh
-      color = 'rgb(' + Math.round(65) + ',' + Math.round(65) + ',' + Math.round(65) + ')';
+      color = colors[3]
 
     } else {
       const frac = (log_scale+Math.log10(1-max/d.total))/log_scale;
+      // const frac = 0.25 + 0.75*(1-max/d.total)
+      const scale:any = [ '#82e09b', '#a82716' ]
+      // const scale:any = ['rgb(67.55129842486164,124.14024251953126,191.36399613050745)', 'rgb(16.88709677419362,32.7884100000022,31.8352059925094']
+      const scaleLog:any = d3.scaleSequentialLog([0.25, 1], scale)
       // there is data at this point, and at least one mutation: total > 0; wt != total
-      const x = 0.25 + 0.75*frac;
-      const r = 255 * (0.472 - 0.567*x + 4.05*Math.pow(x,2)) / (1 + 8.72*x - 19.17*Math.pow(x,2) + 14.1*Math.pow(x,3));
-      const g = 255 * (0.108932 - 1.22635*x + 27.284*Math.pow(x,2) - 98.577*Math.pow(x,3) + 163.3*Math.pow(x,4) - 131.395*Math.pow(x,5) + 40.634*Math.pow(x,6));
-      const b = 255 / (1.97 + 3.54*x - 68.5*Math.pow(x,2) + 243*Math.pow(x,3) - 297*Math.pow(x,4) + 125*Math.pow(x,5));
-      if( r < 0 || g < 0 || b < 0 ){
-        color = 'rgb(253,64,160)';
-      } else {
-        color = 'rgb(' + Math.round(r) + ',' + Math.round(g) + ',' + Math.round(b) + ')';
-      }
+      color = this.frac2Color(frac)
+      // color = scaleLog(frac)
 
     }
     return color;

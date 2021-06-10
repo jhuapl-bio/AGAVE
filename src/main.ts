@@ -6,13 +6,11 @@ import router from './router'
 import Buefy from 'buefy'
 
 import { BootstrapVue } from 'bootstrap-vue'
-Vue.use(BootstrapVue)
-// import * as d3 from 'd3'
-// Vue.use(d3)
+
 
 require('@/assets/scss/custom.scss')
 Vue.use(Buefy)
-
+Vue.use(BootstrapVue)
 Vue.config.productionTip = false
 
 new Vue({
