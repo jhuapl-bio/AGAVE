@@ -32,7 +32,7 @@ import MoleculeViewer from './MoleculeViewer.vue'
 export default class Visualization extends Vue {
   depth_threshold = 0
   frequency_threshold = 0.2
-  column_width = 7
+  column_width = 6
   segment = 'NP'
   position = 54
   group = '3C.2 - 3 dpi hNEC'
@@ -42,7 +42,6 @@ export default class Visualization extends Vue {
     this.$set(this, target, value)
   }
   changePosition(value: number){
-    console.log(value, "new postiion")
     this.position = value
   }
   

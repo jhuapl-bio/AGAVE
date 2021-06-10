@@ -46,7 +46,7 @@ export default class VisualizationOptions extends Vue {
 
   public depth_threshold = 0
   public frequency_threshold = 0.2
-  public column_width = 7
+  public column_width = 6
   public segments: Array<string> = ['NP', 'HA', 'NA', 'M1']
   public segment: string = 'NP'
   public groups: Array<string> = ["3C.2 - NPS",

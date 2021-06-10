@@ -38,7 +38,7 @@ export default class Heatmap extends Vue {
   @Prop({ required: false, default: 0.2 })
   public frequency_threshold!: number;
 
-  @Prop({ required: false, default: 10 })
+  @Prop({ required: false, default: 6 })
   public column_width!: number;
 
   @Prop({ required: false, default: 10 })
@@ -47,16 +47,19 @@ export default class Heatmap extends Vue {
   @Watch("depth_threshold")
   onDepthChanged(value: number, oldValue: number) {
     console.log("depth changed");
+    this.defineHeatmap();
   }
 
   @Watch("frequency_threshold")
   onFrequencyChanged(value: number, oldValue: number) {
     console.log("freq threshold changed");
+    this.defineHeatmap();
   }
 
   @Watch("column_width")
   onColWidthChanged(value: number, oldValue: number) {
     console.log("col width changed");
+    this.defineHeatmap();
   }
 
   @Watch("segment")
@@ -69,7 +72,6 @@ export default class Heatmap extends Vue {
   onGroupChanged(value: string, oldValue: string) {
     d3.select("#heatmapDiv").html("");
     this.defineHeatmap();
-    console.log(oldValue, value);
   }
 
   test = null;
@@ -98,7 +100,7 @@ export default class Heatmap extends Vue {
   margin = {
     top: 0.075 * this.chartHeight,
     bottom: 0.1 * this.chartHeight,
-    left: 0.125 * this.width,
+    left: 0.2 * this.width,
     right: 0.05 * this.width,
   };
 
@@ -116,6 +118,7 @@ export default class Heatmap extends Vue {
     this.width = this.$refs.heatmapDiv.clientWidth;
     const border = this.border;
     const margin = this.margin;
+    d3.select("#heatmapDiv").selectAll("*").remove()
     // const exts = ['A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'T', 'V', 'X', 'Y']
     // const exts = ['A']
     // const segments = ['HA', 'M1', 'NA', 'NP', 'NS1', 'PA', 'PB1', 'PB2']
@@ -154,22 +157,23 @@ export default class Heatmap extends Vue {
       return d.group == this.group;
     })
     // Get unique preps in order to calculate y axis
-    let preps: any = [...new Set(data.map((d: any) => d.prep_id))];
+    let preps: any = [...new Set(data.map((d: any) => d.experiment))];
     // Get unique positions in order to calculate x axis
-    const positions_unique: any[] = [...new Set(data[0].residues.map((d:any)=>{
-      return d.position
-    }))];
+    
     
     // Format data into cells
     let cells: any[] = [];
     data.forEach((prep:any)=>{
       prep.residues.forEach((residue:any)=>{
-        cells.push({ prep_id: prep.prep_id, position: +residue.position, total:+residue.depth, count: residue.counts.length, aa: residue.consensus_aa, consensus_count: residue.consensus_aa_count  })
+        cells.push({ experiment: prep.experiment, position: +residue.position, total:+residue.depth, count: residue.counts.length, aa: residue.consensus_aa, consensus_count: residue.consensus_aa_count  })
       })
     })
+    const positions_unique: any[] = [...new Set(cells.map((d:any)=>{
+      return d.aa + "." + d.position
+    }))];
     const x: any = d3.scaleLinear()
     .domain([0, positions_unique.length])
-    .range([this.margin.left, this.width * 6 - this.margin.right])
+    .range([this.margin.left, this.width * this.column_width - this.margin.right])
     const axisPadding = 10
     const minX = x(0);
     const maxX = x(positions_unique.length);
@@ -202,11 +206,6 @@ export default class Heatmap extends Vue {
       // .call(svg => svg.append("g").call(xAxis))
     // body.node().scrollBy(overwidth, 0);
     const $this = this;
-
-    console.log("data", data)
-
-    
-    console.log(cells)
 
     
     this.scaleX
@@ -242,15 +241,15 @@ export default class Heatmap extends Vue {
       .enter()
       .append("g")
       .attr("transform", (d: any) => {
-        let y = $this.scaleY(d.prep_id);
-        let x = $this.scaleX(d.position);
+        let y = $this.scaleY(d.experiment);
+        let x = $this.scaleX(d.aa + "." + d.position);
         return "translate(" + x + "," + y + ")";
       })
       .attr("class", function (d) {
         return "block";
       })
       .attr("id", function (d: any) {
-        return "g" + "_" + d.prep_id.replaceAll(".", "_");
+        return "g" + "_" + d.experiment.replaceAll(" ", "_");
       })
       .attr("class", "blockRect")
       // .style("rx", "2px")
@@ -260,7 +259,7 @@ export default class Heatmap extends Vue {
       .append("rect")
       .attr("id", (d: any) => {
         return (
-          d.prep_id.replaceAll(".", "_") + d.position
+          d.experiment.replaceAll(" ", "_") + d.position
         );
       })
       .attr("fill", (d: any) => {
@@ -270,20 +269,19 @@ export default class Heatmap extends Vue {
       .attr("width", this.boxWidth )
       .attr("height", this.boxHeight)
       .on("click", (d:any, u:any)=>{
-        console.log(d)
         $this.$emit("changePosition", u.position)
       })
       .on("mouseenter", (d: any, u: any) => {
         d3.select(
           "#" +
-            u.prep_id.replaceAll(".", "_") + u.position 
+            u.experiment.replaceAll(" ", "_") + u.position 
         ).attr("fill", "yellow");
         
         d3.select("#tooltip")
-          .html(`Pos: ${u.aa+"."+u.position}<br> Prep: ${u.prep_id}<br>Count: ${u.count}, Total: ${u.total}`)
+          .html(`Pos: ${u.aa+"."+u.position}<br> Experiment: ${u.experiment}<br>Count: ${u.count}, Total: ${u.total}`)
           .style(
             "left",
-            d.clientX - $this.margin.left - $this.margin.right + "px"
+            d.clientX - this.margin.right - this.margin.left + "px"
           )
           .style(
             "top",
@@ -295,7 +293,7 @@ export default class Heatmap extends Vue {
         d3.select(
           "#" +
             
-            u.prep_id.replaceAll(".", "_") + u.position
+            u.experiment.replaceAll(" ", "_") + u.position
         )
         .attr("fill", (d: any) => {
           return this.calculateColor(d)
