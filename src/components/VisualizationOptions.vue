@@ -23,10 +23,12 @@
         </b-select>
       </b-field>
       <b-field label="Depth Threshold" class="column">
-        <b-slider v-model="depth_threshold"></b-slider>
+        <b-slider v-model="depth_threshold" :step="1" :min="0" :max="100000"></b-slider>
+        <b-input type="number" :step="10" :min="0" :max="100000" v-model.number="depth_threshold"></b-input>
       </b-field>
       <b-field label="Frequency Threshold" class="column">
-        <b-slider v-model="frequency_threshold"></b-slider>
+        <b-slider v-model="frequency_threshold" :step="0.05" :min="0.0" :max="1.0"></b-slider>
+        <b-input type="number" :step="0.05" :min="0.0" :max="1.0" v-model.number="frequency_threshold"></b-input>
       </b-field>
       <b-field label="Column Width" class="column">
         <b-slider v-model="column_width"></b-slider>
@@ -48,7 +50,7 @@ export default class VisualizationOptions extends Vue {
   public frequency_threshold = 0.2
   public column_width = 6
   public segments: Array<string> = ['NP', 'HA', 'NA', 'M1']
-  public segment: string = 'NP'
+  public segment: string = 'HA'
   public groups: Array<string> = ["3C.2 - NPS",
     "3C.2 - 3 dpi hNEC",
     "3C.2 - 7 dpi hNEC",

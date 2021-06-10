@@ -11,9 +11,11 @@ export default class Parsing {
       var frac = 0;
       if ( d.total === 0 ) {
         frac = -100;
-      } else if ( d.total < depth_threshold && (1-max/d.total) < frequency_threshold) {
+      } else if ( (max/d.total) < frequency_threshold) {
+      // } else if ( d.total < depth_threshold && (1-max/d.total) < frequency_threshold) {
         frac = -200;
-      } else if ( max == d.total && d.total >= depth_threshold ) {
+      } else if ( max == d.total  ) {
+      // } else if ( max == d.total && d.total >= depth_threshold ) {
         frac = -300;
       } else if ( max != d.total && d.total < depth_threshold && (1-max/d.total) >= frequency_threshold ) {
         frac = -400;
