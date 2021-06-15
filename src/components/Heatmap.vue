@@ -272,26 +272,7 @@ export default class Heatmap extends Vue {
       legendVals.push(i)
     }
     const legend_margin: number= 10
-    const legendScaleY: any = d3.scaleLinear().domain([-5, 0]).range([0, this.legendHeight])
-    const legendYAxis: any = d3.axisRight(legendScaleY)
-    .ticks(6)
-    .tickFormat((d:any,i:any) => {
-      return Math.pow(10,d)*100 + "%"
-    });
-    d3.select("#heatmapLegend").select("svg")
-      .append("g")
-      .attr("class", "legendyAxis")
-      .attr("transform", "translate(" + (this.legendWidth - legend_margin*2) + "," + 0+ ")")
-      .style("stroke-width", 1)
-      .call(legendYAxis)
-      // .call(g => g.select(".domain").remove())
-      .selectAll('text')
-      .style('text-anchor', 'start')
-      .attr('transform', 'rotate(0)').style("font-size", "1.0em")
-    console.log(d3.select(".legendyAxis").node())
-    const axis_depth = d3.select(".legendyAxis").node().getBoundingClientRect().width
-    d3.select(".legendyAxis")
-    .attr("transform", "translate(" + (this.legendWidth -axis_depth- legend_margin*2) + "," + 0+ ")")
+    
 
 
     d3.select('#heatmapLegend')
@@ -329,8 +310,24 @@ export default class Heatmap extends Vue {
       let cutoff = Math.round(3-Math.log10(Math.pow(10,d)));
       return (Math.pow(10,d)*100).toString().substring(0,cutoff)+"%";
     })
-    
-    // this.updateHeatmap(cells)
+    const legendScaleY: any = d3.scaleLinear().domain([-5, 0]).range([0, this.legendHeight])
+    const legendYAxis: any = d3.axisRight(legendScaleY)
+    .ticks(6)
+    .tickFormat((d:any,i:any) => {
+      return Math.pow(10,d)*100 + "%"
+    });
+    d3.select("#heatmapLegend").select("svg")
+      .append("g")
+      .attr("class", "legendyAxis")
+      .attr("id", "legendyAxis")
+      .attr("transform", "translate(" + (this.legendWidth - legend_margin*2) + "," + 0+ ")")
+      .style("stroke-width", 1)
+      .call(legendYAxis)
+      // .call(g => g.select(".domain").remove())
+      .selectAll('text')
+      .style('text-anchor', 'start')
+      .attr('transform', 'rotate(0)').style("font-size", "0.7em")
+    this.updateHeatmap(cells)
   }
 
   updateHeatmap(cells:any) {
@@ -425,14 +422,14 @@ export default class Heatmap extends Vue {
                   .style(
                     "left",
                     () => {
-                      const w: any = (d3.select("#tooltipHeatmap").node() ?  d3.select("#tooltipHeatmap").node().getBoundingClientRect().width : 0)
+                      const w: any = (d3.select("#tooltipHeatmap").node() ? (d3.select("#tooltipHeatmap").node() as any).getBoundingClientRect().width : 0 )
                       return ( d3.pointer(event, $this.svg.node() )[0] - w ) + "px"
                     }
                   )
                   .style(
                     "top",
                     () => {
-                      const h: any = (d3.select("#tooltipHeatmap").node() ? d3.select("#tooltipHeatmap").node().getBoundingClientRect().height : 0 )
+                      const h: any = (d3.select("#tooltipHeatmap").node() ? (d3.select("#tooltipHeatmap").node() as any).getBoundingClientRect().height : 0 )
                       return (d3.pointer(event, $this.svg.node() )[1] - h ) + "px"
                     }
                   )
