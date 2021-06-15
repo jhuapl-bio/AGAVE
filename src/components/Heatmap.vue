@@ -7,7 +7,7 @@
       </b-col>
       <b-col sm="11">
         <div id="heatmapDiv" ref="heatmapDiv">
-          <div class="tooltip" id="tooltip" style="opacity: 0"></div>
+          <div class="tooltip" id="tooltipHeatmap" style="opacity: 0"></div>
         </div>
       </b-col>
     </b-row>
@@ -37,7 +37,7 @@ export default class Heatmap extends Vue {
   @Prop({ required: false, default: 0 })
   public depth_threshold!: number;
 
-  @Prop({ required: true, default: "NP" })
+  @Prop({ required: true, default: "HA" })
   public segment!: string;
 
   @Prop({ required: false, default: 0.2 })
@@ -116,6 +116,7 @@ export default class Heatmap extends Vue {
   chartHeight = this.containerHeight * 0.55;
   legendWidth = 0;
   legendHeight = 0;
+  svg:any = null
   margin = {
     top: 0.075 * this.chartHeight,
     bottom: 0.1 * this.chartHeight,
@@ -141,6 +142,7 @@ export default class Heatmap extends Vue {
     const border = this.border;
     const margin = this.margin;
     d3.selectAll("#heatmapSVG").remove()
+    d3.selectAll("#heatmapLegend").selectAll("*").remove()
     // const exts = ['A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'T', 'V', 'X', 'Y']
     // const exts = ['A']
     // const segments = ['HA', 'M1', 'NA', 'NP', 'NS1', 'PA', 'PB1', 'PB2']
@@ -159,11 +161,11 @@ export default class Heatmap extends Vue {
       .range([this.margin.left, this.width - this.margin.right]);
 
     const promises: Object[] = [];
-    segments.forEach((segment: string) => {
-      promises.push(
-        this.localDataHelper.readJSON(`Gaydos/grouped/${segment}.json`)
-      );
-    });
+    // segments.forEach((segment: string) => {
+    promises.push(
+      this.localDataHelper.readJSON(`Gaydos/grouped/${this.segment}.json`)
+    );
+    // });
     const $this = this;
     Promise.all(promises).then((l) => {
       let data = l[0];
@@ -214,6 +216,7 @@ export default class Heatmap extends Vue {
       .style("pointer-events", "none")
       .style("z-index", 1)
       // .attr("viewBox", `0 0 ${this.width} ${this.chartHeight}`)
+    this.svg = svg
     const body = heatmapdiv.append("div")
       .style("overflow-x", "scroll")
       .style("-webkit-overflow-scrolling", "touch");
@@ -268,6 +271,27 @@ export default class Heatmap extends Vue {
     for (let i = -5; i <= 0; i+=0.25) {
       legendVals.push(i)
     }
+    const legend_margin: number= 10
+    const legendScaleY: any = d3.scaleLinear().domain([-5, 0]).range([0, this.legendHeight])
+    const legendYAxis: any = d3.axisRight(legendScaleY)
+    .ticks(6)
+    .tickFormat((d:any,i:any) => {
+      return Math.pow(10,d)*100 + "%"
+    });
+    d3.select("#heatmapLegend").select("svg")
+      .append("g")
+      .attr("class", "legendyAxis")
+      .attr("transform", "translate(" + (this.legendWidth - legend_margin*2) + "," + 0+ ")")
+      .style("stroke-width", 1)
+      .call(legendYAxis)
+      // .call(g => g.select(".domain").remove())
+      .selectAll('text')
+      .style('text-anchor', 'start')
+      .attr('transform', 'rotate(0)').style("font-size", "1.0em")
+    console.log(d3.select(".legendyAxis").node())
+    const axis_depth = d3.select(".legendyAxis").node().getBoundingClientRect().width
+    d3.select(".legendyAxis")
+    .attr("transform", "translate(" + (this.legendWidth -axis_depth- legend_margin*2) + "," + 0+ ")")
 
 
     d3.select('#heatmapLegend')
@@ -280,11 +304,11 @@ export default class Heatmap extends Vue {
     .attr("y", (d:any, i:number)=>{
       return (((this.legendHeight / legendVals.length)) * i ) 
     })
-    .attr("x", 10)
+    .attr("x",  0)
     .attr("id", (d:any)=>{
       return "_"+String(d).replace("-", "_").replace(".", "_")
     })
-    .attr("width", this.legendWidth)
+    .attr("width",this.legendWidth - legend_margin*2)
     .attr("height", (this.legendHeight - 0 ) / legendVals.length) 
     .style("fill", (d:any)=>{
       const frac = (d + 3.5 ) / 3.5    
@@ -305,33 +329,8 @@ export default class Heatmap extends Vue {
       let cutoff = Math.round(3-Math.log10(Math.pow(10,d)));
       return (Math.pow(10,d)*100).toString().substring(0,cutoff)+"%";
     })
-
-    let min_x = this.margin.left - 1;
-    let max_x = min_x + legendVals.length * this.legendWidth
-    let min_y = this.margin.top
-    let max_y = this.margin.top + (this.legendHeight - 0 ) / legendVals.length
-
-
-    let text:any = d3.select("#heatmapLegend").select("svg")
-    .append("g").selectAll("text")
-    .data([-5,-4,-3,-2,-1,0])
-    .enter()
-    .append("text")
-    let textHeight = ((this.legendHeight - this.margin.top - this.margin.bottom ) / (text._groups[0].length+1) ) + ( (this.legendHeight  / legendVals.length) /4 ) 
     
-    
-    
-    text.attr("class", "legendText")
-    .attr("y", (d:any, i:number)=>{
-      return ((textHeight + this.margin.top) * i ) 
-    })
-    .attr("x",0)
-    .text((d:any)=>{
-      return Math.pow(10,d)*100 + "%"
-    })
-    
-
-    this.updateHeatmap(cells)
+    // this.updateHeatmap(cells)
   }
 
   updateHeatmap(cells:any) {
@@ -415,20 +414,27 @@ export default class Heatmap extends Vue {
               .on("click", (d:any, u:any)=>{
                 $this.$emit("changePosition", u.position)
               })
-              .on("mouseenter", (d: any, u: any) => {
+              .on("mousemove", (event: any, u: any, n:any, i:number) => {
+                
                 d3.select(
                   "#" +
                     u.experiment.replaceAll(" ", "_") + u.position 
                 ).attr("fill", "yellow");
-                d3.select("#tooltip")
+                d3.select("#tooltipHeatmap")
                   .html(`Pos: ${u.aa+"."+u.position}<br> Experiment: ${u.experiment}<br>Count: ${u.count}, Total: ${u.total}`)
                   .style(
                     "left",
-                    d.clientX - $this.margin.right - $this.margin.left + "px"
+                    () => {
+                      const w: any = (d3.select("#tooltipHeatmap").node() ?  d3.select("#tooltipHeatmap").node().getBoundingClientRect().width : 0)
+                      return ( d3.pointer(event, $this.svg.node() )[0] - w ) + "px"
+                    }
                   )
                   .style(
                     "top",
-                    d.clientY - $this.margin.top - $this.margin.bottom + "px"
+                    () => {
+                      const h: any = (d3.select("#tooltipHeatmap").node() ? d3.select("#tooltipHeatmap").node().getBoundingClientRect().height : 0 )
+                      return (d3.pointer(event, $this.svg.node() )[1] - h ) + "px"
+                    }
                   )
                   .style("opacity", "1");
               })
@@ -441,7 +447,7 @@ export default class Heatmap extends Vue {
                 .attr("fill", (d: any) => {
                   return $this.calculateColor(d)
                 });
-                d3.select("#tooltip").style("opacity", "0");
+                d3.select("#tooltipHeatmap").style("opacity", "0");
               });
           },
           function (update: any) {
