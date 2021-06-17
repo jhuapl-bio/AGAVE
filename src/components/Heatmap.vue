@@ -2,13 +2,13 @@
   <div style="padding-top: 10px; width: 100%; ">
     
     <b-row>
-      <b-col sm="1">
-        <div id="heatmapLegend" ref="heatmapLegend"></div>
-      </b-col>
-      <b-col sm="11">
+      <b-col sm="12">
         <div id="heatmapDiv" ref="heatmapDiv">
           <div class="tooltip" id="tooltipHeatmap" style="opacity: 0"></div>
         </div>
+      </b-col>
+      <b-col sm="12">
+        <div id="heatmapLegend" ref="heatmapLegend"></div>
       </b-col>
     </b-row>
   </div>
@@ -116,6 +116,7 @@ export default class Heatmap extends Vue {
   chartHeight = this.containerHeight * 0.55;
   legendWidth = 0;
   legendHeight = 0;
+  legendPadding = 15;
   svg:any = null
   margin = {
     top: 0.075 * this.chartHeight,
@@ -136,7 +137,7 @@ export default class Heatmap extends Vue {
   defineHeatmap() {
 
     this.legendWidth = this.$refs.heatmapLegend.clientWidth;
-    this.legendHeight = this.chartHeight
+    this.legendHeight = this.chartHeight / 5
     this.height = Math.min(this.chartHeight);
     this.width = this.$refs.heatmapDiv.clientWidth;
     const border = this.border;
@@ -271,26 +272,30 @@ export default class Heatmap extends Vue {
     for (let i = -5; i <= 0; i+=0.25) {
       legendVals.push(i)
     }
-    const legend_margin: number= 10
-    
-
+    const legend_margin: number= this.legendWidth - this.legendPadding
+    console.log(this.legendWidth, this.legendPadding)
+    const boxWidth = this.legendWidth / 4 / legendVals.length
 
     d3.select('#heatmapLegend')
     .append("svg")
     .attr("width", this.legendWidth)
     .attr("height", this.legendHeight)
-    .append("g").selectAll("rect")
+    .attr("transform", `translate(${0},${this.legendPadding})`)
+    .append("g")
+    .attr("class", "legendG")
+    .attr("transform", `translate(${this.legendWidth / 2},${0})`)
+    .selectAll("rect")
     .data(legendVals).enter().append("rect")
     .attr("stroke-width", 0)
-    .attr("y", (d:any, i:number)=>{
-      return (((this.legendHeight / legendVals.length)) * i ) 
+    .attr("x", (d:any, i:number)=>{
+      return (boxWidth* i ) 
     })
-    .attr("x",  0)
+    .attr("y",  0)
     .attr("id", (d:any)=>{
       return "_"+String(d).replace("-", "_").replace(".", "_")
     })
-    .attr("width",this.legendWidth - legend_margin*2)
-    .attr("height", (this.legendHeight - 0 ) / legendVals.length) 
+    .attr("width", boxWidth)
+    .attr("height", this.legendPadding) 
     .style("fill", (d:any)=>{
       const frac = (d + 3.5 ) / 3.5    
       let col = this.frac2Color(frac)
@@ -310,23 +315,34 @@ export default class Heatmap extends Vue {
       let cutoff = Math.round(3-Math.log10(Math.pow(10,d)));
       return (Math.pow(10,d)*100).toString().substring(0,cutoff)+"%";
     })
-    const legendScaleY: any = d3.scaleLinear().domain([-5, 0]).range([0, this.legendHeight])
-    const legendYAxis: any = d3.axisRight(legendScaleY)
+    const legendScaleY: any = d3.scaleLinear().domain([-5, 0]).range([boxWidth / 2, (boxWidth * legendVals.length ) - boxWidth/2   ])
+    const legendYAxis: any = d3.axisBottom(legendScaleY)
     .ticks(6)
     .tickFormat((d:any,i:any) => {
-      return Math.pow(10,d)*100 + "%"
+      const val: any= parseFloat((Math.pow(10,d)*100).toFixed(3) )
+      return ((val > 0.01 ? val : val.toExponential()) + "%")
     });
-    d3.select("#heatmapLegend").select("svg")
+    d3.select("#heatmapLegend").select(".legendG")
       .append("g")
       .attr("class", "legendyAxis")
       .attr("id", "legendyAxis")
-      .attr("transform", "translate(" + (this.legendWidth - legend_margin*2) + "," + 0+ ")")
+      .attr("transform", "translate(" + (0) + "," + this.legendPadding+ ")")
       .style("stroke-width", 1)
       .call(legendYAxis)
-      // .call(g => g.select(".domain").remove())
       .selectAll('text')
       .style('text-anchor', 'start')
-      .attr('transform', 'rotate(0)').style("font-size", "0.7em")
+      .attr('transform', 'rotate(0)').style("font-size", "0.79em")
+    d3.select("#heatmapLegend")
+      .select("svg")
+      .append("text")
+      .attr("x", (this.legendWidth/2 ) - (this.legendPadding))
+      .attr("y", this.legendPadding)
+      .attr("dy", "-0.25em")
+      .attr("text-anchor", "end")
+      .attr("transform", "rotate(0)")
+      .attr("id", "legendYAxisTitle")
+      .attr("font-size", "0.8em")
+      .text("Relative Depth of Mutations")
     this.updateHeatmap(cells)
   }
 
@@ -369,17 +385,24 @@ export default class Heatmap extends Vue {
           .style("stroke-width", 0.2)
           .call(this.xAxisT)
           .selectAll('text')
-          .style('text-anchor', 'middle')
-          .attr('transform', 'rotate(0)').style("font-size", "0.99em");
+          .attr("y", 0)
+          .attr("x", -9)
+          .attr("dy", ".35em")
+          .style("font-size", "0.8em")
+          .attr("transform", "rotate(45)")
+          .style("text-anchor", "end");
     d3.select('#xAxisB')
           .attr("transform", "translate(" + (0) + "," + (this.chartHeight - this.margin.bottom) + ")")
           .style("fill", null)
           .style("stroke-width", 0.2)
           .call(this.xAxisB)
           .selectAll('text')
-          .style('text-anchor', 'middle')
-          .attr('transform', 'rotate(0)').style("font-size", "0.99em");
-    
+          .attr("y", 0)
+          .attr("x", 9)
+          .attr("dy", ".35em")
+          .style("font-size", "0.8em")
+          .attr("transform", "rotate(45)")
+          .style("text-anchor", "start");
 
 
 

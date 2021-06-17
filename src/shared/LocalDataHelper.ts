@@ -41,7 +41,6 @@ export default class LocalDataHelper {
 
   public async readJSON(filepath: string)
   {
-
     // const data = require("/data/" + filepath)
     let data = await d3.json(`/data/${filepath}`)
     return data
