@@ -38,7 +38,7 @@ export default class Visualization extends Vue {
   depth_threshold = 0
   frequency_threshold = 0.2
   column_width = 6
-  segment = 'NP'
+  segment = 'HA'
   position = 54
   group = '3C.2 - 3 dpi hNEC'
   sliderUpdate(gh: {target: string, value: number}) {
