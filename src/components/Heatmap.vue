@@ -237,21 +237,6 @@ export default class Heatmap extends Vue {
       })
     );
     
-    
-    // function zoomed({transform}: any) {
-    //   blocks.attr("transform", transform);
-    // }
-    // const ext: any[] = [[0, 0], [$this.width, $this.height]]
-    // svg.call(d3.zoom().extent(ext))
-      
-    // .append("title").text(function (d) {
-    //   return "Classifier: " + d.classifier_name + "\nRank: " + d.rank + "\nRead Type: " + d.read_type +
-    //     "\n" + element + ": " + d[element]
-    // })
-    // .attr("transform", (d: any, i: number) => {
-    //   console.log(d)
-    //   return `translate(${this.scaleX(d.read_type)}, ${0})`
-    // })
     this.xAxisGT = g.append("g")
     .attr("class", "xAxis")
     .attr("id", "xAxisT")
@@ -453,7 +438,8 @@ export default class Heatmap extends Vue {
                 d3.select(
                   "#" +
                     u.experiment.replaceAll(" ", "_") + u.position 
-                ).attr("fill", "yellow");
+                )
+                .attr("fill", "yellow");
                 d3.select("#tooltipHeatmap")
                   .html(`Pos: ${u.aa+"."+u.position}<br> Experiment: ${u.experiment}<br>Count: ${u.count}, Total: ${u.total}`)
                   .style(
