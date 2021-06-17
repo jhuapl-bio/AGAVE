@@ -1,19 +1,24 @@
 <template>
-  <b-container>
-    <VisualizationOptions @sliderUpdate="sliderUpdate"/>
-    <!-- <hr class="solid"> -->
-    <Heatmap 
-      :depth_threshold=depth_threshold 
-      :frequency_threshold=frequency_threshold 
-      :column_width=column_width 
-      :segment=segment
-      :group=group
-      @changePosition="changePosition"
-    >
-    </Heatmap>
-    <MoleculeViewer :position=position></MoleculeViewer>
-  </b-container>
-
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-lg-9 pr-5">
+        <VisualizationOptions @sliderUpdate="sliderUpdate"/>
+        <!-- <hr class="solid"> -->
+        <Heatmap 
+          :depth_threshold=depth_threshold 
+          :frequency_threshold=frequency_threshold 
+          :column_width=column_width 
+          :segment=segment
+          :group=group
+          @changePosition="changePosition"
+        >
+        </Heatmap>
+      </div>
+      <div class="col-lg-3 pb-6">
+        <MoleculeViewer :position=position></MoleculeViewer>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script lang="ts">

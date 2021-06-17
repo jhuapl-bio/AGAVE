@@ -1,5 +1,5 @@
 <template>
-  <div style="padding-top: 10px; width: 97%; ">
+  <div style="padding-top: 10px; width: 100%; ">
     
     <b-row>
       <b-col sm="1">

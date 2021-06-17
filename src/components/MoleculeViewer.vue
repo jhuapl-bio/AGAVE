@@ -1,9 +1,7 @@
 <template>
-  <div class="columns mt-6 mb-6">
+  <div class="columns mb-6">
     <div class="column is-12">
-      <h2 class="subtitle is-3">
-        Crystal structure of A/Victoria/361/2011 (H3N2) influenza virus hemagglutinin
-      </h2>
+      <b-field label="Crystal structure of A/Victoria/361/2011 (H3N2) influenza virus hemagglutinin"></b-field>
       <div ref="viewer" class="viewer"></div>
       <!-- <div>
         <b-input type="text" v-model="localPosition"></b-input>
@@ -107,7 +105,7 @@ export default class MoleculeViewer extends Vue {
 
 <style scoped lang="scss">
   .viewer {
-    height: 600px;
+    height: 22rem;
     width: 100%;
     float: left;
     position: relative;

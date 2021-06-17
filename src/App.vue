@@ -11,7 +11,7 @@
     </div>
     <footer class="footer">
       <div class="content has-text-centered">
-        The work of JHU, JHU/APL, and BARDA. Not sure what content needs to legally be here.
+        The work of JHU, JHU/APL, and BARDA.
       </div>
     </footer>
   </div>
@@ -50,7 +50,14 @@ export default class App extends Vue {
     // padding: 1rem;
   }
   .add-padding {
-    padding-left: 26px;
-    padding-right: 26px;
+    padding-left: 5.5rem;
+    padding-right: 5.5rem;
+    width: -webkit-fill-available;
+  }
+
+  @media screen and (min-width: 1408px) {
+    .container:not(.is-max-desktop):not(.is-max-widescreen) {
+      max-width: 2000px;
+    }
   }
 </style>

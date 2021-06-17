@@ -1,8 +1,8 @@
 <template>
   <section>
-    <h2 class="subtitle is-3">Local Variants Per Sample</h2>
+    <!-- <h2 class="subtitle is-3">Local Variants Per Sample</h2> -->
     <div class="columns">
-      <b-field label="Segment" class="column is-1">
+      <b-field label="Segment" class="column is-narrow">
         <b-select placeholder="Segment" v-model="segment">
           <option 
             v-for="segment in segments" 
