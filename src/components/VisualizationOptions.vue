@@ -12,7 +12,7 @@
           </option>
         </b-select>
       </b-field>
-      <b-field label="Group" class="column">
+      <b-field label="Group" class="column is-3">
         <b-select placeholder="Group" v-model="group">
           <option 
             v-for="group in groups" 
@@ -22,16 +22,14 @@
           </option>
         </b-select>
       </b-field>
-      <b-field label="Depth Threshold" class="column">
-        <b-slider v-model="depth_threshold" :step="1" :min="0" :max="100000"></b-slider>
-        <b-input type="number" :step="10" :min="0" :max="100000" v-model.number="depth_threshold"></b-input>
+      <b-field label="Depth Threshold" class="column is-2">
+        <b-numberinput v-model="depth_threshold" :step="1" :min="0" :max="100000" controls-position="compact"></b-numberinput>
       </b-field>
-      <b-field label="Frequency Threshold" class="column">
-        <b-slider v-model="frequency_threshold" :step="0.05" :min="0.0" :max="1.0"></b-slider>
-        <b-input type="number" :step="0.05" :min="0.0" :max="1.0" v-model.number="frequency_threshold"></b-input>
-      </b-field>
-      <b-field label="Column Width" class="column">
-        <b-slider v-model="column_width"></b-slider>
+      <!-- <b-field label="Frequency Threshold" class="column is-narrow"> -->
+        <!-- <b-numberinput v-model="frequency_threshold" :step=".05" :min="0" :max="1.0" controls-position="compact"></b-numberinput> -->
+      <!-- </b-field> -->
+      <b-field label="Column Width" class="column is-2">
+        <b-numberinput v-model="column_width" :step="1" :min="1" :max="100000" controls-position="compact"></b-numberinput>
       </b-field>
     </div>
   </section>
