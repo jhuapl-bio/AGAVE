@@ -176,6 +176,7 @@ export default class Heatmap extends Vue {
     let data = raw_data.filter( (d:any) => {
       return d.group == this.group;
     })
+    
     // Get unique preps in order to calculate y axis
     let preps: any = [...new Set(data.map((d: any) => d.experiment))];
     
@@ -379,8 +380,8 @@ export default class Heatmap extends Vue {
           .style("stroke-width", 0.2)
           .call(this.xAxisT)
           .selectAll('text')
-          .attr("y", 0)
-          .attr("x", -9)
+          .attr("y", -9)
+          .attr("x", 0)
           .attr("dy", ".35em")
           .style("font-size", "0.8em")
           .attr("transform", "rotate(45)")

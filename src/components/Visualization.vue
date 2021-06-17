@@ -15,7 +15,7 @@
         </Heatmap>
       </div>
       <div class="col-lg-3 pb-6">
-        <MoleculeViewer :position=position></MoleculeViewer>
+        <MoleculeViewer :segment=segment :position=position></MoleculeViewer>
       </div>
     </div>
   </div>

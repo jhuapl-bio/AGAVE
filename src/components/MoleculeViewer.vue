@@ -29,34 +29,51 @@ export default class MoleculeViewer extends Vue {
 
   public viewer: any;
   public localPosition: number =  55;
-
+  public protein_per_segment: any = {
+    "HA": '4o5n',
+    "NP": '1hoc',
+    "NA": '2hty',
+    'M1': '5v6g'
+  }
   @Prop({ required: true, default: 55 })
   public position!: string;
+  @Prop({ required: true, default: 'HA' })
+  public segment!: string;
 
   @Watch('position')
   onPositionChanged(value: number, oldValue: number) {
     this.localPosition = value
     this.focus()
   }
-
-  mounted() {
-
+  @Watch('segment')
+  onSegmentChanged(value: number, oldValue: number) {
+    console.log("segment changed", value, this.protein_per_segment[value])
+    this.viewer.visual.update({
+      moleculeId: this.protein_per_segment[value],
+      hideControls: true,
+      bgColor: {r:255, g:255, b:255}
+    })
+    // Remove some buttons that break everything
+    this.removeButtons();
+  }
+  make_pdbemolstar(options: any){
     // this object is being imported in index.html so ignore the syntax error it throws
     // @ts-ignore
     this.viewer = new PDBeMolstarPlugin();
+    this.viewer.render(this.$refs.viewer, options);
+    // Remove some buttons that break everything
+    this.removeButtons();
+  }
 
+  mounted() {
     // Available options here: https://github.com/PDBeurope/pdbe-molstar/wiki/1.-PDBe-Molstar-as-JS-plugin
     // Our H3N2 HA protein is 4o5n and our H1N1 HA protein is 3lzg
-    const options = {
-      moleculeId: '4o5n',
+    const options: any= {
+      moleculeId: this.protein_per_segment[this.segment],
       hideControls: true,
       bgColor: {r:255, g:255, b:255}
     }
-    
-    this.viewer.render(this.$refs.viewer, options);
-
-    // Remove some buttons that break everything
-    this.removeButtons();
+    this.make_pdbemolstar(options)
   }
 
   // Example of focus ability. In the future let's rig this to the d3 heatmap so that when an amino acid is clicked, the molecule focuses on it
