@@ -273,7 +273,6 @@ export default class Heatmap extends Vue {
       legendVals.push(i)
     }
     const legend_margin: number= this.legendWidth - this.legendPadding
-    console.log(this.legendWidth, this.legendPadding)
     const boxWidth = this.legendWidth / 4 / legendVals.length
 
     d3.select('#heatmapLegend')
@@ -305,11 +304,26 @@ export default class Heatmap extends Vue {
       d3.select("#_"+String(u).replace("-", "_").replace(".", "_"))
       .attr("stroke-width", 2)
       .attr("stroke", "#000")
+      const fract = (u + 3.5 ) / 3.5 
+      d3.selectAll(".block")
+      .style("fill", (block:any, i:any)=>{
+        if (this.getFrac(block) >= fract){
+          return "rgb(217, 33, 32)"
+        } else{
+          return this.calculateColor(block)
+        }
+        
+      })
     })
     .on("mouseleave", (d:any, u:any)=>{
       d3.select("#_"+String(u).replace("-", "_").replace(".", "_"))
       .attr("stroke-width", 0)
+      d3.selectAll(".block")
+      .style("fill", (block:any, i:any)=>{
+        return this.calculateColor(block)
+      })
     })
+    .style("cursor", "pointer")
     .append("title")
     .attr("class", "tt").text((d:number)=>{
       let cutoff = Math.round(3-Math.log10(Math.pow(10,d)));
@@ -510,12 +524,17 @@ export default class Heatmap extends Vue {
     }
     return color
   }
+
+  getFrac(d:any){
+    const log_scale = 4
+    const max = d.max
+    return(log_scale+Math.log10(1-max/d.total))/log_scale;
+  }
   // pretty close to exactly Tom's color code
   calculateColor(d: any) {
 
    	const depth_thresh = this.depth_threshold
     const freq_thresh = this.frequency_threshold
-    const log_scale = 4
     const max = d.max
     let color = '';
     let colors: string[] = [
@@ -543,7 +562,7 @@ export default class Heatmap extends Vue {
       color = colors[3]
 
     } else {
-      const frac = (log_scale+Math.log10(1-max/d.total))/log_scale;
+      const frac = this.getFrac(d)
       // const frac = 0.25 + 0.75*(1-max/d.total)
       const scale:any = [ '#82e09b', '#a82716' ]
       // const scale:any = ['rgb(67.55129842486164,124.14024251953126,191.36399613050745)', 'rgb(16.88709677419362,32.7884100000022,31.8352059925094']
