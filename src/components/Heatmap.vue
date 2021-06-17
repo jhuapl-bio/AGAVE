@@ -51,22 +51,18 @@ export default class Heatmap extends Vue {
 
   @Watch("depth_threshold")
   onDepthChanged(value: number, oldValue: number) {
-    console.log("depth changed");
     this.updateHeatmap(this.cells)
     // this.defineHeatmap();
   }
 
   @Watch("frequency_threshold")
   onFrequencyChanged(value: number, oldValue: number) {
-    console.log("freq threshold changed");
     this.updateHeatmap(this.cells)
     // this.defineHeatmap();
   }
 
   @Watch("column_width")
   onColWidthChanged(value: number, oldValue: number) {
-    console.log("col width changed");
-    // this.defineHeatmap();
     this.updateHeatmap(this.cells)
   }
 
@@ -346,7 +342,6 @@ export default class Heatmap extends Vue {
   }
 
   updateHeatmap(cells:any) {
-    console.log("Updating Heatmap now...");
     // Add styling to the heatmap blocks
     const g = this.g
     const $this = this
@@ -434,12 +429,11 @@ export default class Heatmap extends Vue {
                 $this.$emit("changePosition", u.position)
               })
               .on("mousemove", (event: any, u: any, n:any, i:number) => {
-                
                 d3.select(
                   "#" +
                     u.experiment.replaceAll(" ", "_") + u.position 
                 )
-                .attr("fill", "yellow");
+                .style("fill", "yellow");
                 d3.select("#tooltipHeatmap")
                   .html(`Pos: ${u.aa+"."+u.position}<br> Experiment: ${u.experiment}<br>Count: ${u.count}, Total: ${u.total}`)
                   .style(
@@ -464,7 +458,7 @@ export default class Heatmap extends Vue {
                     
                     u.experiment.replaceAll(" ", "_") + u.position
                 )
-                .attr("fill", (d: any) => {
+                .style("fill", (d: any) => {
                   return $this.calculateColor(d)
                 });
                 d3.select("#tooltipHeatmap").style("opacity", "0");
