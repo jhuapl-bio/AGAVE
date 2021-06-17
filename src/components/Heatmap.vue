@@ -68,7 +68,7 @@ export default class Heatmap extends Vue {
 
   @Watch("segment")
   onSegChanged(value: string, oldValue: string) {
-    d3.select("#heatmapDiv").html("");
+    // d3.selectAll("#heatmapSVG").remove()
     this.defineHeatmap();
   }
 
@@ -139,6 +139,7 @@ export default class Heatmap extends Vue {
     const border = this.border;
     const margin = this.margin;
     d3.selectAll("#heatmapSVG").remove()
+    d3.select("#overflowDiv").remove()
     d3.selectAll("#heatmapLegend").selectAll("*").remove()
     // const exts = ['A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'T', 'V', 'X', 'Y']
     // const exts = ['A']
@@ -215,7 +216,7 @@ export default class Heatmap extends Vue {
       .style("z-index", 1)
       // .attr("viewBox", `0 0 ${this.width} ${this.chartHeight}`)
     this.svg = svg
-    const body = heatmapdiv.append("div")
+    const body = heatmapdiv.append("div").attr("id","overflowDiv")
       .style("overflow-x", "scroll")
       .style("-webkit-overflow-scrolling", "touch");
 

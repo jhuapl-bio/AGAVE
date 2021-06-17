@@ -87,6 +87,7 @@ export default class MoleculeViewer extends Vue {
     } else {
       residue = { chain: '', position: 0 }
     }
+    console.log(this.viewer)
     if(residue.chain !== '') {
       this.viewer.visual.select({
         data: [{
