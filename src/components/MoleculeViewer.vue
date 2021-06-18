@@ -67,16 +67,17 @@ export default class MoleculeViewer extends Vue {
     this.viewer.render(this.$refs.viewer, options);
     // Remove some buttons that break everything
     this.removeButtons();
-    let response: any = await this.getdata(`https://www.ebi.ac.uk/pdbe/search/pdb/select?q=pdb_id:${options.moleculeId}&wt=json`)
-    if (response.data && response.data.response && response.data.response.docs){
-      let sum = 1;
-      response.data.response.docs.forEach((d:any)=>{
-        this.map_positions[d.chain_id[0]] = [sum, sum+d.polymer_length-1]
-        sum += d.polymer_length 
-      })
-      this.map_positions.total = sum
-      console.log(response.data.response.docs)
-    }
+    //https://www.ebi.ac.uk/pdbe/graph-api/pdbe_pages/uniprot_mapping/4o5n/1
+    // let response: any = await this.getdata(`https://www.ebi.ac.uk/pdbe/search/pdb/select?q=pdb_id:${options.moleculeId}&wt=json`)
+    // if (response.data && response.data.response && response.data.response.docs){
+    //   let sum = 1;
+    //   response.data.response.docs.forEach((d:any)=>{
+    //     this.map_positions[d.chain_id[0]] = [sum, sum+d.polymer_length-1]
+    //     sum += d.polymer_length 
+    //   })
+    //   this.map_positions.total = sum
+    //   console.log(response.data.response.docs)
+    // }
   }
   async getdata(string:string){
     let response = await axios
