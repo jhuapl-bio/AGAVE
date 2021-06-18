@@ -15,6 +15,9 @@
 <script lang="ts">
 
 import { Component, Vue, Watch, Prop } from 'vue-property-decorator'
+import axios from 'axios'
+
+
 
 interface Residue {
   chain: string
@@ -28,6 +31,7 @@ interface Residue {
 export default class MoleculeViewer extends Vue {
 
   public viewer: any;
+  public map_positions:any = {}
   public localPosition: number =  55;
   public protein_per_segment: any = {
     "HA": '4o5n',
@@ -56,16 +60,34 @@ export default class MoleculeViewer extends Vue {
     // Remove some buttons that break everything
     this.removeButtons();
   }
-  make_pdbemolstar(options: any){
+  async make_pdbemolstar(options: any){
     // this object is being imported in index.html so ignore the syntax error it throws
     // @ts-ignore
     this.viewer = new PDBeMolstarPlugin();
     this.viewer.render(this.$refs.viewer, options);
     // Remove some buttons that break everything
     this.removeButtons();
-  }
+    // let response: any = await this.getdata(`https://www.ebi.ac.uk/pdbe/search/pdb/select?q=pdb_id:${options.moleculeId}&wt=json`)
+    // if (response.data && response.data.response && response.data.response.docs){
+    //   let sum = 1;
+    //   response.data.response.docs.forEach((d:any)=>{
+    //     this.map_positions[d.chainId[0]] = [sum, d.polymer_length]
+    //     sum += d.polymer_length
+    //   })
+    // }
 
-  mounted() {
+    
+    // console.log(this.map_positions)
+
+  }
+  async getdata(string:string){
+    axios
+      .get('https://www.ebi.ac.uk/pdbe/search/pdb/select?q=pdb_id:4o5n&wt=json')
+      .then((response:any)=>{
+        console.log(response)
+      })
+  }
+  async mounted() {
     // Available options here: https://github.com/PDBeurope/pdbe-molstar/wiki/1.-PDBe-Molstar-as-JS-plugin
     // Our H3N2 HA protein is 4o5n and our H1N1 HA protein is 3lzg
     const options: any= {
@@ -73,7 +95,9 @@ export default class MoleculeViewer extends Vue {
       hideControls: true,
       bgColor: {r:255, g:255, b:255}
     }
+
     this.make_pdbemolstar(options)
+
   }
 
   // Example of focus ability. In the future let's rig this to the d3 heatmap so that when an amino acid is clicked, the molecule focuses on it
@@ -87,7 +111,6 @@ export default class MoleculeViewer extends Vue {
     } else {
       residue = { chain: '', position: 0 }
     }
-    console.log(this.viewer)
     if(residue.chain !== '') {
       this.viewer.visual.select({
         data: [{
