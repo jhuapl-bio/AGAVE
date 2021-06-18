@@ -67,25 +67,21 @@ export default class MoleculeViewer extends Vue {
     this.viewer.render(this.$refs.viewer, options);
     // Remove some buttons that break everything
     this.removeButtons();
-    // let response: any = await this.getdata(`https://www.ebi.ac.uk/pdbe/search/pdb/select?q=pdb_id:${options.moleculeId}&wt=json`)
-    // if (response.data && response.data.response && response.data.response.docs){
-    //   let sum = 1;
-    //   response.data.response.docs.forEach((d:any)=>{
-    //     this.map_positions[d.chainId[0]] = [sum, d.polymer_length]
-    //     sum += d.polymer_length
-    //   })
-    // }
-
-    
-    // console.log(this.map_positions)
-
+    let response: any = await this.getdata(`https://www.ebi.ac.uk/pdbe/search/pdb/select?q=pdb_id:${options.moleculeId}&wt=json`)
+    if (response.data && response.data.response && response.data.response.docs){
+      let sum = 1;
+      response.data.response.docs.forEach((d:any)=>{
+        this.map_positions[d.chain_id[0]] = [sum, sum+d.polymer_length-1]
+        sum += d.polymer_length 
+      })
+      this.map_positions.total = sum
+      console.log(response.data.response.docs)
+    }
   }
   async getdata(string:string){
-    axios
-      .get('https://www.ebi.ac.uk/pdbe/search/pdb/select?q=pdb_id:4o5n&wt=json')
-      .then((response:any)=>{
-        console.log(response)
-      })
+    let response = await axios
+      .get(string)
+    return response
   }
   async mounted() {
     // Available options here: https://github.com/PDBeurope/pdbe-molstar/wiki/1.-PDBe-Molstar-as-JS-plugin
@@ -111,6 +107,19 @@ export default class MoleculeViewer extends Vue {
     } else {
       residue = { chain: '', position: 0 }
     }
+    // let found: boolean = false
+    // for(let d of Object.keys(this.map_positions).filter((e:any)=>{return e != 'total'})) {
+    //   console.log(this.map_positions)
+    //   if (this.localPosition >= this.map_positions[d][0] && this.localPosition <= this.map_positions[d][1] ){
+    //     residue = { chain: d, position: this.localPosition - this.map_positions[d][0]  }
+    //     found = true;
+    //     break;
+    //   }   
+    // }
+    // if (! found){
+    //   residue = { chain: '', position: 0 }
+    // }
+    console.log(residue, "r")
     if(residue.chain !== '') {
       this.viewer.visual.select({
         data: [{
