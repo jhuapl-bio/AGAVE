@@ -177,7 +177,7 @@ export default class Heatmap extends Vue {
     let data = raw_data.filter( (d:any) => {
       return d.group == this.group;
     })
-    
+    console.log(data)
     // Get unique preps in order to calculate y axis
     let preps: any = [...new Set(data.map((d: any) => d.experiment))];
     

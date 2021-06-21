@@ -67,17 +67,28 @@ export default class MoleculeViewer extends Vue {
     this.viewer.render(this.$refs.viewer, options);
     // Remove some buttons that break everything
     this.removeButtons();
-    //https://www.ebi.ac.uk/pdbe/graph-api/pdbe_pages/uniprot_mapping/4o5n/1
-    // let response: any = await this.getdata(`https://www.ebi.ac.uk/pdbe/search/pdb/select?q=pdb_id:${options.moleculeId}&wt=json`)
-    // if (response.data && response.data.response && response.data.response.docs){
-    //   let sum = 1;
-    //   response.data.response.docs.forEach((d:any)=>{
-    //     this.map_positions[d.chain_id[0]] = [sum, sum+d.polymer_length-1]
-    //     sum += d.polymer_length 
-    //   })
-    //   this.map_positions.total = sum
-    //   console.log(response.data.response.docs)
-    // }
+    // https://www.ebi.ac.uk/pdbe/graph-api/pdbe_pages/uniprot_mapping/4o5n/1
+    // https://www.ebi.ac.uk/pdbe/search/pdb/select?q=pdb_id:${options.moleculeId}&wt=json`)
+    let response: any = await this.getdata(`https://www.ebi.ac.uk/pdbe/graph-api/mappings/uniprot/${options.moleculeId}`)
+    if (
+      response.data && 
+      response.data[options.moleculeId] && 
+      response.data[options.moleculeId].UniProt){
+      const data: any = response.data[options.moleculeId].UniProt;
+      const uniprots = Object.keys(response.data[options.moleculeId].UniProt)
+
+      let sum = 1;
+      uniprots.forEach((accession: any)=>{
+        console.log(data)
+        if (data[accession].mappings){
+          console.log(data)
+          const mapping: any = data[accession].mappings[0]
+          
+          this.map_positions[mapping.chain_id] = [mapping.pdb_start, mapping.unp_start - mapping.pdb_start , mapping.pdb_end, mapping.unp_end - mapping.pdb_start ]
+        }
+      })
+      console.log(this.map_positions)
+    }
   }
   async getdata(string:string){
     let response = await axios
@@ -101,32 +112,42 @@ export default class MoleculeViewer extends Vue {
   focus() {
     this.viewer.visual.clearSelection();
     let residue: Residue;
-    if ( this.localPosition >= 25 && this.localPosition <= 341 ) {
-      residue = { chain: 'A', position: this.localPosition - 22 }
-    } else if ( this.localPosition >= 346 && this.localPosition <= 518 ) {
-      residue = { chain: 'B', position: this.localPosition - 345 }
-    } else {
-      residue = { chain: '', position: 0 }
-    }
-    // let found: boolean = false
-    // for(let d of Object.keys(this.map_positions).filter((e:any)=>{return e != 'total'})) {
-    //   console.log(this.map_positions)
-    //   if (this.localPosition >= this.map_positions[d][0] && this.localPosition <= this.map_positions[d][1] ){
-    //     residue = { chain: d, position: this.localPosition - this.map_positions[d][0]  }
-    //     found = true;
-    //     break;
-    //   }   
-    // }
-    // if (! found){
+    // if ( this.localPosition >= 25 && this.localPosition <= 341 ) {
+    //   residue = { chain: 'A', position: this.localPosition - 22 }
+    // } else if ( this.localPosition >= 346 && this.localPosition <= 518 ) {
+    //   residue = { chain: 'B', position: this.localPosition - 345 }
+    // } else {
     //   residue = { chain: '', position: 0 }
     // }
-    console.log(residue, "r")
+    let found: boolean = false
+    for(let d of Object.keys(this.map_positions).filter((e:any)=>{return e != 'total'})) {
+      console.log(this.map_positions[d])
+      if (this.localPosition  > this.map_positions[d][1] 
+      && this.localPosition < this.map_positions[d][3]  ){
+        console.log("found", this.localPosition, this.map_positions[d][0])
+        residue = { chain: d, position: this.localPosition - this.map_positions[d][1]  }
+        found = true;
+        break;
+      }   
+    }
+    if (! found){
+      residue = { chain: '', position: 0 }
+    }
+    console.log(residue, "r", this.map_positions)
     if(residue.chain !== '') {
+      // this.viewer.visual.select({
+      //   data: [{
+      //     struct_asym_id: residue.chain,
+      //     start_residue_number: residue.position,
+      //     end_residue_number: residue.position,
+      //     focus: true,
+      //     color: {r:255, g:255, b:0}
+      //   }]
+      // })
       this.viewer.visual.select({
         data: [{
           struct_asym_id: residue.chain,
-          start_residue_number: residue.position,
-          end_residue_number: residue.position,
+          residue_number: residue.position,
           focus: true,
           color: {r:255, g:255, b:0}
         }]
