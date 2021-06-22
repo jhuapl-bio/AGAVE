@@ -47,29 +47,28 @@ export default class MoleculeViewer extends Vue {
   @Watch('position')
   onPositionChanged(value: number, oldValue: number) {
     this.localPosition = value
+    
     this.focus()
   }
   @Watch('segment')
   onSegmentChanged(value: number, oldValue: number) {
     console.log("segment changed", value, this.protein_per_segment[value])
-    this.viewer.visual.update({
-      moleculeId: this.protein_per_segment[value],
+    const options: any= {
+      moleculeId: this.protein_per_segment[this.segment],
       hideControls: true,
       bgColor: {r:255, g:255, b:255}
-    })
+    }
+    this.queryAPI(options)
+    this.viewer.visual.update(options)
     // Remove some buttons that break everything
     this.removeButtons();
   }
-  async make_pdbemolstar(options: any){
-    // this object is being imported in index.html so ignore the syntax error it throws
-    // @ts-ignore
-    this.viewer = new PDBeMolstarPlugin();
-    this.viewer.render(this.$refs.viewer, options);
-    // Remove some buttons that break everything
-    this.removeButtons();
+  async queryAPI(options:any){
     // https://www.ebi.ac.uk/pdbe/graph-api/pdbe_pages/uniprot_mapping/4o5n/1
     // https://www.ebi.ac.uk/pdbe/search/pdb/select?q=pdb_id:${options.moleculeId}&wt=json`)
     let response: any = await this.getdata(`https://www.ebi.ac.uk/pdbe/graph-api/mappings/uniprot/${options.moleculeId}`)
+    console.log("Querying API call finished")
+    this.map_positions = {}
     if (
       response.data && 
       response.data[options.moleculeId] && 
@@ -79,16 +78,21 @@ export default class MoleculeViewer extends Vue {
 
       let sum = 1;
       uniprots.forEach((accession: any)=>{
-        console.log(data)
         if (data[accession].mappings){
-          console.log(data)
-          const mapping: any = data[accession].mappings[0]
-          
+          const mapping: any = data[accession].mappings[0]          
           this.map_positions[mapping.chain_id] = [mapping.pdb_start, mapping.unp_start - mapping.pdb_start , mapping.pdb_end, mapping.unp_end - mapping.pdb_start ]
         }
       })
       console.log(this.map_positions)
     }
+  }
+  async make_pdbemolstar(options: any){
+    // this object is being imported in index.html so ignore the syntax error it throws
+    // @ts-ignore
+    this.viewer = new PDBeMolstarPlugin();
+    this.viewer.render(this.$refs.viewer, options);
+    // Remove some buttons that break everything
+    this.removeButtons();
   }
   async getdata(string:string){
     let response = await axios
@@ -103,9 +107,8 @@ export default class MoleculeViewer extends Vue {
       hideControls: true,
       bgColor: {r:255, g:255, b:255}
     }
-
     this.make_pdbemolstar(options)
-
+    this.queryAPI(options)
   }
 
   // Example of focus ability. In the future let's rig this to the d3 heatmap so that when an amino acid is clicked, the molecule focuses on it
@@ -121,10 +124,8 @@ export default class MoleculeViewer extends Vue {
     // }
     let found: boolean = false
     for(let d of Object.keys(this.map_positions).filter((e:any)=>{return e != 'total'})) {
-      console.log(this.map_positions[d])
       if (this.localPosition  > this.map_positions[d][1] 
       && this.localPosition < this.map_positions[d][3]  ){
-        console.log("found", this.localPosition, this.map_positions[d][0])
         residue = { chain: d, position: this.localPosition - this.map_positions[d][1]  }
         found = true;
         break;
