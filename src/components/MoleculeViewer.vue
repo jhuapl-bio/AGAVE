@@ -1,7 +1,7 @@
 <template>
   <div class="columns mb-6">
     <div class="column is-12">
-      <b-field label="Crystal structure of A/Victoria/361/2011 (H3N2) influenza virus hemagglutinin"></b-field>
+      <b-field :label="this.title"></b-field>
       <div ref="viewer" class="viewer"></div>
       <!-- <div>
         <b-input type="text" v-model="localPosition"></b-input>
@@ -16,8 +16,6 @@
 
 import { Component, Vue, Watch, Prop } from 'vue-property-decorator'
 import axios from 'axios'
-
-
 
 interface Residue {
   chain: string
@@ -43,6 +41,8 @@ export default class MoleculeViewer extends Vue {
   public position!: string;
   @Prop({ required: true, default: 'HA' })
   public segment!: string;
+
+  public title: string = "No title found"
 
   @Watch('position')
   onPositionChanged(value: number, oldValue: number) {
@@ -81,6 +81,11 @@ export default class MoleculeViewer extends Vue {
         if (data[accession].mappings){
           const mapping: any = data[accession].mappings[0]          
           this.map_positions[mapping.chain_id] = [mapping.pdb_start, mapping.unp_start - mapping.pdb_start , mapping.pdb_end, mapping.unp_end - mapping.pdb_start ]
+        }
+        if (data[accession].description) {
+          this.title = data[accession].description
+        } else {
+          this.title = "No title found"
         }
       })
       console.log(this.map_positions)
