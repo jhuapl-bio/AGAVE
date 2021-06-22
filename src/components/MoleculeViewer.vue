@@ -66,8 +66,8 @@ export default class MoleculeViewer extends Vue {
   async queryAPI(options:any){
     // https://www.ebi.ac.uk/pdbe/graph-api/pdbe_pages/uniprot_mapping/4o5n/1
     // https://www.ebi.ac.uk/pdbe/search/pdb/select?q=pdb_id:${options.moleculeId}&wt=json`)
-    let response: any = await this.getdata(`https://www.ebi.ac.uk/pdbe/graph-api/mappings/uniprot/${options.moleculeId}`)
-    console.log("Querying API call finished")
+    let response: any = await this.getdata(`https://www.ebi.ac.uk/pdbe/graph-api/mappings/uniprot_segments/${options.moleculeId}`)
+    console.log("Querying API call finished", response)
     this.map_positions = {}
     if (
       response.data && 
@@ -80,7 +80,7 @@ export default class MoleculeViewer extends Vue {
       uniprots.forEach((accession: any)=>{
         if (data[accession].mappings){
           const mapping: any = data[accession].mappings[0]          
-          this.map_positions[mapping.chain_id] = [mapping.pdb_start, mapping.unp_start - mapping.pdb_start , mapping.pdb_end, mapping.unp_end - mapping.pdb_start ]
+          this.map_positions[mapping.chain_id] = [mapping.start.residue_number, mapping.unp_start - mapping.start.residue_number, mapping.end.residue_number, mapping.unp_end - mapping.start.residue_number +1 ]
         }
         if (data[accession].description) {
           this.title = data[accession].description
@@ -129,8 +129,8 @@ export default class MoleculeViewer extends Vue {
     // }
     let found: boolean = false
     for(let d of Object.keys(this.map_positions).filter((e:any)=>{return e != 'total'})) {
-      if (this.localPosition  > this.map_positions[d][1] 
-      && this.localPosition < this.map_positions[d][3]  ){
+      if (this.localPosition  >= this.map_positions[d][1] 
+      && this.localPosition <= this.map_positions[d][3]  ){
         residue = { chain: d, position: this.localPosition - this.map_positions[d][1]  }
         found = true;
         break;
@@ -139,7 +139,7 @@ export default class MoleculeViewer extends Vue {
     if (! found){
       residue = { chain: '', position: 0 }
     }
-    console.log(residue, "r", this.map_positions)
+    console.log(residue, "r", this.map_positions, this.localPosition)
     if(residue.chain !== '') {
       // this.viewer.visual.select({
       //   data: [{
