@@ -139,6 +139,7 @@ export default class MoleculeViewer extends Vue {
           }
           position =  this.map_positions[key][3] + this.map_positions[key][0] 
         })
+        this.protein = options.moleculeId
       }
     } catch(err){
       this.reportError(err, "Error in fetching Query Info")
