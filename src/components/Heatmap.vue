@@ -4,6 +4,7 @@
     <b-row>
       <b-col sm="12">
         <div id="heatmapDiv" ref="heatmapDiv">
+          <p v-if="cells.length < 1">No data available</p>
           <div class="tooltip" id="tooltipHeatmap" style="opacity: 0"></div>
         </div>
       </b-col>
@@ -22,6 +23,7 @@ import { Component, Vue, Prop, Watch } from "vue-property-decorator";
 import LocalDataHelper from "@/shared/LocalDataHelper";
 import Parsing from "@/shared/Parsing";
 import * as d3 from "d3";
+import swal from 'vue-sweetalert2'
 import { BIconArrowReturnRight } from "bootstrap-vue";
 // import { local } from 'd3';
 // import fs from 'file-system'
@@ -63,9 +65,10 @@ export default class Heatmap extends Vue {
   onDSwitchedChange(value: boolean, oldValue: boolean) {
     this.updateHeatmap(this.cells)
   }
-  // @Watch("referenceSequence")
-  // onReferenceSeq(value: any, oldValue: any) {
-  // }
+  @Watch("referenceSequence")
+  onReferenceSeq(value: any, oldValue: any) {
+    this.updateHeatmap(this.cells)
+  }
 
   @Watch("frequency_threshold")
   onFrequencyChanged(value: number, oldValue: number) {
@@ -181,9 +184,16 @@ export default class Heatmap extends Vue {
     const $this = this;
     Promise.all(promises).then((l) => {
       let data = l[0];
-
       $this.makeHeatmap(data);
       // $this.updateHeatmap(data)
+    }).catch((err:any)=>{
+      this.$swal.fire({
+        position: 'center',
+        icon: 'error',
+        showConfirmButton:true,
+        title:  "JSON parsing error",
+        text: err
+      });
     });
   }
   
@@ -191,6 +201,9 @@ export default class Heatmap extends Vue {
     let data = raw_data.filter( (d:any) => {
       return d.group == this.group;
     })
+    if (data.length < 1){
+      return
+    }
     // Get unique preps in order to calculate y axis
     let preps: any = [...new Set(data.map((d: any) => d.experiment))];
     
@@ -202,7 +215,7 @@ export default class Heatmap extends Vue {
         cells.push({ max: residue.consensus_aa_count, experiment: prep.experiment, depth: residue.depth, position: +residue.position, total:+residue.depth, count: residue.counts.length, aa: residue.consensus_aa, consensus_count: residue.consensus_aa_count  })
       })
     })
-    console.log(data)
+    
     this.cells = cells
     // Get unique positions in order to calculate x axis
     const position_max: any = d3.max(cells.map((d:any)=>{
@@ -405,6 +418,7 @@ export default class Heatmap extends Vue {
     .tickFormat((interval:any,i:any) => {
       return i%2 !== 1 ? " ": this.positions_unique[i];
     });
+    // console.log(this.scaleX.domain(), "scaleXdomain")
     d3.select('#xAxisT')
           .attr("transform", "translate(" + (0) + "," + (this.margin.top) + ")")
           .style("fill", null)
@@ -515,7 +529,6 @@ export default class Heatmap extends Vue {
             )            
           },
           function (exit: any) {
-            console.log(exit)
             return exit.remove()
           }
         )

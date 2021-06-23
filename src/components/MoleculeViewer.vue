@@ -58,7 +58,7 @@ export default class MoleculeViewer extends Vue {
   }
   @Watch('referenceSequence', { immediate: true, deep: true })
   onRefSeqChange(value: any, oldValue: any) {
-    console.log(value, "changed refseq")
+    // console.log(value, "changed refseq")
     if (value.positions && value.positions.length > 0){
       this.$emit("changeReferenceSequence", value)
     }
@@ -145,9 +145,11 @@ export default class MoleculeViewer extends Vue {
             chain.chain_id.forEach((id:any)=>{
               if (id in this.map_positions){
                 for (let i = this.map_positions[id][1]; i < this.map_positions[id][3]; i++){
-                  const position = this.determinePosition(i, this.map_positions[id][1])
-                  ref_seq.push(chain.molecule_sequence.substring(position,position+1) + "." + (i+1))
-                  ref_pos.push(i+1)
+                  if (i >= 0){
+                    const position = this.determinePosition(i, this.map_positions[id][1])
+                    ref_seq.push(chain.molecule_sequence.substring(position,position+1) + "." + (i+1))
+                    ref_pos.push(i+1)
+                  }
                 }
               }
             })
