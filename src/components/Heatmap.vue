@@ -86,7 +86,7 @@ export default class Heatmap extends Vue {
 
   @Watch("group")
   onGroupChanged(value: string, oldValue: string) {
-    d3.select("#heatmapDiv").html("");
+    // d3.select("#heatmapDiv").html("");
     this.defineHeatmap();
     
   }
@@ -202,6 +202,7 @@ export default class Heatmap extends Vue {
         cells.push({ max: residue.consensus_aa_count, experiment: prep.experiment, depth: residue.depth, position: +residue.position, total:+residue.depth, count: residue.counts.length, aa: residue.consensus_aa, consensus_count: residue.consensus_aa_count  })
       })
     })
+    console.log(data)
     this.cells = cells
     // Get unique positions in order to calculate x axis
     const position_max: any = d3.max(cells.map((d:any)=>{
