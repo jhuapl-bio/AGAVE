@@ -212,10 +212,10 @@ export default class Heatmap extends Vue {
     data.forEach((prep:any)=>{
       prep.residues.forEach((residue:any)=>{
         
-        cells.push({ max: residue.consensus_aa_count, experiment: prep.experiment, depth: residue.depth, position: +residue.position, total:+residue.depth, count: residue.counts.length, aa: residue.consensus_aa, consensus_count: residue.consensus_aa_count  })
+        cells.push({ unique: [...new Set(residue.counts.map((d: any) => d.aa))], max: residue.consensus_aa_count, experiment: prep.experiment, depth: residue.depth, position: +residue.position, total:+residue.depth, count: residue.counts.length, aa: residue.consensus_aa, consensus_count: residue.consensus_aa_count  })
       })
     })
-    
+    console.log(cells)
     this.cells = cells
     // Get unique positions in order to calculate x axis
     const position_max: any = d3.max(cells.map((d:any)=>{
@@ -445,10 +445,11 @@ export default class Heatmap extends Vue {
 
     d3.select('#innerheatmapSVG')
     .attr("width", overwidth)
-    const blocks = g.selectAll(".block").data(cells.filter((d:any)=>{
-                return d.position >= min && d.position <= max && this.positions.indexOf(d.position) > -1
-              }), (d:any, i:any)=>{
-      d.experiment.replaceAll(" ", "_") + d.position + $this.segment
+    const blocks = g.selectAll(".block")
+    .data(cells.filter((d:any)=>{
+        return d.position >= min && d.position <= max && this.positions.indexOf(d.position) > -1
+      }), (d:any, i:any)=>{
+        d.experiment.replaceAll(" ", "_") + d.position + $this.segment
     })
     .join(
       function (enter: any) {
@@ -481,7 +482,7 @@ export default class Heatmap extends Vue {
                 )
                 .style("fill", "yellow");
                 d3.select("#tooltipHeatmap")
-                  .html(`Pos: ${u.position}<br> Experiment: ${u.experiment}<br>Depth: ${u.depth}<br>Unique AA: ${u.count}<br>Total: ${u.total}<br> Consensus Residue: ${u.aa}<br>Consensus / Total: ${u.max} / ${u.depth} ${( !$this.isSwitched ? `<br>Ref. Residue: ${$this.positions_unique[$this.positions.indexOf(u.position)]}`: '')} `)
+                  .html(`Pos: ${u.position}<br> Experiment: ${u.experiment}<br>Depth: ${u.depth}<br>Unique AA: ${u.unique}<br>Total: ${u.total}<br> Consensus Residue: ${u.aa}<br>Consensus / Total: ${u.max} / ${u.depth} ${( !$this.isSwitched ? `<br>Ref. Residue: ${$this.positions_unique[$this.positions.indexOf(u.position)]}`: '')} `)
                   .style(
                     "left",
                     () => {
