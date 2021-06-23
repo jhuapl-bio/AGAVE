@@ -206,7 +206,7 @@ export default class Heatmap extends Vue {
     }
     // Get unique preps in order to calculate y axis
     let preps: any = [...new Set(data.map((d: any) => d.experiment))];
-    console.log(data)
+    // console.log(data)
     // Format data into cells
     let cells: any[] = [];
     data.forEach((prep:any)=>{
@@ -418,7 +418,6 @@ export default class Heatmap extends Vue {
     .tickFormat((interval:any,i:any) => {
       return i%2 !== 1 ? " ": this.positions_unique[i];
     });
-    // console.log(this.scaleX.domain(), "scaleXdomain")
     d3.select('#xAxisT')
           .attr("transform", "translate(" + (0) + "," + (this.margin.top) + ")")
           .style("fill", null)
@@ -476,10 +475,6 @@ export default class Heatmap extends Vue {
                 $this.$emit("changePosition", u.position)
               })
               .on("mousemove", (event: any, u: any, n:any, i:number) => {
-                // console.log(d3.select(
-                //   "#" +
-                //     u.experiment.replaceAll(" ", "_") + u.position 
-                // )._groups[0], u.experiment, u.position, u.experiment.replaceAll(" ", "_") + u.position)
                 d3.select(
                   "#" +
                     u.experiment.replaceAll(" ", "_") + u.position 

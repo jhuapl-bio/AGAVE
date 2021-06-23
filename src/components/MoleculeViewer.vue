@@ -2,12 +2,18 @@
   <div class="columns mb-6">
     <div class="column is-12">
       <b-field :label="this.title"></b-field>
+      <div >
+        <b-input-group prepend="PDB ID" class="mt-3">
+          <b-form-input type="text" v-model="protein" ></b-form-input>
+          <b-input-group-append>
+            <b-button
+              elevation="2"
+              @click="proteinChange(protein.toLowerCase())"
+            >Change Protein</b-button>
+          </b-input-group-append>
+        </b-input-group>
+      </div>
       <div ref="viewer" class="viewer"></div>
-      <!-- <div>
-        <b-input type="text" v-model="localPosition"></b-input>
-        <b-button outlined @click="focus">Focus</b-button>
-        <b-button outlined @click="reset">Reset</b-button>
-      </div> -->
       <b-field v-if="queryingReferenceSequence" label="Querying Reference Sequence..."></b-field>
       <b-field v-if="queryingResidueMapping" label="Querying Residue Mapping.."></b-field>
     </div>
@@ -32,6 +38,7 @@ interface Residue {
 export default class MoleculeViewer extends Vue {
 
   public viewer: any;
+  public protein: string = "";
   public map_positions:any = {}
   public queryingResidueMapping: boolean = false;
   public queryingReferenceSequence: boolean = false;
@@ -43,6 +50,7 @@ export default class MoleculeViewer extends Vue {
     "NA": '2hty',
     'M1': '5v6g'
   }
+  
   @Prop({ required: true, default: 55 })
   public position!: string;
   @Prop({ required: true, default: 'HA' })
@@ -56,6 +64,7 @@ export default class MoleculeViewer extends Vue {
     
     this.focus()
   }
+  
   @Watch('referenceSequence', { immediate: true, deep: true })
   onRefSeqChange(value: any, oldValue: any) {
     // console.log(value, "changed refseq")
@@ -65,13 +74,7 @@ export default class MoleculeViewer extends Vue {
   }
   @Watch('segment')
   onSegmentChanged(value: number, oldValue: number) {
-    const options: any= {
-      moleculeId: this.protein_per_segment[this.segment],
-      hideControls: true,
-      bgColor: {r:255, g:255, b:255}
-    }
-    this.queryAPI(options)
-    this.viewer.visual.update(options)
+    this.proteinChange(this.protein_per_segment[this.segment])
     // Remove some buttons that break everything
     this.removeButtons();
   }
@@ -82,6 +85,15 @@ export default class MoleculeViewer extends Vue {
     } else {
       return  err
     } 
+  }
+  proteinChange(value: string){
+    const options: any= {
+      moleculeId: value,
+      hideControls: true,
+      bgColor: {r:255, g:255, b:255}
+    }
+    this.queryAPI(options)
+    this.viewer.visual.update(options)
   }
   reportError(err:any, title: string){
     const error = this.parseError(err) 
@@ -111,13 +123,21 @@ export default class MoleculeViewer extends Vue {
         let data: any = response.data[options.moleculeId].UniProt;
         const uniprots = Object.keys(response.data[options.moleculeId].UniProt)
         let sum = 1;
-        
         uniprots.forEach((accession: any)=>{
           if (data[accession].mappings){
             const mapping: any = data[accession].mappings[0]          
             this.map_positions[mapping.chain_id] = [mapping.start.residue_number, mapping.unp_start - mapping.start.residue_number, mapping.end.residue_number, mapping.unp_end - mapping.start.residue_number +1 ]
           }
           
+        })
+        const keys: any[] = Object.keys(this.map_positions).sort()
+        let position: number = 0;
+        keys.forEach((key:any)=>{
+          if (this.map_positions[key][1] < position){
+            this.map_positions[key][1] = position 
+            this.map_positions[key][3] = position + this.map_positions[key][2]
+          }
+          position =  this.map_positions[key][3] + this.map_positions[key][0] 
         })
       }
     } catch(err){
