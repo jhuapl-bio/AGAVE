@@ -10,12 +10,17 @@
           :column_width=column_width 
           :segment=segment
           :group=group
+          :referenceSequence=referenceSequence
           @changePosition="changePosition"
         >
         </Heatmap>
       </div>
       <div class="col-lg-3 pb-6">
-        <MoleculeViewer :segment=segment :position=position></MoleculeViewer>
+        <MoleculeViewer 
+          :segment=segment 
+          :position=position
+          @changeReferenceSequence="changeReferenceSequence">
+        </MoleculeViewer>
       </div>
     </div>
   </div>
@@ -40,6 +45,7 @@ export default class Visualization extends Vue {
   column_width = 6
   segment = 'HA'
   position = 54
+  public referenceSequence: any = { positions: [], sequence: [] };
   group = '3C.2 - 3 dpi hNEC'
   sliderUpdate(gh: {target: string, value: number}) {
     const target = gh.target
@@ -48,6 +54,10 @@ export default class Visualization extends Vue {
   }
   changePosition(value: number){
     this.position = value
+  }
+  changeReferenceSequence(value: any){
+    this.referenceSequence = value
+    console.log("made it to visualization")
   }
   
 }

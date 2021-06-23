@@ -8,6 +8,8 @@
         <b-button outlined @click="focus">Focus</b-button>
         <b-button outlined @click="reset">Reset</b-button>
       </div> -->
+      <b-field v-if="queryingReferenceSequence" label="Querying Reference Sequence..."></b-field>
+      <b-field v-if="queryingResidueMapping" label="Querying Residue Mapping.."></b-field>
     </div>
   </div>
 </template>
@@ -16,6 +18,7 @@
 
 import { Component, Vue, Watch, Prop } from 'vue-property-decorator'
 import axios from 'axios'
+import swal from 'vue-sweetalert2'
 
 interface Residue {
   chain: string
@@ -30,7 +33,10 @@ export default class MoleculeViewer extends Vue {
 
   public viewer: any;
   public map_positions:any = {}
+  public queryingResidueMapping: boolean = false;
+  public queryingReferenceSequence: boolean = false;
   public localPosition: number =  55;
+  public referenceSequence: any = { positions: [], sequence: [] };
   public protein_per_segment: any = {
     "HA": '4o5n',
     "NP": '1hoc',
@@ -50,9 +56,15 @@ export default class MoleculeViewer extends Vue {
     
     this.focus()
   }
+  @Watch('referenceSequence', { immediate: true, deep: true })
+  onRefSeqChange(value: any, oldValue: any) {
+    console.log(value, "changed refseq")
+    if (value.positions && value.positions.length > 0){
+      this.$emit("changeReferenceSequence", value)
+    }
+  }
   @Watch('segment')
   onSegmentChanged(value: number, oldValue: number) {
-    console.log("segment changed", value, this.protein_per_segment[value])
     const options: any= {
       moleculeId: this.protein_per_segment[this.segment],
       hideControls: true,
@@ -63,33 +75,96 @@ export default class MoleculeViewer extends Vue {
     // Remove some buttons that break everything
     this.removeButtons();
   }
+  parseError(err: any){
+    console.log(err)
+    if (err.toJSON){
+      return err.toJSON().message
+    } else {
+      return  err
+    } 
+  }
+  reportError(err:any, title: string){
+    const error = this.parseError(err) 
+    this.$swal.fire({
+      position: 'center',
+      icon: 'error',
+      showConfirmButton:true,
+      title:  title,
+      text: error
+    });
+    
+  }
   async queryAPI(options:any){
-    // https://www.ebi.ac.uk/pdbe/graph-api/pdbe_pages/uniprot_mapping/4o5n/1
-    // https://www.ebi.ac.uk/pdbe/search/pdb/select?q=pdb_id:${options.moleculeId}&wt=json`)
-    let response: any = await this.getdata(`https://www.ebi.ac.uk/pdbe/graph-api/mappings/uniprot_segments/${options.moleculeId}`)
-    console.log("Querying API call finished", response)
-    this.map_positions = {}
-    if (
-      response.data && 
-      response.data[options.moleculeId] && 
-      response.data[options.moleculeId].UniProt){
-      const data: any = response.data[options.moleculeId].UniProt;
-      const uniprots = Object.keys(response.data[options.moleculeId].UniProt)
-
-      let sum = 1;
-      uniprots.forEach((accession: any)=>{
-        if (data[accession].mappings){
-          const mapping: any = data[accession].mappings[0]          
-          this.map_positions[mapping.chain_id] = [mapping.start.residue_number, mapping.unp_start - mapping.start.residue_number, mapping.end.residue_number, mapping.unp_end - mapping.start.residue_number +1 ]
+    let error: any = null
+    try {
+      // https://www.ebi.ac.uk/pdbe/graph-api/pdbe_pages/uniprot_mapping/4o5n/1
+      this.queryingResidueMapping = true;
+      // throw new Error("new err")
+      let response: any = await this.getdata(`https://www.ebi.ac.uk/pdbe/graph-api/mappings/uniprot_segments/${options.moleculeId}`)
+      this.title = "Fetching..."
+      console.log("Querying API call finished", response)
+      this.map_positions = {}
+      if (
+        response.data && 
+        response.data[options.moleculeId] && 
+        response.data[options.moleculeId].UniProt){
+        let data: any = response.data[options.moleculeId].UniProt;
+        const uniprots = Object.keys(response.data[options.moleculeId].UniProt)
+        let sum = 1;
+        
+        uniprots.forEach((accession: any)=>{
+          if (data[accession].mappings){
+            const mapping: any = data[accession].mappings[0]          
+            this.map_positions[mapping.chain_id] = [mapping.start.residue_number, mapping.unp_start - mapping.start.residue_number, mapping.end.residue_number, mapping.unp_end - mapping.start.residue_number +1 ]
+          }
+          
+        })
+      }
+    } catch(err){
+      this.reportError(err, "Error in fetching Query Info")
+    } finally {
+      this.queryingResidueMapping = false;
+      try {
+        this.queryingReferenceSequence = true;
+        this.referenceSequence = { positions: [], sequence: [] };
+        let response: any =  await this.getdata(`https://www.ebi.ac.uk/pdbe/search/pdb/select?q=pdb_id:${options.moleculeId}&wt=json`)
+        if (
+          response.data && 
+          response.data.response && 
+          response.data.response.docs){
+          const chains: any = response.data.response.docs
+          let ref_seq: string[] = []
+          let ref_pos: number[] = []
+          chains.forEach((chain: any)=>{
+            if (chain.title) {
+              this.title = chain.title
+            } else {
+              this.title = "No title found"
+            }
+            const ids: any[]  = chain.chain_id;
+            chain.chain_id.forEach((id:any)=>{
+              if (id in this.map_positions){
+                for (let i = this.map_positions[id][1]; i < this.map_positions[id][3]; i++){
+                  const position = this.determinePosition(i, this.map_positions[id][1])
+                  ref_seq.push(chain.molecule_sequence.substring(position,position+1) + "." + (i+1))
+                  ref_pos.push(i+1)
+                }
+              }
+            })
+            this.referenceSequence.sequence = ref_seq
+            this.referenceSequence.positions = ref_pos
+          })
         }
-        if (data[accession].description) {
-          this.title = data[accession].description
-        } else {
-          this.title = "No title found"
-        }
-      })
-      console.log(this.map_positions)
+      } catch(err){
+        this.reportError(err, "Error in Fetching Reference Info")
+      } finally {
+        this.queryingReferenceSequence = false;
+      }
     }
+    
+    
+    
+    
   }
   async make_pdbemolstar(options: any){
     // this object is being imported in index.html so ignore the syntax error it throws
@@ -115,11 +190,13 @@ export default class MoleculeViewer extends Vue {
     this.make_pdbemolstar(options)
     this.queryAPI(options)
   }
-
+  determinePosition(localPosition: number, mapPosition: number){
+    return localPosition - mapPosition
+  }
   // Example of focus ability. In the future let's rig this to the d3 heatmap so that when an amino acid is clicked, the molecule focuses on it
   focus() {
     this.viewer.visual.clearSelection();
-    let residue: Residue;
+    let residue: Residue =  { chain: '', position: 0 };
     // if ( this.localPosition >= 25 && this.localPosition <= 341 ) {
     //   residue = { chain: 'A', position: this.localPosition - 22 }
     // } else if ( this.localPosition >= 346 && this.localPosition <= 518 ) {
@@ -131,25 +208,13 @@ export default class MoleculeViewer extends Vue {
     for(let d of Object.keys(this.map_positions).filter((e:any)=>{return e != 'total'})) {
       if (this.localPosition  >= this.map_positions[d][1] 
       && this.localPosition <= this.map_positions[d][3]  ){
-        residue = { chain: d, position: this.localPosition - this.map_positions[d][1]  }
+        const position = this.determinePosition(this.localPosition,this.map_positions[d][1])
+        residue = { chain: d, position:  position }
         found = true;
         break;
       }   
     }
-    if (! found){
-      residue = { chain: '', position: 0 }
-    }
-    console.log(residue, "r", this.map_positions, this.localPosition)
     if(residue.chain !== '') {
-      // this.viewer.visual.select({
-      //   data: [{
-      //     struct_asym_id: residue.chain,
-      //     start_residue_number: residue.position,
-      //     end_residue_number: residue.position,
-      //     focus: true,
-      //     color: {r:255, g:255, b:0}
-      //   }]
-      // })
       this.viewer.visual.select({
         data: [{
           struct_asym_id: residue.chain,

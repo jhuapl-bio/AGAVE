@@ -9,6 +9,9 @@
       </b-col>
       <b-col sm="12">
         <div id="heatmapLegend" ref="heatmapLegend"></div>
+        <b-switch v-model="isSwitched" :disabled="this.referenceSequence.sequence.length <= 0">
+                {{ ( isSwitched ? 'Consensus Sequence' : 'Reference' ) }}
+        </b-switch>
       </b-col>
     </b-row>
   </div>
@@ -28,7 +31,6 @@ export default class Heatmap extends Vue {
 
   private localDataHelper = new LocalDataHelper();
   private parsing = new Parsing();
-
   $refs!: {
     heatmapDiv: HTMLElement;
     heatmapLegend: HTMLElement;
@@ -49,11 +51,21 @@ export default class Heatmap extends Vue {
   @Prop({ required: false, default: 10 })
   public group!: string;
 
+  @Prop({ required: false, default: { positions: [], sequence: [] } })
+  public referenceSequence!: any;
+
   @Watch("depth_threshold")
   onDepthChanged(value: number, oldValue: number) {
     this.updateHeatmap(this.cells)
     // this.defineHeatmap();
   }
+  @Watch("isSwitched")
+  onDSwitchedChange(value: boolean, oldValue: boolean) {
+    this.updateHeatmap(this.cells)
+  }
+  // @Watch("referenceSequence")
+  // onReferenceSeq(value: any, oldValue: any) {
+  // }
 
   @Watch("frequency_threshold")
   onFrequencyChanged(value: number, oldValue: number) {
@@ -78,8 +90,9 @@ export default class Heatmap extends Vue {
     this.defineHeatmap();
     
   }
-
+  isSwitched = true;
   test = null;
+  reference_seq: any = [];
   showMenu = false;
   msg = "Hello";
   height = 900;
@@ -108,6 +121,7 @@ export default class Heatmap extends Vue {
   yAxisDivision = {};
   scaleY: any= d3.scaleOrdinal();
   positions_unique: any[] = [];
+  positions: any[] = [];
   containerHeight = 500;
   chartHeight = this.containerHeight * 0.55;
   legendWidth = 0;
@@ -177,7 +191,6 @@ export default class Heatmap extends Vue {
     let data = raw_data.filter( (d:any) => {
       return d.group == this.group;
     })
-    console.log(data)
     // Get unique preps in order to calculate y axis
     let preps: any = [...new Set(data.map((d: any) => d.experiment))];
     
@@ -191,15 +204,15 @@ export default class Heatmap extends Vue {
     })
     this.cells = cells
     // Get unique positions in order to calculate x axis
-    const positions_unique: any[] = [...new Set(cells.map((d:any)=>{
-      return d.aa + "." + d.position
-    }))];
-    this.positions_unique = positions_unique
+    const position_max: any = d3.max(cells.map((d:any)=>{
+      return d.position 
+    }));
+    
     const axisPadding = 10
-    this.x.domain([0, this.positions_unique.length])
+    this.x.domain([0, position_max])
     .range([this.margin.left, this.width * this.column_width - this.margin.right])
     const minX = this.x(0);
-    const maxX = this.x(positions_unique.length);
+    const maxX = this.x(position_max);
     const overwidth = maxX - minX + this.margin.left + this.margin.right;
     this.overwidth = overwidth
     const boxHeight = (this.height - this.margin.top - this.margin.bottom - axisPadding)/ preps.length 
@@ -347,33 +360,49 @@ export default class Heatmap extends Vue {
     // Add styling to the heatmap blocks
     const g = this.g
     const $this = this
-    this.x.domain([0, this.positions_unique.length])
+    if (this.isSwitched){
+      const positions_unique = [...new Set(cells.map((d:any)=>{
+        return d.aa + "." + d.position
+      }))];
+      // Get unique positions in order to calculate x axis
+      const positions: any[] = [...new Set(cells.map((d:any)=>{
+        return d.position 
+      }))];
+      this.positions_unique = positions_unique
+      this.positions = positions
+    } else {
+      this.positions_unique = this.referenceSequence.sequence
+      const positions: any[] = this.referenceSequence.positions
+      this.positions = positions
+    }
+    const min = d3.min($this.positions)
+    const max = d3.max($this.positions)
+    this.x.domain([1, this.positions.length])
     .range([this.margin.left, this.width * this.column_width - this.margin.right])
-    const minX = this.x(0);
-    const maxX = this.x(this.positions_unique.length);
+    const minX = this.x(1);
+    const maxX = this.x(this.positions.length);
     const overwidth = maxX - minX + this.margin.left + this.margin.right;
     this.overwidth = overwidth
     const boxWidth =
-      (this.overwidth - this.margin.left - this.margin.right) / this.positions_unique.length -
+      (this.overwidth - this.margin.left - this.margin.right) / this.positions.length -
       this.border;
     this.boxWidth = boxWidth;
-
     this.scaleX
-      .domain(this.positions_unique)
+      .domain(this.positions)
       .range([this.margin.left, overwidth - this.margin.right]);
     this.xAxisT = d3
       .axisTop(this.scaleX)
       .tickSizeOuter(0)
-      .ticks(this.positions_unique)
+      .ticks(max - min)
       .tickFormat((interval:any,i:any) => {
-        return i%2 !== 0 ? " ": interval;
+        return i%2 !== 0 ? " ": this.positions_unique[i];
       });
     this.xAxisB = d3
     .axisBottom(this.scaleX)
     .tickSizeOuter(0)
-    .ticks(this.positions_unique)
+    .ticks(max - min)
     .tickFormat((interval:any,i:any) => {
-      return i%2 !== 1 ? " ": interval;
+      return i%2 !== 1 ? " ": this.positions_unique[i];
     });
     d3.select('#xAxisT')
           .attr("transform", "translate(" + (0) + "," + (this.margin.top) + ")")
@@ -400,12 +429,13 @@ export default class Heatmap extends Vue {
           .attr("transform", "rotate(45)")
           .style("text-anchor", "start");
 
-
-
     d3.select('#innerheatmapSVG')
     .attr("width", overwidth)
-
-    const blocks = g.selectAll(".block").data(cells)
+    const blocks = g.selectAll(".block").data(cells.filter((d:any)=>{
+                return d.position >= min && d.position <= max && this.positions.indexOf(d.position) > -1
+              }), (d:any, i:any)=>{
+      d.experiment.replaceAll(" ", "_") + d.position + $this.segment
+    })
     .join(
       function (enter: any) {
             return enter
@@ -420,7 +450,7 @@ export default class Heatmap extends Vue {
               })
               .attr("transform", (d: any) => {
                 let y = $this.scaleY(d.experiment);
-                let x = $this.scaleX(d.aa + "." + d.position);
+                let x = $this.scaleX(d.position);
                 return "translate(" + x + "," + y + ")";
               })
               .attr("class", "block")
@@ -431,13 +461,17 @@ export default class Heatmap extends Vue {
                 $this.$emit("changePosition", u.position)
               })
               .on("mousemove", (event: any, u: any, n:any, i:number) => {
+                // console.log(d3.select(
+                //   "#" +
+                //     u.experiment.replaceAll(" ", "_") + u.position 
+                // )._groups[0], u.experiment, u.position, u.experiment.replaceAll(" ", "_") + u.position)
                 d3.select(
                   "#" +
                     u.experiment.replaceAll(" ", "_") + u.position 
                 )
                 .style("fill", "yellow");
                 d3.select("#tooltipHeatmap")
-                  .html(`Pos: ${u.aa+"."+u.position}<br> Experiment: ${u.experiment}<br>Count: ${u.count}, Total: ${u.total}`)
+                  .html(`Pos: ${u.position}<br> Experiment: ${u.experiment}<br>Depth: ${u.count}, Total: ${u.total}<br> Consensus Residue: ${u.aa} ${( !$this.isSwitched ? `<br>Ref. Residue: ${$this.positions_unique[$this.positions.indexOf(u.position)]}`: '')} `)
                   .style(
                     "left",
                     () => {
@@ -468,24 +502,19 @@ export default class Heatmap extends Vue {
           },
           function (update: any) {
             return update
-
             .call((update: any)=>update.transition().duration(1000).attr("fill", (d: any) => {
               return $this.calculateColor(d)
             })
             .attr("transform", (d: any) => {
               let y = $this.scaleY(d.experiment);
-              let x = $this.scaleX(d.aa + "." + d.position);
+              let x = $this.scaleX(d.position);
               return "translate(" + x + "," + y + ")";
             })
             .attr("width", $this.boxWidth )
-            )
-            
-            // .transition()
-            // .duration(700)
-            
-           
+            )            
           },
           function (exit: any) {
+            console.log(exit)
             return exit.remove()
           }
         )
