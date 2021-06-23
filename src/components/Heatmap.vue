@@ -206,7 +206,7 @@ export default class Heatmap extends Vue {
     }
     // Get unique preps in order to calculate y axis
     let preps: any = [...new Set(data.map((d: any) => d.experiment))];
-    
+    console.log(data)
     // Format data into cells
     let cells: any[] = [];
     data.forEach((prep:any)=>{
@@ -486,7 +486,7 @@ export default class Heatmap extends Vue {
                 )
                 .style("fill", "yellow");
                 d3.select("#tooltipHeatmap")
-                  .html(`Pos: ${u.position}<br> Experiment: ${u.experiment}<br>Depth: ${u.count}, Total: ${u.total}<br> Consensus Residue: ${u.aa} ${( !$this.isSwitched ? `<br>Ref. Residue: ${$this.positions_unique[$this.positions.indexOf(u.position)]}`: '')} `)
+                  .html(`Pos: ${u.position}<br> Experiment: ${u.experiment}<br>Depth: ${u.depth}<br>Unique AA: ${u.count}<br>Total: ${u.total}<br> Consensus Residue: ${u.aa}<br>Consensus / Total: ${u.max} / ${u.depth} ${( !$this.isSwitched ? `<br>Ref. Residue: ${$this.positions_unique[$this.positions.indexOf(u.position)]}`: '')} `)
                   .style(
                     "left",
                     () => {
