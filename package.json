@@ -20,6 +20,7 @@
     "csv-loader": "^3.0.3",
     "d3": "^6.7.0",
     "file-system": "^2.2.2",
+    "https-proxy-agent": "^5.0.0",
     "vue": "2.6.11",
     "vue-class-component": "7.2.3",
     "vue-property-decorator": "8.4.2",

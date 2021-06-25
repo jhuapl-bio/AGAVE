@@ -31,15 +31,25 @@ import { Component, Vue } from 'vue-property-decorator'
 import VisualizationOptions from '@/components/VisualizationOptions.vue'
 import Heatmap from './Heatmap.vue'
 import MoleculeViewer from './MoleculeViewer.vue'
-
+import Service from '@/services/service'
+import axios from "axios"
 @Component({
   components: {
     Heatmap,
     VisualizationOptions,
-    MoleculeViewer
+    MoleculeViewer,
   }
 })
 export default class Visualization extends Vue {
+
+  private Service= new Service();
+
+
+  mounted() {
+    this.Service.init()
+    
+  }
+
   depth_threshold = 0
   frequency_threshold = 0.2
   column_width = 6

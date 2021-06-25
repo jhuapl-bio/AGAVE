@@ -12,6 +12,19 @@ module.exports = {
       }
     }
   },
+  devServer: {
+    proxy: { 
+      '/': {
+        target: `http://localhost:3089`, 
+        logLevel:'info',
+        secure: false,
+        changeOrigin: true,
+        pathRewrite: {
+          '^/': ''
+        }
+      }
+    },
+  },
   chainWebpack: config => {
     config.module
       .rule("csv")
