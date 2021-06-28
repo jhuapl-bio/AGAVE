@@ -16,6 +16,7 @@ class App {
     constructor() {
         this.express = express();
         this.middleware();
+        this.express.use(bodyParser.json({limit: '100MB'}));
         this.routes();
         this.users = [];
         this.logger = new Logger();
@@ -24,10 +25,12 @@ class App {
     // Configure Express middleware.
     private middleware(): void {
         this.express.use(bodyParser.json());
-        this.express.use(bodyParser.urlencoded({ extended: true }));
+        this.express.use(bodyParser.urlencoded({ extended: true, limit: '120mb' }));
         // this.express.use(express.static(process.cwd() + "/my-app/dist/"));
-    }
+        
 
+    }
+    
     private routes(): void {
 
         this.express.get("/", (req, res, next) => {

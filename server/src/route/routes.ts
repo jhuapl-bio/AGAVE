@@ -35,7 +35,9 @@ class Routes {
 
         this.express.post("/data/:type", (req: any, res: any, next) => {
             this.logger.info("testing data type: " + req.params.type);
-            this.logger.info(JSON.stringify(req.body))
+            this.logger.info(req.files)
+            this.logger.info(`${Object.keys(req.body)}`)
+            res.status(200).send("url:::::::" );
             fs.readFile(req.body, function(err: any, data: any){
                 if (err){
                     this.logger.console.error(err);
@@ -46,7 +48,7 @@ class Routes {
                     res.status(200).send("url:::::::" );        
                 }
             })
-            res.status(200).send("url:::::::" );  
+            // res.status(200).send("url:::::::" );  
         })
     }
 }

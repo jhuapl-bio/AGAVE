@@ -24,6 +24,9 @@
         >
         </b-form-file>
         <div class="mt-3">Selected file: {{ customfile ? customfile.name : '' }}</div>
+        <input type="file" name="datafile" size="40">
+
+        <textarea id="2" name="y" style="width:400px;height:150px;"></textarea>
       </b-col>
     </b-row>
   </div>
@@ -106,16 +109,40 @@ export default class Heatmap extends Vue {
     this.defineHeatmap();
   }
   @Watch("customfile")
-  onChangeFile(value: string, oldValue: string) {
+  async onChangeFile(value: any, oldValue: any) {
     console.log(value)
-    let formData = new FormData();
-    formData.append('file', value)
-    for (var [key, value] of formData.entries()) { 
-      console.log(key, value);
+    const reader = new FileReader()
+    reader.onload = function(event:any) {
+      console.log(JSON.parse(reader.result));
     }
-    this.Service.getData(formData)
-  }
+    // reader.onerror = error => reject(error)
+    let text = reader.readAsText(value) // you could also read images and other binaries
 
+  // let formData = new FormData();
+    // formData.append('file', value)
+    // try{
+    //   let data: any = await this.Service.getData(formData)
+    //   console.log("datA", data)
+    // }
+    // catch(err:any){
+    //   console.log("error found,", err)
+    //   this.$swal.fire({
+    //     position: 'center',
+    //     icon: 'error',
+    //     showConfirmButton:true,
+    //     title:  "Error in submitting file",
+    //     text: this.parseError(err)
+    //   })
+    // }
+  }
+  parseError(err: any){
+    console.log(err)
+    if (err.toJSON){
+      return err.toJSON().message
+    } else {
+      return  err
+    } 
+  }
 
   isSwitched = true;
   customfile: any = null
