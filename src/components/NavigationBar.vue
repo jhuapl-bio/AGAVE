@@ -1,28 +1,30 @@
 <template>
   <div>
-    <div class="container pb-3 pt-3 pl-3">
-      <img class="navbar-image" src="@/assets/jhu-shield.png"/>
+    <div class=" pb-3 pt-3 left-padding">
+      <a href="https://jhu.edu">
+        <img class="navbar-image" src="@/assets/images/jhu-shield.png"/>
+      </a>
     </div>
     <nav class="navbar is-aplblue">
-      <div class="container">
+      <div class="navbar-title">
         <div class="navbar-brand pl-3">
-          <router-link class="navbar-item is-size-1" to="/">
-            Untitled Data Viz
-          </router-link>
-          <a role="button" class="navbar-burger" :class="{'is-active': showMenu}" v-on:click="showMenu = !showMenu">
+          <h1 class="navbar-item is-size-2">
+            Influenza Variant Explorer
+          </h1>
+          <!-- <a role="button" class="navbar-burger" :class="{'is-active': showMenu}" v-on:click="showMenu = !showMenu">
             <span aria-hidden="true"></span>
             <span aria-hidden="true"></span>
             <span aria-hidden="true"></span>
-          </a>
+          </a> -->
         </div>
-        <div class="navbar-menu navbar-end bg-is-inherited" :class="{'is-active': showMenu}">
-          <b-navbar-item class="is-size-4" :class="{'is-active': $route.name === 'Data'}">
+        <!-- <div class="navbar-menu navbar-end bg-is-inherited" :class="{'is-active': showMenu}"> -->
+          <!-- <b-navbar-item class="is-size-4" :class="{'is-active': $route.name === 'Data'}">
             <router-link to="/"> Data </router-link>
-          </b-navbar-item>
-          <b-navbar-item class="is-size-4" :class="{'is-active': $route.name === 'About'}">
+          </b-navbar-item> -->
+          <!-- <b-navbar-item class="is-size-4" :class="{'is-active': $route.name === 'About'}">
             <router-link to="/about"> About </router-link>
-          </b-navbar-item>
-        </div>
+          </b-navbar-item> -->
+        <!-- </div> -->
       </div>
     </nav>
   </div>
@@ -42,6 +44,10 @@ export default class NavigationBar extends Vue {
 <style scoped lang="scss">
   .navbar-image {
     max-height: 6rem;
+    padding-left: 6rem
+  }
+  .navbar-title {
+    padding-left: 4rem;
   }
   .bg-is-inherited {
     background-color: inherit;

@@ -1,16 +1,17 @@
 <template>
   <div>
+    
     <NavigationBar/>
     <div class="router-outer container">
       <div class="router-inner columns pt-4">
-        <div class="column is-offset-1 is-10 is-offset-1-mobile">
+        <div class="column is-offset-1-mobile add-padding">
           <router-view/>
         </div>
       </div>
     </div>
     <footer class="footer">
       <div class="content has-text-centered">
-        The work of JHU, JHU/APL, and BARDA. Not sure what content needs to legally be here.
+        The work of JHU, JHU/APL, and BARDA.
       </div>
     </footer>
   </div>
@@ -19,7 +20,8 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
 import NavigationBar from './components/NavigationBar.vue'
-
+import 'bootstrap/dist/css/bootstrap.css'
+import 'bootstrap-vue/dist/bootstrap-vue.css'
 @Component({
   components: {
     NavigationBar
@@ -46,5 +48,16 @@ export default class App extends Vue {
     width: 100%;
     background-color: $aplgrey2;
     // padding: 1rem;
+  }
+  .add-padding {
+    padding-left: 5.5rem;
+    padding-right: 5.5rem;
+    width: -webkit-fill-available;
+  }
+
+  @media screen and (min-width: 1408px) {
+    .container:not(.is-max-desktop):not(.is-max-widescreen) {
+      max-width: 2000px;
+    }
   }
 </style>
