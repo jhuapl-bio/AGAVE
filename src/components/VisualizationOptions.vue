@@ -58,7 +58,7 @@ export default class VisualizationOptions extends Vue {
     "3C.3 - 7 dpi hNEC",
     "3C.3 - MDCK",
     "Flu B / unk"]
-  public group: string = "3C.2 - 3 dpi hNEC"
+  public group: string = "all"
 
   @Watch('depth_threshold')
   onDepthChanged(value: number, oldValue: number) {

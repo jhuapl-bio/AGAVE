@@ -160,8 +160,8 @@ export default class Heatmap extends Vue {
     d3.selectAll("#heatmapLegend").selectAll("*").remove()
     // const exts = ['A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'T', 'V', 'X', 'Y']
     // const exts = ['A']
-    // const segments = ['HA', 'M1', 'NA', 'NP', 'NS1', 'PA', 'PB1', 'PB2']
-    const segments = ["HA", "M1", "NA", "NP"];
+    const segments = ['HA', 'M', 'NA', 'NP', 'NS', 'PA', 'PB1', 'PB2']
+    // const segments = ["HA", "M1", "NA", "NP"];
 
     const boxSpacingX = (this.width - margin.left - margin.right) / 1;
     // const boxSpacingY = (this.height - margin.bottom - margin.top) / this.classifiers.length
@@ -178,7 +178,7 @@ export default class Heatmap extends Vue {
     const promises: Object[] = [];
     // segments.forEach((segment: string) => {
     promises.push(
-      this.localDataHelper.readJSON(`Gaydos/grouped/${this.segment}.json`)
+      this.localDataHelper.readJSON(`BARDA/${this.segment}.json`)
     );
     // });
     const $this = this;
@@ -198,9 +198,16 @@ export default class Heatmap extends Vue {
   }
   
   makeHeatmap(raw_data: any) {
-    let data = raw_data.filter( (d:any) => {
-      return d.group == this.group;
-    })
+    let data;
+    if (this.group !== "all") {
+      data = raw_data.filter( (d:any) => {
+        return d.group == this.group;
+      })
+    } else {
+      data = raw_data.filter( (d:any) => {
+        return true;
+      })
+    }
     if (data.length < 1){
       return
     }
@@ -211,7 +218,6 @@ export default class Heatmap extends Vue {
     let cells: any[] = [];
     data.forEach((prep:any)=>{
       prep.residues.forEach((residue:any)=>{
-        
         cells.push({ unique: [...new Set(residue.counts.map((d: any) => d.aa))], max: residue.consensus_aa_count, experiment: prep.experiment, depth: residue.depth, position: +residue.position, total:+residue.depth, count: residue.counts.length, aa: residue.consensus_aa, consensus_count: residue.consensus_aa_count  })
       })
     })

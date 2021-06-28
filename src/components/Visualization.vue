@@ -46,7 +46,7 @@ export default class Visualization extends Vue {
   segment = 'HA'
   position = 54
   public referenceSequence: any = { positions: [], sequence: [] };
-  group = '3C.2 - 3 dpi hNEC'
+  group = 'all'
   sliderUpdate(gh: {target: string, value: number}) {
     const target = gh.target
     const value = gh.value
