@@ -38,6 +38,7 @@
 <script lang="ts">
 
 import { Component, Vue, Watch } from 'vue-property-decorator'
+import LocalDataHelper from "@/shared/LocalDataHelper";
 
 @Component({
   
@@ -59,6 +60,9 @@ export default class VisualizationOptions extends Vue {
     "3C.3 - MDCK",
     "Flu B / unk"]
   public group: string = "3C.2 - 3 dpi hNEC"
+  private localDataHelper = new LocalDataHelper();
+
+
 
   @Watch('depth_threshold')
   onDepthChanged(value: number, oldValue: number) {
@@ -83,6 +87,10 @@ export default class VisualizationOptions extends Vue {
   @Watch('group')
   onGroupChanged(value: string, oldValue: string) {
     this.$emit('sliderUpdate', {value: value, target: 'group'})
+  }
+
+  mounted() {
+    console.log("mounted")
   }
   
 }

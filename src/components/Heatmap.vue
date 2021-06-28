@@ -25,8 +25,6 @@ import Parsing from "@/shared/Parsing";
 import * as d3 from "d3";
 import swal from 'vue-sweetalert2'
 import { BIconArrowReturnRight } from "bootstrap-vue";
-// import { local } from 'd3';
-// import fs from 'file-system'
 
 @Component({})
 export default class Heatmap extends Vue {
