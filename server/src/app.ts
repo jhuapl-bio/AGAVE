@@ -3,6 +3,7 @@ import * as express from "express";
 import { Logger } from "./logger/logger";
 import Routes from "./route/routes";
 const path = require('path');
+let multer  = require('multer');
 
 class App {
 
@@ -23,7 +24,7 @@ class App {
     // Configure Express middleware.
     private middleware(): void {
         this.express.use(bodyParser.json());
-        this.express.use(bodyParser.urlencoded({ extended: false }));
+        this.express.use(bodyParser.urlencoded({ extended: true }));
         // this.express.use(express.static(process.cwd() + "/my-app/dist/"));
     }
 
@@ -36,7 +37,13 @@ class App {
 
         // user route
         this.express.use("/api", Routes);
-
+        this.express.use((req, res, next) => {
+            res.setHeader('Access-Control-Allow-Origin', '*');
+            res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, PUT, PATCH, OPTIONS');
+            res.setHeader('Access-Control-Allow-Headers', 'Content-Type, api_key, Authorization'); 
+            res.setHeader('Access-Control-Expose-Headers', 'Content-Range');
+        }); 
+        this.express.use(multer)
         // handle undefined routes
         this.express.use("*", (req, res, next) => {
             res.send("Make sure url is correct!");

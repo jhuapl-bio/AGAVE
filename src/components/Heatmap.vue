@@ -13,6 +13,17 @@
         <b-switch v-model="isSwitched" :disabled="this.referenceSequence.sequence.length <= 0">
                 {{ ( isSwitched ? 'Consensus Sequence' : 'Reference' ) }}
         </b-switch>
+        <!-- <input type="file" id="file" ref="file" v-on:change="handleFileUpload()"/> -->
+        <b-form-file
+          type="file"
+          v-model="customfile"
+          id="customfile"
+          ref="customfile"
+          placeholder="Choose a file or drop it here..."
+          drop-placeholder="Drop file here..."
+        >
+        </b-form-file>
+        <div class="mt-3">Selected file: {{ customfile ? customfile.name : '' }}</div>
       </b-col>
     </b-row>
   </div>
@@ -25,14 +36,16 @@ import Parsing from "@/shared/Parsing";
 import * as d3 from "d3";
 import swal from 'vue-sweetalert2'
 import { BIconArrowReturnRight } from "bootstrap-vue";
-// import { local } from 'd3';
-// import fs from 'file-system'
+import Service from '@/services/service'
+
 
 @Component({})
 export default class Heatmap extends Vue {
 
   private localDataHelper = new LocalDataHelper();
+  private Service= new Service();
   private parsing = new Parsing();
+  
   $refs!: {
     heatmapDiv: HTMLElement;
     heatmapLegend: HTMLElement;
@@ -91,9 +104,21 @@ export default class Heatmap extends Vue {
   onGroupChanged(value: string, oldValue: string) {
     // d3.select("#heatmapDiv").html("");
     this.defineHeatmap();
-    
   }
+  @Watch("customfile")
+  onChangeFile(value: string, oldValue: string) {
+    console.log(value)
+    let formData = new FormData();
+    formData.append('file', value)
+    for (var [key, value] of formData.entries()) { 
+      console.log(key, value);
+    }
+    this.Service.getData(formData)
+  }
+
+
   isSwitched = true;
+  customfile: any = null
   test = null;
   reference_seq: any = [];
   showMenu = false;
@@ -145,6 +170,7 @@ export default class Heatmap extends Vue {
   }
   mounted() {
     this.defineHeatmap();
+    // this.Service.init()
   }
 
   defineHeatmap() {

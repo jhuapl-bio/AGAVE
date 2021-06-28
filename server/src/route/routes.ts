@@ -1,6 +1,8 @@
 import * as bodyParser from "body-parser";
 import * as express from "express";
 import { Logger } from "../logger/logger";
+import * as fs from 'fs';
+
 
 class Routes {
 
@@ -31,23 +33,21 @@ class Routes {
             res.status(200).send({status: 200, message: "Test complete" });
         });
 
-        // request to get all the users by userName
-        this.express.get("/users/:userName", (req, res, next) => {
-            this.logger.info("url:::::" + req.url);
-            const user = this.users.filter(function(user) {
-                if (req.params.userName === user.userName) {
-                    return user;
+        this.express.post("/data/:type", (req: any, res: any, next) => {
+            this.logger.info("testing data type: " + req.params.type);
+            this.logger.info(JSON.stringify(req.body))
+            fs.readFile(req.body, function(err: any, data: any){
+                if (err){
+                    this.logger.console.error(err);
+                    res.status(419).send(err)
+                } else {
+                    const jsondata: any = JSON.parse(data)
+                    this.logger.info("data" + req.body);
+                    res.status(200).send("url:::::::" );        
                 }
-            });
-            res.json(user);
-        });
-
-        // req.body has object of type {firstName:"fnam1",lastName:"lnam1",userName:"username1"}
-        this.express.post("/test/:url", (req: any, res: any, next) => {
-            this.logger.info("url:::::::" + req.data);
-            const data: any = JSON.parse(req.data)
-            res.status(200).send("url:::::::" + data);
-        });
+            })
+            res.status(200).send("url:::::::" );  
+        })
     }
 }
 

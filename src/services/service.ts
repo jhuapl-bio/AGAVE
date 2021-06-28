@@ -4,4 +4,12 @@ export default class Service {
         api.get('/api/test')
         .then(response=> (console.log(response)))
     }
+    public getData(formData: any){
+        api.post('/api/data/json', formData, {
+            headers: {
+                "Content-Type": `multipart/form-data;`,
+        },
+        })
+        .then(response=> (console.log(response)))
+    }
 }
