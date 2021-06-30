@@ -115,8 +115,16 @@ export default class VisualizationOptions extends Vue {
     } else {
         data = (this.localDataHelper.parseJSON(string))
         this.groups = [...new Set(data.map((d: any) => d.group))];
-        if (this.groups.indexOf(this.group) <= -1){
+        if (! this.group || this.group.length == 0){
           this.group = [this.groups[0]]
+        } else {
+          let newgroups: any = []
+          this.group.forEach((d:any)=>{
+            if (this.groups.indexOf(this.group) <= -1){
+              newgroups.push(d)
+            }
+          })
+          this.group  = newgroups
         }
         this.data = data
     } 
