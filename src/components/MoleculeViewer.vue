@@ -43,7 +43,9 @@ interface Residue {
 export default class MoleculeViewer extends Vue {
 
   public viewer: any;
-  public chain_focus: any = null;
+  public chain_focus: any = null 
+  public entity_focus:any = null;
+  
   public available_focus_chains: any[] = []
   public protein: string = "";
   public map_positions:any = {}
@@ -73,7 +75,7 @@ export default class MoleculeViewer extends Vue {
   @Watch('position')
   onPositionChanged(value: number, oldValue: number) {
     this.localPosition = value
-    this.chain_focus = null
+    // this.chain_focus = null
     this.focus()
   }
   
@@ -195,6 +197,8 @@ export default class MoleculeViewer extends Vue {
               }
               this.referenceSequence.sequence = ref_seq
               this.referenceSequence.positions = ref_pos
+              console.log("reference seq", this.referenceSequence)
+              console.log("map postiions", this.map_positions)
             }
           })
         }
@@ -252,11 +256,11 @@ export default class MoleculeViewer extends Vue {
       if (this.localPosition  >= this.map_positions[d].positions[1] 
       && this.localPosition <= this.map_positions[d].positions[3]  ){
         const position = this.determinePosition(this.localPosition,this.map_positions[d].positions[1])
-        if (! this.chain_focus){  
+        if (! this.chain_focus || this.entity_focus != d){  
           this.chain_focus = this.map_positions[d].chains[0]
           this.available_focus_chains = this.map_positions[d].chains
         }
-        
+        this.entity_focus = d
         residue = { chain: this.chain_focus, entity: d, position:  position }
         found = true;
         break;

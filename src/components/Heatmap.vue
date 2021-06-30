@@ -433,7 +433,7 @@ export default class Heatmap extends Vue {
       this.positions = positions
     }
     const min = d3.min($this.positions)
-    const max = d3.max($this.positions)
+    const max = Math.min(this.position_max, d3.max($this.positions))
     this.positions = this.positions.filter((d:any)=>{ return d <= max && d >= min})
     if (this.scrollDirection == 'x'){
       scrollAttr['x'] = this.positions
