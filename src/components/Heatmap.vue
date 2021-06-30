@@ -79,10 +79,12 @@ export default class Heatmap extends Vue {
   }
   @Watch("position_ranges")
   onRangeChange(value: any, oldValue: any) {
+    console.log("position ranges changed")
     this.updateHeatmap(this.cells)
   }
   @Watch("referenceSequence")
   onReferenceSeq(value: any, oldValue: any) {
+    console.log("ref seq changed")
     if (!this.isSwitched){
       this.updateHeatmap(this.cells)
     }
@@ -114,6 +116,7 @@ export default class Heatmap extends Vue {
   
   @Watch("data")
   onDataChanged(value: any, oldValue: any) {
+    console.log("data changed")
     this.defineHeatmap()
   }
   parseError(err: any){
@@ -132,7 +135,6 @@ export default class Heatmap extends Vue {
     var img = new Image();
     const w = this.oversize
     const h = this.height
-    console.log(w, h,"poverside")
     img.width = this.oversize;
     img.height = h;
     const $this = this
@@ -410,6 +412,7 @@ export default class Heatmap extends Vue {
 
   updateHeatmap(cells:any) {
     // Add styling to the heatmap blocks
+    console.log("update heatmap")
     let scrollAttr: any  = { x: null, y: null, marginA: null, marginB: null }    
     const g = this.g
     const $this = this
@@ -469,7 +472,6 @@ export default class Heatmap extends Vue {
         return (i * this.boxHeight ) + this.margin.top;
       })
     );
-    console.log("over", over)
     this.yAxis = d3.axisLeft(this.scaleY)
           .ticks(scrollAttr.y.length);
     this.xAxisT = d3

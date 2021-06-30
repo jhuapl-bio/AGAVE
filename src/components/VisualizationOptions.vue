@@ -56,7 +56,7 @@ export default class VisualizationOptions extends Vue {
   public data:any = null
   private localDataHelper = new LocalDataHelper();
   public customfile: any = null
-  public segment: string = 'HA'
+  public segment: string = 'PB2'
   public segments: Array<string> = ['HA', 'NP', 'NA', 'M', 'PB1', 'PB2', 'NS', 'PA']
   public group: any[] = []
   public groups: Array<any> = []

@@ -48,12 +48,17 @@ export default class MoleculeViewer extends Vue {
     "HA": '4o5n',
     "NP": '1hoc',
     "NA": '2hty',
-    'M1': '5v6g'
+    'M1': '5v6g',
+    'M': '5v6g',
+    'PB1': '6qx3',
+    'PB2': '6euv',
+    'NS': '6qxe',
+    'PA': '2w69'
   }
   
   @Prop({ required: true, default: 55 })
   public position!: string;
-  @Prop({ required: true, default: 'HA' })
+  @Prop({ required: true, default: 'PB2' })
   public segment!: string;
 
   public title: string = "No title found"
@@ -126,7 +131,7 @@ export default class MoleculeViewer extends Vue {
         uniprots.forEach((accession: any)=>{
           if (data[accession].mappings){
             const mapping: any = data[accession].mappings[0]          
-            this.map_positions[mapping.chain_id] = [mapping.start.residue_number, mapping.unp_start - mapping.start.residue_number, mapping.end.residue_number, mapping.unp_end - mapping.start.residue_number +1 ]
+            this.map_positions[mapping.struct_asym_id] = [mapping.start.residue_number, mapping.unp_start - mapping.start.residue_number, mapping.end.residue_number, mapping.unp_end - mapping.start.residue_number +1 ]
           }
           
         })
@@ -162,8 +167,8 @@ export default class MoleculeViewer extends Vue {
             } else {
               this.title = "No title found"
             }
-            const ids: any[]  = chain.chain_id;
-            chain.chain_id.forEach((id:any)=>{
+            const ids: any[]  = chain.struct_asym_id;
+            chain.struct_asym_id.forEach((id:any)=>{
               if (id in this.map_positions){
                 for (let i = this.map_positions[id][1]; i < this.map_positions[id][3]; i++){
                   if (i >= 0){
@@ -182,6 +187,8 @@ export default class MoleculeViewer extends Vue {
         this.reportError(err, "Error in Fetching Reference Info")
       } finally {
         this.queryingReferenceSequence = false;
+        // console.log("reference", this.referenceSequence)
+        // console.log("mappost", this.map_positions)
       }
     }
     
