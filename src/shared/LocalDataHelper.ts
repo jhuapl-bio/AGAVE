@@ -3,7 +3,10 @@ import * as d3 from 'd3'
 interface StringMap { [key: string]: string; }
 
 export default class LocalDataHelper {
-
+  public parseJSON(string: string)
+  {
+    return JSON.parse(string)
+  }
   public async readTSV(filepath: string)
   {
 
