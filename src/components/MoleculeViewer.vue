@@ -197,8 +197,8 @@ export default class MoleculeViewer extends Vue {
               }
               this.referenceSequence.sequence = ref_seq
               this.referenceSequence.positions = ref_pos
-              console.log("reference seq", this.referenceSequence)
-              console.log("map postiions", this.map_positions)
+              // console.log("reference seq", this.referenceSequence)
+              // console.log("map postiions", this.map_positions)
             }
           })
         }

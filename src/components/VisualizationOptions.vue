@@ -64,6 +64,15 @@ export default class VisualizationOptions extends Vue {
   async onChangeFile(value: any, oldValue: any) {
     const $this = this
     const reader = new FileReader()
+    let estimate_segment: any = null
+    try{
+      estimate_segment = value.name.split(".")[0]
+      if (this.segments.indexOf(estimate_segment) > -1){
+        this.segment = estimate_segment
+      }
+    } catch(err){
+      console.log(err)
+    }
     reader.onload = function(event:any) {
       $this.getData(reader.result, 'string')
     }
