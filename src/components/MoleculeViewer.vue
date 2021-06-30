@@ -67,7 +67,7 @@ export default class MoleculeViewer extends Vue {
   
   @Prop({ required: true, default: 55 })
   public position!: string;
-  @Prop({ required: true, default: 'PB2' })
+  @Prop({ required: true, default: 'HA' })
   public segment!: string;
 
   public title: string = "No title found"

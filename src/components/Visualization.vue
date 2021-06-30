@@ -26,8 +26,6 @@
           @changeReferenceSequence="changeReferenceSequence"
           >
         </MoleculeViewer>
-        <!-- <input type="file" id="file" ref="file" v-on:change="handleFileUpload()"/> -->
-        
       </div>
     </div>
   </div>
@@ -51,7 +49,7 @@ export default class Visualization extends Vue {
   public depth_threshold = 0
   public frequency_threshold = 0.2
   public column_width = 6
-  public segment = 'PB2'
+  public segment = 'HA'
   public position = 54
   public data:any = null
   public group: any[] = []
