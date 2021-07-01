@@ -5,22 +5,18 @@
       <b-col sm="12">
         
         <div id="heatmapDiv" ref="heatmapDiv">
-          <p v-if="cells.length < 1">No data available</p>
+          <p v-if="!DataHandler || DataHandler.cells.length < 1">No data available</p>
           <div class="tooltip" id="tooltipHeatmap" style="opacity: 0"></div>
         </div>
       </b-col>
       <b-col sm="12">
         <div id="heatmapLegend" ref="heatmapLegend"></div>
-        <b-switch v-model="isSwitched" :disabled="this.referenceSequence.sequence.length <= 0">
-                {{ ( isSwitched ? 'Consensus Sequence' : 'Reference' ) }}
-        </b-switch>
-        <b-switch v-model="isFlipped" hidden :disabled="!this.data" >
+        <b-switch v-model="isFlipped" hidden :disabled="!this.DataHandler.cells" >
                 {{ ( isFlipped ? 'Flip Axis' : 'Flip Axis' ) }}
         </b-switch>
         <b-button @click="downloadSVG()">Initiate Canvas</b-button>
         <a id='imgId'>Save SVG</a>
-        <b-slider v-model="position_ranges" :min="1" :max="position_max" :step="1" ticks>
-        </b-slider>
+        
       </b-col>
     </b-row>
     <canvas id="mycanvas"></canvas>
@@ -35,6 +31,7 @@ import * as d3 from "d3";
 import swal from 'vue-sweetalert2'
 import { BIconArrowReturnRight } from "bootstrap-vue";
 import * as canvas from 'canvas'
+import DataHandler from "@/shared/DataHandler";
 @Component({})
 export default class Heatmap extends Vue {
 
@@ -47,78 +44,91 @@ export default class Heatmap extends Vue {
     heatmapSVG: HTMLElement;
   };
 
-  @Prop({ required: false, default: 0 })
-  public depth_threshold!: number;
+  // @Prop({ required: false, default: 0 })
+  // public depth_threshold!: number;
 
-  @Prop({ required: true, default: "HA" })
-  public segment!: string;
+  // @Prop({ required: true, default: "HA" })
+  // public segment!: string;
 
-  @Prop({ required: false, default: 0.2 })
-  public frequency_threshold!: number;
+  // @Prop({ required: false, default: 0.2 })
+  // public frequency_threshold!: number;
 
   @Prop({ required: false, default: 6 })
   public column_width!: number;
-
-  @Prop({ required: false, default: 10 })
-  public group!: string;
-
-  @Prop({ required: false, default: { positions: [], sequence: [] } })
-  public referenceSequence!: any;
-
   @Prop({ required: true, default: null })
-  public data!: any;
+  public DataHandler!: DataHandler;
 
-  @Watch("depth_threshold")
-  onDepthChanged(value: number, oldValue: number) {
-    this.updateHeatmap(this.cells)
-    // this.defineHeatmap();
-  }
+  // @Prop({ required: false, default: 10 })
+  // public group!: string;
+
+  // @Prop({ required: false, default: { positions: [], sequence: [] } })
+  // public referenceSequence!: any;
+  // @Prop({ required: true, default: null })
+  // public cells!: any;
+  @Prop({ required: false, default: true })
+  public isSwitched!: any;
+
+  // @Watch("depth_threshold")
+  // onDepthChanged(value: number, oldValue: number) {
+  //   this.updateHeatmap(this.cells)
+  //   // this.defineHeatmap();
+  // }
+  
+  // @Watch("position_ranges")
+  // onRangeChange(value: any, oldValue: any) {
+  //   // console.log("position ranges changed")
+  //   // this.updateHeatmap(this.cells)
+  // }
+  // @Watch("referenceSequence")
+  // onReferenceSeq(value: any, oldValue: any) {
+  //   // console.log("ref seq changed")
+  //   // if (!this.isSwitched){
+  //     // this.updateHeatmap(this.cells)
+  //   // }
+  // }
   @Watch("isSwitched")
-  onDSwitchedChange(value: boolean, oldValue: boolean) {
-    this.updateHeatmap(this.cells)
+  onSwitchChanged(value: number, oldValue: number) {
+    console.log("switched")
+    this.updateHeatmap(this.DataHandler.cells)
   }
-  @Watch("position_ranges")
-  onRangeChange(value: any, oldValue: any) {
-    console.log("position ranges changed")
-    this.updateHeatmap(this.cells)
-  }
-  @Watch("referenceSequence")
-  onReferenceSeq(value: any, oldValue: any) {
-    console.log("ref seq changed")
-    if (!this.isSwitched){
-      this.updateHeatmap(this.cells)
-    }
-  }
-  @Watch("isFlipped")
-  onFlipped(value: number, oldValue: number) {
-    this.scrollDirection = (value ? "y": "x")
+  // @Watch("isFlipped")
+  // onFlipped(value: number, oldValue: number) {
+  //   console.log("is flipped now")
+  //   this.scrollDirection = (value ? "y": "x")
+  //   this.defineHeatmap()
+  // }
+  @Watch("DataHandler", { deep: true })
+  onDataHandlerChange(value: number, oldValue: number) {
+    console.log("data changed", this.DataHandler)
     this.defineHeatmap()
   }
 
-  @Watch("frequency_threshold")
-  onFrequencyChanged(value: number, oldValue: number) {
-    this.updateHeatmap(this.cells)
-    // this.defineHeatmap();
-  }
+  // @Watch("frequency_threshold")
+  // onFrequencyChanged(value: number, oldValue: number) {
+  //   this.updateHeatmap(this.cells)
+  //   // this.defineHeatmap();
+  // }
 
   @Watch("column_width")
   onColWidthChanged(value: number, oldValue: number) {
-    this.updateHeatmap(this.cells)
+    console.log("col width changed")
+    this.updateHeatmap(this.DataHandler.cells)
   }
 
   
 
-  @Watch("group")
-  onGroupChanged(value: string, oldValue: string) {
-    // d3.select("#heatmapDiv").html("");
-    this.defineHeatmap();
-  }
+  // @Watch("group")
+  // onGroupChanged(value: string, oldValue: string) {
+  //   // d3.select("#heatmapDiv").html("");
+  //   // console.log("group changed")
+  //   // this.defineHeatmap();
+  // }
   
-  @Watch("data")
-  onDataChanged(value: any, oldValue: any) {
-    console.log("data changed")
-    this.defineHeatmap()
-  }
+  // @Watch("cells", {deep: true})
+  // onCellsChanged(value: any, oldValue: any) {
+  //   // console.log("cell data  changed")
+  //   this.defineHeatmap()
+  // }
   parseError(err: any){
     console.log(err)
     if (err.toJSON){
@@ -147,7 +157,7 @@ export default class Heatmap extends Vue {
       var ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0, w, h);
       ctx.font = "20px Arial";
-      ctx.fillText($this.segment, w / 2 , $this.margin.top / 2)
+      ctx.fillText($this.DataHandler.segment, w / 2 , $this.margin.top / 2)
       window.URL.revokeObjectURL(url);
       var canvasdata = canvas.toDataURL('image/jpeg');
       var a: any = document.getElementById('imgId');
@@ -158,15 +168,12 @@ export default class Heatmap extends Vue {
     
   }
 
-  isSwitched = true;
+  
   customfile: any = null
   scrollDirection: string = "x"
   partitions = 1
-  position_max=1
-  minrange: number = 1
-  maxrange: number = 1
-  position_ranges: any = [this.minrange,this.maxrange]
-
+  position_max: number = 1
+  position_ranges: number[] = [1,this.position_max]
   test = null;
   reference_seq: any = [];
   showMenu = false;
@@ -190,7 +197,6 @@ export default class Heatmap extends Vue {
   xAxisT: any = null;
   xAxisB: any = null;
   g: any  = null;
-  cells: any[] = [];
   color_range = 4;
   divisionYScale = {};
   yAxisDivision = {};
@@ -214,51 +220,42 @@ export default class Heatmap extends Vue {
     
 
   mounted() {
-    this.defineHeatmap()
+    if (this.DataHandler.cells){
+      this.defineHeatmap()
+    }
   }
 
   defineHeatmap() {
-    this.legendWidth = this.$refs.heatmapLegend.clientWidth;
+    console.log("define heatmap")
+    try {
+      this.legendWidth = this.$refs.heatmapLegend.clientWidth;
+      this.width = this.$refs.heatmapDiv.clientWidth;
+    }catch (err){
+      console.log(err)
+    }
     this.legendHeight = this.chartHeight / 5
-    this.height = Math.min(this.chartHeight);
-    this.width = this.$refs.heatmapDiv.clientWidth;
+    this.height = Math.min(this.chartHeight);    
     const border = this.border;
     const margin = this.margin;
+    
     d3.selectAll("#heatmapSVG").remove()
     d3.select("#overflowDiv").remove()
     d3.selectAll("#heatmapLegend").selectAll("*").remove()
     const segments = ["HA", "M1", "NA", "NP"];
     const $this = this;
-    this.makeHeatmap(this.data)
-
+    this.makeHeatmap(this.DataHandler.cells)
   }
   
-  makeHeatmap(raw_data: any) {
-    let data = raw_data.filter( (d:any) => {
-      return this.group.indexOf(d.group) > -1;
-    })
-    if (data.length < 1){
-      return
-    }
-
-    // Get unique preps in order to calculate y axis
-    let preps: any = [...new Set(data.map((d: any) => d.experiment))];
-    this.preps = preps
-    // Format data into cells
-    let cells: any[] = [];
-    data.forEach((prep:any)=>{
-      prep.residues.forEach((residue:any)=>{
-        
-        cells.push({ unique: [...new Set(residue.counts.map((d: any) => d.aa))], segment:this.segment, max: residue.consensus_aa_count, experiment: prep.experiment, depth: residue.depth, position: +residue.position, total:+residue.depth, count: residue.counts.length, aa: residue.consensus_aa, consensus_count: residue.consensus_aa_count  })
-      })
-    })
-    this.cells = cells
+  makeHeatmap(cells: any) {
+    console.log("make heatmap", this.DataHandler.cells)
     // Get unique positions in order to calculate positions axis
     const position_max: any = d3.max(cells.map((d:any)=>{
       return d.position 
     }));
     this.position_max = position_max
-    
+    // Get unique preps in order to calculate y axis
+    let preps: any = [...new Set(cells.map((d: any) => d.experiment))];
+    this.preps = preps
     const axisPadding = 10
     
     this.position_ranges = [1, position_max]
@@ -407,6 +404,7 @@ export default class Heatmap extends Vue {
       .attr("id", "legendYAxisTitle")
       .attr("font-size", "0.8em")
       .text("Relative Depth of Mutations")
+    
     this.updateHeatmap(cells)
   }
 
@@ -416,7 +414,7 @@ export default class Heatmap extends Vue {
     let scrollAttr: any  = { x: null, y: null, marginA: null, marginB: null }    
     const g = this.g
     const $this = this
-    cells = this.cells.filter((d:any)=>{ return d.position <= this.position_ranges[1] && d.position >= this.position_ranges[0]})
+    cells = this.DataHandler.cells.filter((d:any)=>{ return d.position <= this.position_ranges[1] && d.position >= this.position_ranges[0]})
     if (this.isSwitched){
       const positions_unique = [...new Set(cells.map((d:any)=>{
         return d.aa + "." + d.position
@@ -428,8 +426,8 @@ export default class Heatmap extends Vue {
       this.positions_unique = positions_unique
       this.positions = positions
     } else {
-      this.positions_unique = this.referenceSequence.sequence
-      const positions: any[] = this.referenceSequence.positions
+      this.positions_unique = this.DataHandler.referenceSequence.sequence
+      const positions: any[] = this.DataHandler.referenceSequence.positions
       this.positions = positions
     }
     const min = d3.min($this.positions)
@@ -450,7 +448,6 @@ export default class Heatmap extends Vue {
       scrollAttr.marginA = this.margin.top
       scrollAttr.marginB = this.margin.bottom
     }
-    
     let boxHeight = (this.height - this.margin.top - this.margin.bottom )/ scrollAttr.y.length 
     this.boxHeight = boxHeight;
     this.x.domain([min, max])
@@ -523,10 +520,8 @@ export default class Heatmap extends Vue {
     .attr("width", over)
     .style("fill", "white")
     const blocks = g.selectAll(".block")
-    .data(cells.filter((d:any)=>{
-        return d.position >= min && d.position <= max && this.positions.indexOf(d.position) > -1
-      }), (d:any, i:any)=>{
-        "_"+d.experiment.replaceAll(" ", "_").replaceAll("-", "_") + d.position +d.prep_id+ $this.segment
+    .data(cells, (d:any, i:any)=>{
+        "_"+d.experiment.replaceAll(" ", "_").replaceAll("-", "_") + d.position +d.prep_id+ $this.DataHandler.segment
     })
     .join(
       function (enter: any) {
@@ -643,8 +638,8 @@ export default class Heatmap extends Vue {
   // pretty close to exactly Tom's color code
   calculateColor(d: any) {
 
-   	const depth_thresh = this.depth_threshold
-    const freq_thresh = this.frequency_threshold
+   	const depth_thresh = this.DataHandler.depth_threshold
+    const freq_thresh = this.DataHandler.frequency_threshold
     const max = d.max
     let color = '';
     let colors: string[] = [

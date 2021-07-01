@@ -3,18 +3,15 @@
     <div class="row">
       <div class="col-lg-12 pr-5">
         <VisualizationOptions 
+          :referenceSequence=referenceSequence
           @sliderUpdate="sliderUpdate"/>
         <hr class="solid">
       </div>
-      <div class="col-lg-9 pr-5">      
+      <div class="col-lg-9 pr-5" v-if="DataHandler.cells && DataHandler.cells.length > 0">      
         <Heatmap 
-          :depth_threshold=depth_threshold 
-          :frequency_threshold=frequency_threshold 
           :column_width=column_width 
-          :segment=segment
-          :group=group
-          :referenceSequence=referenceSequence
-          :data=data
+          :DataHandler=DataHandler
+          :isSwitched=isSwitched          
           @changePosition="changePosition"
         >
         </Heatmap>
@@ -23,6 +20,7 @@
         <MoleculeViewer 
           :segment=segment 
           :position=position
+          :DataHandler="DataHandler"
           @changeReferenceSequence="changeReferenceSequence"
           >
         </MoleculeViewer>
@@ -37,6 +35,7 @@ import VisualizationOptions from '@/components/VisualizationOptions.vue'
 import Heatmap from './Heatmap.vue'
 import MoleculeViewer from './MoleculeViewer.vue'
 import LocalDataHelper from "@/shared/LocalDataHelper";
+import DataHandler from "@/shared/DataHandler";
 
 @Component({
   components: {
@@ -51,22 +50,25 @@ export default class Visualization extends Vue {
   public column_width = 6
   public segment = 'HA'
   public position = 54
-  public data:any = null
+  public cells:any = null
   public group: any[] = []
   public customfile: any = null
+  public isSwitched: boolean = true
   public referenceSequence: any = { positions: [], sequence: [] };
   private localDataHelper = new LocalDataHelper();
+  private DataHandler = new DataHandler()
   sliderUpdate(gh: {target: string, value: number}) {
     const target = gh.target
     const value = gh.value
     this.$set(this, target, value)
+    console.log("target: ", target, value)
   }
   
   changePosition(value: number){
     this.position = value
   }
   changeReferenceSequence(value: any){
-    this.referenceSequence = value
+    this.DataHandler.referenceSequence = value
   }  
   
 }

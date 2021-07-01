@@ -29,6 +29,7 @@
 import { Component, Vue, Watch, Prop } from 'vue-property-decorator'
 import axios from 'axios'
 import swal from 'vue-sweetalert2'
+import DataHandler from "@/shared/DataHandler";
 
 interface Residue {
   chain: string
@@ -70,6 +71,10 @@ export default class MoleculeViewer extends Vue {
   @Prop({ required: true, default: 'HA' })
   public segment!: string;
 
+  @Prop({ required: true, default: null })
+  public DataHandler!: DataHandler
+
+  
   public title: string = "No title found"
 
   @Watch('position')
@@ -87,7 +92,7 @@ export default class MoleculeViewer extends Vue {
   }
   @Watch('segment')
   onSegmentChanged(value: number, oldValue: number) {
-    
+    // console.log("new segment", value)
     this.proteinChange(this.protein_per_segment[this.segment])
     // Remove some buttons that break everything
     this.removeButtons();
@@ -129,7 +134,7 @@ export default class MoleculeViewer extends Vue {
       // throw new Error("new err")
       let response: any = await this.getdata(`https://www.ebi.ac.uk/pdbe/graph-api/mappings/uniprot_segments/${options.moleculeId}`)
       this.title = "Fetching..."
-      console.log("Querying API call finished", response)
+      // console.log("Querying API call finished", response)
       this.map_positions = {}
       if (
         response.data && 
