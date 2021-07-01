@@ -29,7 +29,7 @@
 import { Component, Vue, Watch, Prop } from 'vue-property-decorator'
 import axios from 'axios'
 import swal from 'vue-sweetalert2'
-import DataHandler from "@/shared/DataHandler";
+// import DataHandler from "@/shared/DataHandler";
 
 interface Residue {
   chain: string
@@ -71,8 +71,8 @@ export default class MoleculeViewer extends Vue {
   @Prop({ required: true, default: 'HA' })
   public segment!: string;
 
-  @Prop({ required: true, default: null })
-  public DataHandler!: DataHandler
+  // @Prop({ required: true, default: null })
+  // public DataHandler!: DataHandler
 
   
   public title: string = "No title found"

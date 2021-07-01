@@ -20,7 +20,6 @@
         <MoleculeViewer 
           :segment=segment 
           :position=position
-          :DataHandler="DataHandler"
           @changeReferenceSequence="changeReferenceSequence"
           >
         </MoleculeViewer>
@@ -57,11 +56,14 @@ export default class Visualization extends Vue {
   public referenceSequence: any = { positions: [], sequence: [] };
   private localDataHelper = new LocalDataHelper();
   private DataHandler = new DataHandler()
-  sliderUpdate(gh: {target: string, value: number}) {
+  sliderUpdate(gh: {target: string, value: any}) {
     const target = gh.target
     const value = gh.value
     this.$set(this, target, value)
     console.log("target: ", target, value)
+    if (target == 'DataHandler'){
+      this.segment = value.segment
+    }
   }
   
   changePosition(value: number){
