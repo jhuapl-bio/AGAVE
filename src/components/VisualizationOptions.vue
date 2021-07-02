@@ -31,8 +31,8 @@
       </b-field>
     </div>
     <div class="columns">
-      <b-field label="Experiment Consensus" class="column is-4" v-if="DataHandler && DataHandler.consensus_map">
-        <b-select placeholder="Mapped Experiment" v-model="DataHandler.selected_consensus" @change="emitChange($event, { full: false, target: 'selected_consensus' })" 
+      <b-field label="Experiment Consensus"  class="column is-4" v-if="DataHandler && DataHandler.consensus_map">
+        <b-select :disabled="!isSwitched" placeholder="Mapped Experiment" v-model="DataHandler.selected_consensus" @change="emitChange($event, { full: false, target: 'selected_consensus' })" 
                     >
                     <option
                       v-for="option in DataHandler.consensus_map"
