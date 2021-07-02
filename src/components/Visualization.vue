@@ -9,6 +9,7 @@
       </div>
       <div class="col-lg-9 pr-5" v-if="DataHandler.cells && DataHandler.cells.length > 0">      
         <Heatmap 
+          ref="heatmap"
           :column_width=column_width 
           :DataHandler=DataHandler
           :isSwitched=isSwitched          
@@ -53,16 +54,21 @@ export default class Visualization extends Vue {
   public group: any[] = []
   public customfile: any = null
   public isSwitched: boolean = true
-  public referenceSequence: any = { positions: [], sequence: [] };
+  public referenceSequence: any[] = [];
   private localDataHelper = new LocalDataHelper();
   private DataHandler = new DataHandler()
+  $refs!: {
+    heatmap: any;
+  };
   sliderUpdate(gh: {target: string, value: any}) {
     const target = gh.target
     const value = gh.value
     this.$set(this, target, value)
-    console.log("target: ", target, value)
     if (target == 'DataHandler'){
       this.segment = value.segment
+    }
+    if (this.$refs.heatmap){
+      this.$refs.heatmap.changeDataHandler()
     }
   }
   
@@ -70,7 +76,8 @@ export default class Visualization extends Vue {
     this.position = value
   }
   changeReferenceSequence(value: any){
-    this.DataHandler.referenceSequence = value
+    this.DataHandler.updateReference(value)
+    this.sliderUpdate({target: "DataHandler", value: this.DataHandler})
   }  
   
 }

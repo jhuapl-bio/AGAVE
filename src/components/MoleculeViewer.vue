@@ -53,7 +53,7 @@ export default class MoleculeViewer extends Vue {
   public queryingResidueMapping: boolean = false;
   public queryingReferenceSequence: boolean = false;
   public localPosition: number =  55;
-  public referenceSequence: any = { positions: [], sequence: [] };
+  public referenceSequence: any[] = []
   public protein_per_segment: any = {
     "HA": '4o5n',
     "NP": '1hoc',
@@ -86,13 +86,13 @@ export default class MoleculeViewer extends Vue {
   
   @Watch('referenceSequence', { immediate: true, deep: true })
   onRefSeqChange(value: any, oldValue: any) {
-    if (value.positions && value.positions.length > 0){
+    if (value.length > 0){
       this.$emit("changeReferenceSequence", value)
     }
   }
   @Watch('segment')
   onSegmentChanged(value: number, oldValue: number) {
-    // console.log("new segment", value)
+    console.log("new segment", value)
     this.proteinChange(this.protein_per_segment[this.segment])
     // Remove some buttons that break everything
     this.removeButtons();
@@ -167,6 +167,7 @@ export default class MoleculeViewer extends Vue {
             
         })
         this.protein = options.moleculeId
+        // console.log(this.map_positions, "map postiions")
       }
     } catch(err){
       this.reportError(err, "Error in fetching Query Info")
@@ -174,15 +175,14 @@ export default class MoleculeViewer extends Vue {
       this.queryingResidueMapping = false;
       try {
         this.queryingReferenceSequence = true;
-        this.referenceSequence = { positions: [], sequence: [] };
+        this.referenceSequence = []
         let response: any =  await this.getdata(`https://www.ebi.ac.uk/pdbe/search/pdb/select?q=pdb_id:${options.moleculeId}&wt=json`)
         if (
           response.data && 
           response.data.response && 
           response.data.response.docs){
           const chains: any = response.data.response.docs
-          let ref_seq: string[] = []
-          let ref_pos: number[] = []
+          let ref_seq: any[] = []
           chains.forEach((chain: any)=>{
             if (chain.entity_id in this.map_positions){
               if (chain.title) {
@@ -196,12 +196,15 @@ export default class MoleculeViewer extends Vue {
               for (let i = this.map_positions[chain.entity_id].positions[1]; i < this.map_positions[chain.entity_id].positions[3]; i++){
                 if (i >= 0){
                   const position = this.determinePosition(i, this.map_positions[chain.entity_id].positions[1])
-                  ref_seq.push(chain.molecule_sequence.substring(position,position+1) + "." + (i+1))
-                  ref_pos.push(i+1)
+                  let chain_id = chain.molecule_sequence.substring(position,position+1)
+                  ref_seq.push( {
+                    position: i+1,
+                    aa: chain_id
+                  } )
+                  
                 }
               }
-              this.referenceSequence.sequence = ref_seq
-              this.referenceSequence.positions = ref_pos
+              this.referenceSequence = ref_seq
               // console.log("reference seq", this.referenceSequence)
               // console.log("map postiions", this.map_positions)
             }

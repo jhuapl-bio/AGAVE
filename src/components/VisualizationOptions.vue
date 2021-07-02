@@ -30,16 +30,32 @@
         </b-switch>
       </b-field>
     </div>
-    <b-form-file
-          type="file"
-          v-model="customfile"
-          id="customfile"
-          ref="customfile"
-          placeholder="Choose a file or drop it here..."
-          drop-placeholder="Drop file here..."
-        >
-        </b-form-file>
-        <div class="mt-3">Selected file: {{ customfile ? customfile.name : '' }}</div>
+    <div class="columns">
+      <b-field label="Experiment Consensus" class="column is-4" v-if="DataHandler && DataHandler.consensus_map">
+        <b-select placeholder="Mapped Experiment" v-model="DataHandler.selected_consensus" @change="emitChange($event, { full: false, target: 'selected_consensus' })" 
+                    >
+                    <option
+                      v-for="option in DataHandler.consensus_map"
+                      :value="option"
+                      :key="option.experiment">
+                      {{ option.experiment }}
+                    </option>
+        </b-select>
+      </b-field>   
+      <b-field label="Custom File Input" class="column is-8" >
+        
+        <b-form-file
+              type="file"
+              v-model="customfile"
+              id="customfile"
+              ref="customfile"
+              placeholder="Choose a file or drop it here..."
+              drop-placeholder="Drop file here..."
+            >
+            </b-form-file>
+            
+      </b-field>
+    </div>
   </section>
 </template>
 
@@ -89,7 +105,10 @@ export default class VisualizationOptions extends Vue {
       console.log(err)
     }
     reader.onload = function(event:any) {
-      $this.DataHandler.getData(reader.result, 'string')
+      $this.getData(reader.result, 'string').then((d:any)=>{
+        $this.DataHandler.segment = $this.segment
+        $this.$emit('sliderUpdate', {value: $this.DataHandler, target: 'DataHandler'})
+      })
     }
     reader.onerror = function(err:any){
       $this.$swal.fire({
@@ -106,50 +125,54 @@ export default class VisualizationOptions extends Vue {
   public referenceSequence!: any;
 
 
-  change(event: any){
-    console.log(event, "cahnged evented")
-  }
   @Watch('column_width')
   onColWidthChanged(value: number, oldValue: number) {
     this.$emit('sliderUpdate', {value: value, target: 'column_width'})
   }
 
-  emitChange(event: any, params: { full: boolean, target: string} ){
-    console.log(event)
+  async emitChange(event: any, params: { full: boolean, target: string} ){
+    console.log(event, params)
     if (params.target == 'depth_threshold'){
       this.DataHandler.depth_threshold = event
     } else if (params.target == 'segment'){
       this.DataHandler.segment = event
+      await this.getData(`New/grouped/${event}.json`, "file")
     } else if (params.target == 'group'){
-      console.log(event, "group.....")
       this.DataHandler.group = event
     } else if (params.target == 'position_ranges'){
       this.DataHandler.position_ranges = event
+    } else if (params.target == 'selected_consensus'){
+      this.DataHandler.selected_consensus = event
     } else {
       return
     }
     if (params.full){
       this.DataHandler.updateData()
     }
-    console.log("0")
     this.DataHandler.updateCells()
-    console.log("2")
     this.$emit('sliderUpdate', {value: this.DataHandler, target: 'DataHandler'})
-    console.log("3")
   }
 
-
-  async mounted() {
-    // this.$swal.fire({
-    //                 position: 'center',
-    //                 icon: 'error',
-    //                 showConfirmButton:true,
-    //                 title:  "JSON parsing error",
-    //                 text: err
-    //             });
-    await this.DataHandler.getData(`New/grouped/${this.segment}.json`, "file").then((d:any)=>{
+  async getData(value: any, type: string){
+    this.DataHandler.getData(value, type).then((d:any)=>{
+      // this.$emit('sliderUpdate', {value: this.DataHandler, target: 'DataHandler'})
+      return
+    }).catch((err)=>{
+      console.log("errr found.....")
+     this.$swal.fire({
+          position: 'center',
+          icon: 'error',
+          showConfirmButton:true,
+          title:  "JSON parsing error",
+          text: err
+      });
+    })
+  }
+  mounted() {
+    this.getData(`New/grouped/${this.segment}.json`, "file").then((d:any)=>{
       this.$emit('sliderUpdate', {value: this.DataHandler, target: 'DataHandler'})
     })
+    
   }
   
 }
