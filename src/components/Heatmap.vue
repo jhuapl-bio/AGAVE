@@ -362,21 +362,17 @@ export default class Heatmap extends Vue {
     let cells: any = this.DataHandler.cells
     this.position_ranges = this.DataHandler.position_ranges
     if (this.isSwitched){
-      // cells = this.DataHandler.cells.filter((d:any)=>{ return d.position <= this.position_ranges[1] && d.position >= this.position_ranges[0]})
-      // const positions_unique = [...new Set(cells.map((d:any)=>{
-      //   return d.aa + "." + d.position
-      // }))];
-      const positions_unique = this.DataHandler.selected_consensus.residues
-      // console.log(positions_unique, "poss unique")
       // Get unique positions in order to calculate x axis
       const positions: any[] = [...new Set(cells.map((d:any)=>{
         return d.position 
       }))];
-      this.positions_unique = positions_unique
+      const positions_unique = this.DataHandler.selected_consensus.residues
+      this.positions_unique = positions_unique.filter((d:any, i:any)=>{
+        return i+1 >= this.DataHandler.position_ranges[0] && i+1 <= this.DataHandler.position_ranges[1]
+      })
       this.positions = positions
     } else {
       let positions: any = this.DataHandler.referenceSequence
-      // console.log(positions, this.DataHandler.referenceSequence)
       // const positions: any[] = this.DataHandler.referenceSequence.positions
       this.positions = positions.filter((d:any)=>{
         return +d.position >= this.DataHandler.position_ranges[0] && +d.position <= this.DataHandler.position_ranges[1]
