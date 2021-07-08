@@ -31,7 +31,7 @@
       </b-field>
     </div>
     <div class="columns">
-      <b-field label="Experiment Consensus"  class="column is-4" v-if="DataHandler && DataHandler.consensus_map">
+      <b-field label="Axis Experiment Consensus"  class="column is-4" v-if="DataHandler && DataHandler.consensus_map">
         <b-select :disabled="!isSwitched" placeholder="Mapped Experiment" v-model="DataHandler.selected_consensus" @change="emitChange($event, { full: false, target: 'selected_consensus' })" 
                     >
                     <option
@@ -42,7 +42,7 @@
                     </option>
         </b-select>
       </b-field>   
-      <b-field label="Custom File Input" class="column is-8" >
+      <b-field label="Custom Variant File Input" class="column is-8" >
         
         <b-form-file
               type="file"

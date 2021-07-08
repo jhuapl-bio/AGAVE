@@ -14,9 +14,8 @@
         <b-switch v-model="isFlipped" hidden :disabled="!this.DataHandler.cells" >
                 {{ ( isFlipped ? 'Flip Axis' : 'Flip Axis' ) }}
         </b-switch>
-        <b-button @click="downloadSVG()">Initiate Canvas</b-button>
-        <a id='imgId'>Save SVG</a>
-        
+        <b-button @click="downloadSVG()">Save SVG</b-button>
+        <a hidden id='imgId'>Save SVG</a>
       </b-col>
     </b-row>
     <canvas id="mycanvas"></canvas>
@@ -106,8 +105,10 @@ export default class Heatmap extends Vue {
       window.URL.revokeObjectURL(url);
       var canvasdata = canvas.toDataURL('image/jpeg');
       var a: any = document.getElementById('imgId');
+      // document.write('<img src="'+canvasdata+'"/>');
       a.download = "export_" + Date.now() + ".jpeg";
-      a.href=canvasdata;  
+      a.href=canvasdata;
+      a.click()  
     }
     img.src = url
     

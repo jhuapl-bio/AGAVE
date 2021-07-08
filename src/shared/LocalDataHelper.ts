@@ -43,7 +43,6 @@ export default class LocalDataHelper {
 
   public async readJSON(filepath: string)
   {
-    console.log(process.env)
     try{
       let data = await d3.json(`${process.env.BASE_URL}data/${filepath}`)
       return data

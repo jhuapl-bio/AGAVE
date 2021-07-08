@@ -5,8 +5,8 @@
     <div class="router-outer container">
       <div class="router-inner columns pt-4">
         <div class="column is-offset-1-mobile add-padding">
-          <!-- <router-view/> -->
-          <DataView></DataView>
+          <router-view/>
+          <!-- <DataView></DataView> -->
         </div>
       </div>
     </div>
