@@ -9,9 +9,8 @@ export default class LocalDataHelper {
   }
   public async readTSV(filepath: string)
   {
-
     // const data = require("/data/" + filepath)
-    let data = await d3.tsv(`/data/${filepath}`)
+    let data = await d3.tsv(`${process.env.BASE_URL}data/${filepath}`)
     
     return data.slice(0, 2)
 
@@ -44,8 +43,9 @@ export default class LocalDataHelper {
 
   public async readJSON(filepath: string)
   {
+    console.log(process.env)
     try{
-      let data = await d3.json(`/data/${filepath}`)
+      let data = await d3.json(`${process.env.BASE_URL}data/${filepath}`)
       return data
     } catch(err){
       throw err

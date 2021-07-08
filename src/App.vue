@@ -5,7 +5,8 @@
     <div class="router-outer container">
       <div class="router-inner columns pt-4">
         <div class="column is-offset-1-mobile add-padding">
-          <router-view/>
+          <!-- <router-view/> -->
+          <DataView></DataView>
         </div>
       </div>
     </div>
@@ -20,11 +21,13 @@
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator'
 import NavigationBar from './components/NavigationBar.vue'
+import DataView from '@/views/DataView.vue'
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 @Component({
   components: {
-    NavigationBar
+    NavigationBar,
+    DataView
   }
 })
 export default class App extends Vue {
