@@ -11,11 +11,12 @@
       </b-col>
       <b-col sm="12">
         <div id="heatmapLegend" ref="heatmapLegend"></div>
+        <b-button @click="downloadSVG()">Save SVG</b-button>
+        <a hidden id='imgId' target="_blank">Save SVG</a>
         <b-switch v-model="isFlipped" hidden :disabled="!this.DataHandler.cells" >
                 {{ ( isFlipped ? 'Flip Axis' : 'Flip Axis' ) }}
         </b-switch>
-        <b-button @click="downloadSVG()">Save SVG</b-button>
-        <a hidden id='imgId'>Save SVG</a>
+        
       </b-col>
     </b-row>
     <canvas id="mycanvas"></canvas>
@@ -105,7 +106,6 @@ export default class Heatmap extends Vue {
       window.URL.revokeObjectURL(url);
       var canvasdata = canvas.toDataURL('image/jpeg');
       var a: any = document.getElementById('imgId');
-      // document.write('<img src="'+canvasdata+'"/>');
       a.download = "export_" + Date.now() + ".jpeg";
       a.href=canvasdata;
       a.click()  
@@ -179,7 +179,7 @@ export default class Heatmap extends Vue {
     }catch (err){
       console.log(err)
     }
-    this.legendHeight = this.chartHeight / 5
+    this.legendHeight = this.chartHeight / 20
     this.height = Math.min(this.chartHeight);    
     const border = this.border;
     const margin = this.margin;
