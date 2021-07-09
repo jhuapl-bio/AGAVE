@@ -23,21 +23,21 @@ export default class DataHandler {
     consensus_map: any  = null
     selected_consensus: any = {}
     defaultDataList: any = [
-    {
-        id: "New",
-        label: "BARDA",
-        virus: "H3N2",
-        subfolder: "grouped"
-    },
-    {
-        id: "Gaydos",
-        label: "Gaydos",
-        virus: "H1N1",
-        subfolder: "grouped"
-    }
+        {
+            id: "New",
+            label: "BARDA",
+            virus: "H1N1",
+            subfolder: "grouped"
+        },
+        {
+            id: "Gaydos",
+            label: "Gaydos",
+            virus: "H3N2",
+            subfolder: "grouped"
+        }
     ]
     data_selected: any  = null
-
+    subtype: string = "H1N1"
     public  constructor() {
         this.data_selected = this.defaultDataList[0]
     }
@@ -57,6 +57,10 @@ export default class DataHandler {
     public updateSegment(positions: number[])
     {
         this.position_ranges = positions
+    }
+    public updateSubtype(subtype: string)
+    {
+        this.subtype = subtype
     }
     public updateCells(){
         let cells_filtered= this.cells_full.filter((d:any)=>{

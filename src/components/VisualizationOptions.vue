@@ -2,6 +2,34 @@
   <section>
     <!-- <h2 class="subtitle is-3">Local Variants Per Sample</h2> -->
     <div class="columns">
+      <b-field label="Default Data" class="column is-6">
+        <b-select 
+        placeholder="Data" 
+        v-model="DataHandler.data_selected" 
+        @change="emitChange($event, { full: true, target: 'data_selected' })" 
+        >
+          <option
+            v-for="option in DataHandler.defaultDataList"
+            :value="option"
+            :key="option.id">
+            {{ option.label }}
+          </option>
+        </b-select>
+      </b-field>
+      <b-field label="Custom Variant File Input" class="column is-6" >
+        <b-form-file
+              type="file"
+              v-model="customfile"
+              id="customfile"
+              ref="customfile"
+              placeholder="Choose a file or drop it here..."
+              drop-placeholder="Drop file here..."
+            >
+            </b-form-file>
+            
+      </b-field>
+    </div>
+    <div class="columns">
       <b-field label="Depth Threshold" class="column is-3">
         <b-numberinput v-model="depth_threshold" :step="1"  :min="0" :max="100000" controls-position="compact"></b-numberinput>
       </b-field>
@@ -28,30 +56,15 @@
       
     </div>
     <div class="columns">
-       
       <b-field label="Segment" class="column is-narrow">
         <b-select placeholder="Segment" v-model="DataHandler.segment" @change="emitChange($event, { full: true, target: 'segment' })" :options="segments">
         </b-select>
       </b-field>
-      <b-field label="Group" class="column is-3">
+      <b-field label="Group" class="column is-5">
         <b-select placeholder="Group" v-if="DataHandler.group" v-model="DataHandler.group" @change="emitChange($event, { full: true, target: 'group' })" multiple :options="DataHandler.groups">
         </b-select>
       </b-field>
-      <b-field label="Default Data" class="column is-3">
-        <b-select 
-        placeholder="Data" 
-        v-model="DataHandler.data_selected" 
-        @change="emitChange($event, { full: true, target: 'data_selected' })" 
-        >
-          <option
-            v-for="option in DataHandler.defaultDataList"
-            :value="option"
-            :key="option.id">
-            {{ option.label }}
-          </option>
-        </b-select>
-      </b-field>
-      <b-field label="Axis Experiment Consensus"  class="column is-4" v-if="DataHandler && DataHandler.consensus_map">
+      <b-field label="Axis Experiment Consensus"  class="column is-3" v-if="DataHandler && DataHandler.consensus_map">
         <b-select :disabled="!isSwitched" placeholder="Mapped Experiment" v-model="DataHandler.selected_consensus" @change="emitChange($event, { full: false, target: 'selected_consensus' })" 
           >
           <option
@@ -61,19 +74,22 @@
             {{ option.experiment }}
           </option>
         </b-select>
-      </b-field>  
-      <b-field label="Custom Variant File Input" class="column is-5" >
-        <b-form-file
-              type="file"
-              v-model="customfile"
-              id="customfile"
-              ref="customfile"
-              placeholder="Choose a file or drop it here..."
-              drop-placeholder="Drop file here..."
-            >
-            </b-form-file>
-            
+      </b-field> 
+      <b-field label="Subtype" class="column is-3">
+        <b-select 
+        placeholder="Subtype" 
+        v-model="DataHandler.subtype" 
+        @change="emitChange($event, { full: false, target: 'subtype' })" 
+        >
+          <option
+            v-for="option in ['H1N1', 'H3N2']"
+            :value="option"
+            :key="option">
+            {{ option }}
+          </option>
+        </b-select>
       </b-field>
+      
     </div>
   </section>
 </template>
@@ -170,6 +186,7 @@ export default class VisualizationOptions extends Vue {
       await this.getData(`${this.DataHandler.data_selected.id}/${this.DataHandler.data_selected.subfolder}/${event}.json`, "file")
     } else if (params.target == 'data_selected'){
       this.DataHandler.group = []
+      this.DataHandler.updateSubtype(event.virus)
       await this.getData(`${this.DataHandler.data_selected.id}/${this.DataHandler.data_selected.subfolder}/${this.DataHandler.segment}.json`, "file")
     } else if (params.target == 'group' ){
       this.DataHandler.group = event
