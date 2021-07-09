@@ -14,6 +14,11 @@
         </b-input-group>
       </div>
       <div ref="viewer" class="viewer"></div>
+      <b-field label="Molecule Structure" class="column is-narrow pl-0">
+        <b-switch v-model="isSwitched">
+          {{ ( isSwitched ? 'Biological Assembly' : 'Asymmetric Unit' ) }}
+        </b-switch>
+      </b-field>
       <b-field v-if="queryingReferenceSequence" label="Querying Reference Sequence..."></b-field>
       <b-field v-if="queryingResidueMapping" label="Querying Residue Mapping.."></b-field>
       <b-field v-if="chain_focus" :label="'Chains at '+this.localPosition" class="column is-narrow">
@@ -29,7 +34,7 @@
 import { Component, Vue, Watch, Prop } from 'vue-property-decorator'
 import axios from 'axios'
 import swal from 'vue-sweetalert2'
-// import DataHandler from "@/shared/DataHandler";
+import DataHandler from "@/shared/DataHandler";
 
 interface Residue {
   chain: string
@@ -54,16 +59,31 @@ export default class MoleculeViewer extends Vue {
   public queryingReferenceSequence: boolean = false;
   public localPosition: number =  55;
   public referenceSequence: any[] = []
+  public isSwitched = true
+  public assemblyId = "1"
   public protein_per_segment: any = {
-    "HA": '4o5n',
-    "NP": '1hoc',
-    "NA": '2hty',
-    'M1': '5v6g',
-    'M': '5v6g',
-    'PB1': '6qx3',
-    'PB2': '6euv',
-    'NS': '6qxe',
-    'PA': '2w69'
+    "H3N2": {
+      "HA": '4o5n',
+      "NP": '1hoc',
+      "NA": '2hty',
+      'M1': '5v6g',
+      'M': '5v6g',
+      'PB1': '6qx3',
+      'PB2': '6euv',
+      'NS': '6qxe',
+      'PA': '2w69'
+    },
+    "H1N1": {
+      "HA": '3al4',
+      "NP": '5b7b',
+      "NA": '3nss',
+      'M1': '3md2',
+      'M': '3md2',
+      'PB1': '2ztt',
+      'PB2': '2ztt',
+      'NS': '6dgk',
+      'PA': '5des'
+    }
   }
   
   @Prop({ required: true, default: 55 })
@@ -71,10 +91,9 @@ export default class MoleculeViewer extends Vue {
   @Prop({ required: true, default: 'HA' })
   public segment!: string;
 
-  // @Prop({ required: true, default: null })
-  // public DataHandler!: DataHandler
+  @Prop({ required: true, default: null })
+  public DataHandler!: DataHandler
 
-  
   public title: string = "No title found"
 
   @Watch('position')
@@ -90,13 +109,28 @@ export default class MoleculeViewer extends Vue {
       this.$emit("changeReferenceSequence", value)
     }
   }
+
   @Watch('segment')
   onSegmentChanged(value: number, oldValue: number) {
     console.log("new segment", value)
-    this.proteinChange(this.protein_per_segment[this.segment])
-    // Remove some buttons that break everything
-    this.removeButtons();
+    this.proteinChange(this.protein_per_segment[this.DataHandler.subtype][this.segment])
   }
+
+  @Watch('DataHandler.subtype')
+  onDataChanged(value: any, oldValue: any){
+    this.proteinChange(this.protein_per_segment[value][this.segment])
+  }
+
+  @Watch('isSwitched')
+  onSwitchToggled(value: any, oldValue: any) {
+    if(value === true) {
+      this.assemblyId = "1"
+    } else {
+      this.assemblyId = "preffered"
+    }
+    this.proteinChange(this.protein_per_segment[this.DataHandler.subtype][this.segment])
+  }
+
   parseError(err: any){
     console.log(err)
     if (err.toJSON){
@@ -105,16 +139,21 @@ export default class MoleculeViewer extends Vue {
       return  err
     } 
   }
+
   proteinChange(value: string){
     this.chain_focus = null
     const options: any= {
       moleculeId: value,
+      assemblyId: this.assemblyId,
       hideControls: true,
       bgColor: {r:255, g:255, b:255}
     }
     this.queryAPI(options)
     this.viewer.visual.update(options)
+    // Remove some buttons that break everything
+    this.removeButtons();
   }
+
   reportError(err:any, title: string){
     const error = this.parseError(err) 
     this.$swal.fire({
@@ -124,8 +163,8 @@ export default class MoleculeViewer extends Vue {
       title:  title,
       text: error
     });
-    
   }
+
   async queryAPI(options:any){
     let error: any = null
     try {
@@ -216,11 +255,8 @@ export default class MoleculeViewer extends Vue {
         this.queryingReferenceSequence = false;
       }
     }
-    
-    
-    
-    
   }
+
   async make_pdbemolstar(options: any){
     // this object is being imported in index.html so ignore the syntax error it throws
     // @ts-ignore
@@ -229,25 +265,30 @@ export default class MoleculeViewer extends Vue {
     // Remove some buttons that break everything
     this.removeButtons();
   }
+
   async getdata(string:string){
     let response = await axios
       .get(string)
     return response
   }
+
   async mounted() {
     // Available options here: https://github.com/PDBeurope/pdbe-molstar/wiki/1.-PDBe-Molstar-as-JS-plugin
     // Our H3N2 HA protein is 4o5n and our H1N1 HA protein is 3lzg
     const options: any= {
-      moleculeId: this.protein_per_segment[this.segment],
+      moleculeId: this.protein_per_segment[this.DataHandler.subtype][this.segment],
+      assemblyId: this.assemblyId,
       hideControls: true,
       bgColor: {r:255, g:255, b:255}
     }
     this.make_pdbemolstar(options)
     this.queryAPI(options)
   }
+
   determinePosition(localPosition: number, mapPosition: number){
     return localPosition - mapPosition
   }
+
   // Example of focus ability. In the future let's rig this to the d3 heatmap so that when an amino acid is clicked, the molecule focuses on it
   focus() {
     this.viewer.visual.clearSelection();
@@ -295,11 +336,11 @@ export default class MoleculeViewer extends Vue {
 
   private removeButtons() {
     // TODO: find better way to do this than directly accessing the DOM
-    const button1 = document.querySelector('[title="Toggle Controls Panel"]')
+    // const button1 = document.querySelector('[title="Toggle Controls Panel"]')
     const button2 = document.querySelector('[title="Toggle Expanded Viewport"]')
-    if(button1){
-      button1.remove()
-    }
+    // if(button1){
+    //   button1.remove()
+    // }
     if(button2){
       button2.remove()
     }

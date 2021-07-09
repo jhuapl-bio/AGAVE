@@ -2,28 +2,32 @@
   <section>
     <!-- <h2 class="subtitle is-3">Local Variants Per Sample</h2> -->
     <div class="columns">
-      <b-field label="Depth Threshold" class="column is-3">
+      <b-field label="Depth Threshold" class="column is-narrow">
         <b-numberinput v-model="DataHandler.depth_threshold" :step="1" @change="emitChange($event, { full: false, target: 'depth_threshold' })" :min="0" :max="100000" controls-position="compact"></b-numberinput>
       </b-field>
       <!-- <b-field label="Frequency Threshold" class="column is-narrow"> -->
         <!-- <b-numberinput v-model="frequency_threshold" :step=".05" :min="0" :max="1.0" controls-position="compact"></b-numberinput> -->
       <!-- </b-field> -->
-      <b-field label="Column Width" class="column is-3">
+      <b-field label="Column Width" class="column is-narrow">
         <b-numberinput v-model="column_width" :step="1" :min="1" :max="100000" controls-position="compact"></b-numberinput>
       </b-field>
       <b-field label="Position Ranges" class="column is-2">
         <b-slider v-model="DataHandler.position_ranges" y :min="1" :max="DataHandler.position_max" @change="emitChange($event, { full: false, target: 'position_ranges' })" :step="1" ticks>
         </b-slider>
       </b-field>
-      <b-field label="Sort" class="column is-2">
-        <b-switch v-model="sortBy" >
+      <b-field label="Sort" class="column is-narrow">
+        <b-switch v-model="sortBy" class="mt-2">
           {{ ( sortBy ? 'Name' : 'Time' ) }}
         </b-switch>
       </b-field>
-      <b-field label="Axis labels" class="column is-2">
-        <b-switch v-model="isSwitched" >
+      <b-field label="Axis labels" class="column is-narrow">
+        <b-switch v-model="isSwitched" class="mt-2">
           {{ ( isSwitched ? 'Consensus' : 'Reference' ) }}
         </b-switch>
+      </b-field>
+      <b-field label="Flu A Subtype" class="column is-narrow">
+        <b-select placeholder="Subtype" v-model="DataHandler.subtype" @change="emitChange($event, { full: true, target: 'subtype'})" :options="subtypes">
+        </b-select>
       </b-field>
       
     </div>
@@ -37,7 +41,7 @@
         <b-select placeholder="Group" v-model="DataHandler.group" @change="emitChange($event, { full: true, target: 'group' })" multiple :options="DataHandler.groups">
         </b-select>
       </b-field>
-      <b-field label="Axis Experiment Consensus"  class="column is-4" v-if="DataHandler && DataHandler.consensus_map">
+      <b-field label="Axis Experiment Consensus"  class="column is-3" v-if="DataHandler && DataHandler.consensus_map">
         <b-select :disabled="!isSwitched" placeholder="Mapped Experiment" v-model="DataHandler.selected_consensus" @change="emitChange($event, { full: false, target: 'selected_consensus' })" 
                     >
                     <option
@@ -83,9 +87,11 @@ export default class VisualizationOptions extends Vue {
   public customfile: any = null
   public segment: string = 'HA'
   public segments: Array<string> = ['HA', 'NP', 'NA', 'M', 'PB1', 'PB2', 'NS', 'PA']
+  public subtypes: Array<string> = ['H1N1', 'H3N2']
   public group: any[] = []
   public groups: Array<any> = []
   public isSwitched: boolean = true
+  public isH1N1: boolean = true
   public sortBy: boolean = true
   minrange: number = 1
   maxrange: number = 1
@@ -153,6 +159,8 @@ export default class VisualizationOptions extends Vue {
       this.DataHandler.position_ranges = event
     } else if (params.target == 'selected_consensus'){
       this.DataHandler.selected_consensus = event
+    } else if (params.target == 'subtype'){
+      this.DataHandler.subtype = event
     } else {
       return
     }

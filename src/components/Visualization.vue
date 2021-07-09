@@ -22,6 +22,7 @@
         <MoleculeViewer 
           :segment=segment 
           :position=position
+          :DataHandler=DataHandler
           @changeReferenceSequence="changeReferenceSequence"
           >
         </MoleculeViewer>

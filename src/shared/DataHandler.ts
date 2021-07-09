@@ -22,6 +22,7 @@ export default class DataHandler {
     position_max: any = 1
     consensus_map: any  = null
     selected_consensus: any = {}
+    subtype: string = "H1N1"
     public  constructor() {
     }
     public updateReference(referenceSequence: any){
@@ -40,6 +41,10 @@ export default class DataHandler {
     public updateSegment(positions: number[])
     {
         this.position_ranges = positions
+    }
+    public updateSubtype(subtype: string)
+    {
+        this.subtype = subtype
     }
     public updateCells(){
         let cells_filtered= this.cells_full.filter((d:any)=>{
