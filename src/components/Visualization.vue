@@ -13,7 +13,8 @@
           :column_width=column_width 
           :DataHandler=DataHandler
           :isSwitched=isSwitched  
-          :sortBy=sortBy        
+          :sortBy=sortBy      
+            
           @changePosition="changePosition"
         >
         </Heatmap>

@@ -41,14 +41,16 @@ export default class LocalDataHelper {
 
   }
 
-  public async readJSON(filepath: string)
+  public readJSON(filepath: string)
   {
-    try{
-      let data = await d3.json(`${process.env.BASE_URL}data/${filepath}`)
-      return data
-    } catch(err){
-      throw err
-    }
+    return new Promise<void>(function(resolve,reject){
+      d3.json(`${process.env.BASE_URL}data/${filepath}`).then((data:any)=>{
+        resolve(data)
+      }).catch((error)=>{
+        console.log("error")
+        reject(error)
+      })
+    })
 
     // Tom's D3 code for parsing data before consuming it. This could be useful?
 

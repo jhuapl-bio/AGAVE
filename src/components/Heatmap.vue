@@ -6,7 +6,21 @@
         
         <div id="heatmapDiv" ref="heatmapDiv">
           <p v-if="!DataHandler || DataHandler.cells.length < 1">No data available</p>
-          <div class="tooltip" id="tooltipHeatmap" style="opacity: 0"></div>
+          <div class="tooltip"  id="tooltipHeatmap" style="opacity: 0; font-size: 12px; display:block">
+            <div  id="tooltipcontent"></div>
+            <b-table  striped hover :items="tooltiptable"
+            :fields="[
+              {
+                key: 'aa',
+                label: 'AA'
+              },
+              {
+                key: 'proportion',
+                label: 'Proportion',
+              },
+            ]"
+            ></b-table>
+          </div>
         </div>
       </b-col>
       <b-col sm="12">
@@ -60,16 +74,7 @@ export default class Heatmap extends Vue {
     console.log("switched")
     this.updateHeatmap()
   }
-  // @Watch("isFlipped")
-  // onFlipped(value: number, oldValue: number) {
-  //   console.log("is flipped now")
-  //   this.scrollDirection = (value ? "y": "x")
-  //   this.defineHeatmap()
-  // }
-  // @Watch("DataHandler", { deep: true })
-  // onDataHandlerChange(value: number, oldValue: number) {
-  //   console.log("data changed")
-  // }
+ 
   changeDataHandler(){
     this.defineHeatmap()
   }
@@ -129,6 +134,7 @@ export default class Heatmap extends Vue {
   reference_seq: any = [];
   showMenu = false;
   msg = "Hello";
+  tooltiptable: any = [];
   height = 900;
   boxHeight = 0;
   width = 900;
@@ -539,8 +545,10 @@ export default class Heatmap extends Vue {
                     "_"+u.experiment.replaceAll(" ", "_").replaceAll("-", "_") + u.position 
                 )
                 .style("fill", "yellow");
+
+                const ratio: number = (u.max / u.depth)
+
                 d3.select("#tooltipHeatmap")
-                  .html(`Pos: ${u.position}<br> Experiment: ${u.experiment}<br>Depth: ${u.depth}<br>Unique AA: ${u.unique}<br>Total: ${u.total}<br> Consensus Residue: ${u.aa}<br>Consensus / Total: ${u.max} / ${u.depth} ${( !$this.isSwitched ? `<br>Ref. Residue: ${$this.positions_unique[$this.positions.indexOf(u.position)]}`: '')} `)
                   .style(
                     "left",
                     () => {
@@ -552,10 +560,24 @@ export default class Heatmap extends Vue {
                     "top",
                     () => {
                       const h: any = (d3.select("#tooltipHeatmap").node() ? (d3.select("#tooltipHeatmap").node() as any).getBoundingClientRect().height : 0 )
-                      return (d3.pointer(event, $this.svg.node() )[1] - h ) + "px"
+                      return (d3.pointer(event, $this.svg.node() )[1] -h / 2  ) + "px"
                     }
                   )
-                  .style("opacity", "1");
+                  .style("opacity", "1").select("#tooltipcontent")
+                  .html(`Pos: ${u.position}<br>
+                  Experiment: ${u.experiment}<br>
+                  Depth: ${u.depth}<br>
+                  Total: ${u.total}<br>
+                  Consensus Residue: ${u.aa}<br>
+                  Consensus / Total: ${ratio.toFixed(3)} ${( !$this.isSwitched ? `<br>Ref. Residue: ${$this.positions_unique[$this.positions.indexOf(u.position)]}`: '')} `)
+                  $this.tooltiptable = u.unique.map((d:any)=>{
+                    if (d.aa == u.aa){
+                      d._rowVariant = 'info'
+                    } else if (ratio <= d.proportion){
+                      d._rowVariant = 'danger'
+                    }
+                    return d
+                  })
               })
               .on("mouseleave", (d: any, u: any) => {
                 d3.select(
