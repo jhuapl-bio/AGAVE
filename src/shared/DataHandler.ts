@@ -4,7 +4,7 @@ import LocalDataHelper from "@/shared/LocalDataHelper";
 interface StringMap { [key: string]: string; }
 
 export default class DataHandler {
-
+    sort: boolean = true
     referenceSequence: number[] = []
     position_ranges: number[] = []
     xvalues: any[] = []
@@ -63,10 +63,8 @@ export default class DataHandler {
             cells.push({ unique: [...new Set(residue.counts.map((d: any) => d.aa))], segment:this.segment, max: residue.consensus_aa_count, experiment: prep.experiment, depth: residue.depth, position: +residue.position, total:+residue.depth, count: residue.counts.length, aa: residue.consensus_aa, consensus_count: residue.consensus_aa_count  })
             })
         })
-        console.log(consensus_map, data)
         this.consensus_map = consensus_map
         this.selected_consensus = this.consensus_map[0]
-        console.log("total max", this.consensus_map, this.selected_consensus)
         const min: any = d3.min(cells.map((d:any)=>{return +d.position}))
         const max: any = d3.max(cells.map((d:any)=>{return +d.position}))
         this.position_max = max
@@ -91,6 +89,7 @@ export default class DataHandler {
                     this.group = newgroups
                 }
                 this.raw_data = data
+                console.log(this.raw_data)
                 this.updateData()
                 this.updateCells()
             } else {

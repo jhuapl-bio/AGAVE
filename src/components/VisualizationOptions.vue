@@ -2,35 +2,41 @@
   <section>
     <!-- <h2 class="subtitle is-3">Local Variants Per Sample</h2> -->
     <div class="columns">
+      <b-field label="Depth Threshold" class="column is-3">
+        <b-numberinput v-model="DataHandler.depth_threshold" :step="1" @change="emitChange($event, { full: false, target: 'depth_threshold' })" :min="0" :max="100000" controls-position="compact"></b-numberinput>
+      </b-field>
+      <!-- <b-field label="Frequency Threshold" class="column is-narrow"> -->
+        <!-- <b-numberinput v-model="frequency_threshold" :step=".05" :min="0" :max="1.0" controls-position="compact"></b-numberinput> -->
+      <!-- </b-field> -->
+      <b-field label="Column Width" class="column is-3">
+        <b-numberinput v-model="column_width" :step="1" :min="1" :max="100000" controls-position="compact"></b-numberinput>
+      </b-field>
+      <b-field label="Position Ranges" class="column is-2">
+        <b-slider v-model="DataHandler.position_ranges" y :min="1" :max="DataHandler.position_max" @change="emitChange($event, { full: false, target: 'position_ranges' })" :step="1" ticks>
+        </b-slider>
+      </b-field>
+      <b-field label="Sort" class="column is-2">
+        <b-switch v-model="sortBy" >
+          {{ ( sortBy ? 'Name' : 'Time' ) }}
+        </b-switch>
+      </b-field>
+      <b-field label="Axis labels" class="column is-2">
+        <b-switch v-model="isSwitched" >
+          {{ ( isSwitched ? 'Consensus' : 'Reference' ) }}
+        </b-switch>
+      </b-field>
+      
+    </div>
+    <div class="columns">
+       
       <b-field label="Segment" class="column is-narrow">
         <b-select placeholder="Segment" v-model="DataHandler.segment" @change="emitChange($event, { full: true, target: 'segment' })" :options="segments">
-          
         </b-select>
       </b-field>
       <b-field label="Group" class="column is-3">
         <b-select placeholder="Group" v-model="DataHandler.group" @change="emitChange($event, { full: true, target: 'group' })" multiple :options="DataHandler.groups">
         </b-select>
       </b-field>
-      <b-field label="Depth Threshold" class="column is-2">
-        <b-numberinput v-model="DataHandler.depth_threshold" :step="1" @change="emitChange($event, { full: false, target: 'depth_threshold' })" :min="0" :max="100000" controls-position="compact"></b-numberinput>
-      </b-field>
-      <!-- <b-field label="Frequency Threshold" class="column is-narrow"> -->
-        <!-- <b-numberinput v-model="frequency_threshold" :step=".05" :min="0" :max="1.0" controls-position="compact"></b-numberinput> -->
-      <!-- </b-field> -->
-      <b-field label="Column Width" class="column is-2">
-        <b-numberinput v-model="column_width" :step="1" :min="1" :max="100000" controls-position="compact"></b-numberinput>
-      </b-field>
-      <b-field label="Position Ranges" class="column is-3">
-        <b-slider v-model="DataHandler.position_ranges" y :min="1" :max="DataHandler.position_max" @change="emitChange($event, { full: false, target: 'position_ranges' })" :step="1" ticks>
-        </b-slider>
-      </b-field>
-      <b-field label="Axis labels" class="column is-2">
-        <b-switch v-model="isSwitched" >
-          {{ ( isSwitched ? 'Consensus Sequence' : 'Reference' ) }}
-        </b-switch>
-      </b-field>
-    </div>
-    <div class="columns">
       <b-field label="Axis Experiment Consensus"  class="column is-4" v-if="DataHandler && DataHandler.consensus_map">
         <b-select :disabled="!isSwitched" placeholder="Mapped Experiment" v-model="DataHandler.selected_consensus" @change="emitChange($event, { full: false, target: 'selected_consensus' })" 
                     >
@@ -41,9 +47,8 @@
                       {{ option.experiment }}
                     </option>
         </b-select>
-      </b-field>   
-      <b-field label="Custom Variant File Input" class="column is-8" >
-        
+      </b-field>  
+      <b-field label="Custom Variant File Input" class="column is-5" >
         <b-form-file
               type="file"
               v-model="customfile"
@@ -81,6 +86,7 @@ export default class VisualizationOptions extends Vue {
   public group: any[] = []
   public groups: Array<any> = []
   public isSwitched: boolean = true
+  public sortBy: boolean = true
   minrange: number = 1
   maxrange: number = 1
   position_max: any =1
@@ -90,6 +96,10 @@ export default class VisualizationOptions extends Vue {
   @Watch("isSwitched")
   onSwitchedChange(value: boolean, oldValue: boolean) {
     this.$emit('sliderUpdate', {value: value, target: 'isSwitched'})
+  }
+  @Watch("sortBy")
+  onSortByChange(value: boolean, oldValue: boolean) {
+    this.$emit('sliderUpdate', {value: value, target: 'sortBy'})
   }
   @Watch("customfile")
   async onChangeFile(value: any, oldValue: any) {

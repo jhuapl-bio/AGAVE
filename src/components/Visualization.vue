@@ -12,7 +12,8 @@
           ref="heatmap"
           :column_width=column_width 
           :DataHandler=DataHandler
-          :isSwitched=isSwitched          
+          :isSwitched=isSwitched  
+          :sortBy=sortBy        
           @changePosition="changePosition"
         >
         </Heatmap>
@@ -54,6 +55,7 @@ export default class Visualization extends Vue {
   public group: any[] = []
   public customfile: any = null
   public isSwitched: boolean = true
+  public sortBy: boolean = true
   public referenceSequence: any[] = [];
   private localDataHelper = new LocalDataHelper();
   private DataHandler = new DataHandler()
@@ -66,10 +68,11 @@ export default class Visualization extends Vue {
     this.$set(this, target, value)
     if (target == 'DataHandler'){
       this.segment = value.segment
+      if (this.$refs.heatmap){
+        this.$refs.heatmap.changeDataHandler()
+      }
     }
-    if (this.$refs.heatmap){
-      this.$refs.heatmap.changeDataHandler()
-    }
+    
   }
   
   changePosition(value: number){

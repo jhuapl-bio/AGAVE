@@ -49,9 +49,14 @@ export default class Heatmap extends Vue {
   public DataHandler!: DataHandler;
   @Prop({ required: false, default: true })
   public isSwitched!: any;
-
+  @Prop({ required: false, default: true })
+  public sortBy!: any;
+  @Watch("sortBy")
+  onSortByChanged(value: boolean, oldValue: boolean) {
+    this.updateHeatmap()
+  }
   @Watch("isSwitched")
-  onSwitchChanged(value: number, oldValue: number) {
+  onSwitchChanged(value: boolean, oldValue: boolean) {
     console.log("switched")
     this.updateHeatmap()
   }
@@ -421,6 +426,21 @@ export default class Heatmap extends Vue {
     this.scaleX
       .domain(scrollAttr.x)
       .range([scrollAttr.marginA, over - scrollAttr.marginB]);
+    // console.log("scroll y old", scrollAttr.y)
+    if (! this.sortBy){
+      try{
+        scrollAttr.y = scrollAttr.y.sort((a: any, b:any) => {
+          let datea = a.split("-")
+          let dateb = b.split("-")
+          return datea[datea.length -1].localeCompare(dateb[dateb.length -1])
+        })
+      } catch(err){
+        console.log(err)
+        scrollAttr.y = scrollAttr.y.sort()
+      }
+    } else {
+      scrollAttr.y = scrollAttr.y.sort()
+    }
     this.scaleY.domain(scrollAttr.y).range(
       scrollAttr['y'].map((d: any, i: number) => {
         const spacing = this.boxHeight / 2;
@@ -429,7 +449,7 @@ export default class Heatmap extends Vue {
     );
     this.yAxis = d3.axisLeft(this.scaleY)
           .ticks(scrollAttr.y.length);
-    // console.log("scaleX", this.scaleX.domain())
+    // console.log("scaleY", this.scaleY.domain())
     // const difference = this.positions_unique.length - this.positions.length
     this.xAxisT = d3
       .axisTop(this.scaleX)
