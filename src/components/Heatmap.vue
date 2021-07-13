@@ -309,6 +309,7 @@ export default class Heatmap extends Vue {
       .attr("stroke-width", 2)
       .attr("stroke", "#000")
       const fract = (u + 3.5 ) / 3.5 
+
       d3.selectAll(".block")
       .style("fill", (block:any, i:any)=>{
         if (this.getFrac(block) >= fract){
@@ -545,9 +546,7 @@ export default class Heatmap extends Vue {
                     "_"+u.experiment.replaceAll(" ", "_").replaceAll("-", "_") + u.position 
                 )
                 .style("fill", "yellow");
-
                 const ratio: number = (u.max / u.depth)
-
                 d3.select("#tooltipHeatmap")
                   .style(
                     "left",
@@ -664,7 +663,7 @@ export default class Heatmap extends Vue {
       // there is enough data at this point, but zero mutations: total >= depth_thresh; wt = total
       color = colors[2]
 
-    } else if ( max != d.total && d.total < depth_thresh && (1-max/d.total) >= freq_thresh ) {
+    } else if ( (max != d.total && d.total < depth_thresh && (1-max/d.total) >= freq_thresh ) || max == d.total && d.total < depth_thresh ) {
       // there is little data at this point, but a lot of mutations: total < depth_thresh; 1-wt/total > freq_thresh
       color = colors[3]
 
