@@ -1,6 +1,6 @@
 <template>
-  <div class="columns mb-6">
-    <div class="column is-12">
+  <div class="col-lg-12 pb-1">
+    <div class="">
       <b-field :label="this.title"></b-field>
       <div >
         <b-input-group prepend="PDB ID" class="mt-3">
@@ -26,6 +26,12 @@
         </b-select>
       </b-field>
     </div>
+    <div class="col-lg-12 pb-1">
+        <BindingSites 
+          @siteHover="siteHover" 
+          :chains=chains>
+        </BindingSites>
+    </div>
   </div>
 </template>
 
@@ -35,7 +41,7 @@ import { Component, Vue, Watch, Prop } from 'vue-property-decorator'
 import axios from 'axios'
 import swal from 'vue-sweetalert2'
 import DataHandler from "@/shared/DataHandler";
-
+import BindingSites from '@/components/BindingSites.vue'
 interface Residue {
   chain: string
   position: number
@@ -44,6 +50,7 @@ interface Residue {
 
 @Component({
   components: {
+    BindingSites
   }
 })
 export default class MoleculeViewer extends Vue {
@@ -61,6 +68,7 @@ export default class MoleculeViewer extends Vue {
   public referenceSequence: any[] = []
   public isSwitched = true
   public assemblyId = "1"
+  public chains: any = {id: null,  entities: [] };
   public protein_per_segment: any = {
     "H3N2": {
       "HA": '4o5n',
@@ -130,7 +138,13 @@ export default class MoleculeViewer extends Vue {
     }
     this.proteinChange(this.protein_per_segment[this.DataHandler.subtype][this.segment])
   }
-
+  siteHover(item: any){
+    this.localPosition = item.endIndex + this.map_positions[item.entity].positions[1] 
+    this.focus()
+    item.position  = this.localPosition
+    this.$emit("siteHover", item)
+  }
+  
   parseError(err: any){
     console.log(err)
     if (err.toJSON){
@@ -182,9 +196,15 @@ export default class MoleculeViewer extends Vue {
         let data: any = response.data[options.moleculeId].UniProt;
         const uniprots = Object.keys(response.data[options.moleculeId].UniProt)
         let sum = 1;
+        
+
         uniprots.forEach((accession: any)=>{
           if (data[accession].mappings){
             const mappings: any = data[accession].mappings
+            this.chains = {
+              id: options.moleculeId,
+              entities: [...new Set(mappings.map((d: any) => d.entity_id))]
+            }
             mappings.forEach((mapping:any)=>{
               if (! this.map_positions.hasOwnProperty(mapping.entity_id)){
                 this.map_positions[mapping.entity_id] = { chains: [], positions: []}
@@ -244,8 +264,6 @@ export default class MoleculeViewer extends Vue {
                 }
               }
               this.referenceSequence = ref_seq
-              // console.log("reference seq", this.referenceSequence)
-              // console.log("map postiions", this.map_positions)
             }
           })
         }
@@ -256,7 +274,7 @@ export default class MoleculeViewer extends Vue {
       }
     }
   }
-
+  
   async make_pdbemolstar(options: any){
     // this object is being imported in index.html so ignore the syntax error it throws
     // @ts-ignore

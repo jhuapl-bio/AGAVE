@@ -309,7 +309,6 @@ export default class Heatmap extends Vue {
       .attr("stroke-width", 2)
       .attr("stroke", "#000")
       const fract = (u + 3.5 ) / 3.5 
-
       d3.selectAll(".block")
       .style("fill", (block:any, i:any)=>{
         if (this.getFrac(block) >= fract){
@@ -547,6 +546,8 @@ export default class Heatmap extends Vue {
                 )
                 .style("fill", "yellow");
                 const ratio: number = (u.max / u.depth)
+                $this.focusColumn(u.position, false)
+
                 d3.select("#tooltipHeatmap")
                   .style(
                     "left",
@@ -587,6 +588,7 @@ export default class Heatmap extends Vue {
                 .style("fill", (d: any) => {
                   return $this.calculateColor(d)
                 });
+                $this.unfocusColumn(u.position)
                 d3.select("#tooltipHeatmap").style("opacity", "0");
               });
           },
@@ -613,9 +615,37 @@ export default class Heatmap extends Vue {
             return exit.remove()
           }
         )
-
-
-      
+  }
+  focusColumn(position: any, focus: boolean){
+    // const blocks: any = d3.selectAll(".block").filter((d:any)=>{
+    //   return d.position == position
+    // })
+    // blocks.classed("focusedColumn", true)
+    let scaleXpost: any = this.scaleX(position)
+    let listScales: any[] = [scaleXpost, scaleXpost + this.boxWidth] 
+    d3.selectAll(".focus").remove()
+    let minMax: any[] = d3.extent(this.scaleY.range())
+    this.g.selectAll(".focus").data(listScales).enter().append("line")
+    .attr("x1", (d:any)=>{return d})
+    .attr("x2",(d:any)=>{return d})
+    .attr("y1", minMax[0] )
+    .style("stroke", "black")
+    .style("stroke-width", 0.5)
+    .attr("y2", this.boxHeight + minMax[1] )
+    .attr("class", "focus")
+    if (focus){
+      let obj: any = document.querySelector("#overflowDiv")
+      if (obj){
+        let post: any = this.scaleX(position.toString())
+        obj.scrollLeft = post - this.width/2
+      }
+    }
+  }
+  unfocusColumn(position:number){
+    // d3.selectAll(".block").filter((d:any)=>{
+    //   return d.position == position
+    // }).classed("focusedColumn", false)
+    d3.select("#focus").remove()
   }
   frac2Color(frac: number){
     let color = '';

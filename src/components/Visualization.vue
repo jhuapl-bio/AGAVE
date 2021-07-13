@@ -7,23 +7,24 @@
           @sliderUpdate="sliderUpdate"/>
         <hr class="solid">
       </div>
-      <div class="col-lg-9 pr-5" v-if="DataHandler.cells && DataHandler.cells.length > 0">      
+      <div class="col-lg-8 pr-5" v-if="DataHandler.cells && DataHandler.cells.length > 0">      
         <Heatmap 
           ref="heatmap"
           :column_width=column_width 
           :DataHandler=DataHandler
           :isSwitched=isSwitched  
           :sortBy=sortBy      
-            
+          
           @changePosition="changePosition"
         >
         </Heatmap>
       </div>
-      <div class="col-lg-3 pb-1">
+      <div class="col-lg-4 pb-1">
         <MoleculeViewer 
           :segment=segment 
           :position=position
           :DataHandler=DataHandler
+          @siteHover="siteHover"  
           @changeReferenceSequence="changeReferenceSequence"
           >
         </MoleculeViewer>
@@ -76,7 +77,13 @@ export default class Visualization extends Vue {
     }
     
   }
-  
+  siteHover(event: any){
+    if (event.focus){
+      this.$refs.heatmap.focusColumn(event.position, true)
+    } else {
+      this.$refs.heatmap.unfocusColumn(event.position)
+    }
+  }
   changePosition(value: number){
     this.position = value
   }
