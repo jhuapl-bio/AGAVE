@@ -24,6 +24,9 @@
         </div>
       </b-col>
       <b-col sm="12">
+        <div id="heatmapSlider" ref="heatmapSlider"></div>
+      </b-col>
+      <b-col sm="12">
         <div id="heatmapLegend" ref="heatmapLegend"></div>
         <b-button @click="downloadSVG()">Save SVG</b-button>
         <a hidden id='imgId' target="_blank">Save SVG</a>
@@ -153,6 +156,7 @@ export default class Heatmap extends Vue {
   yAxisG: any = null;
   xAxisT: any = null;
   xAxisB: any = null;
+  context: any  = null;
   g: any  = null;
   color_range = 4;
   divisionYScale = {};
@@ -197,6 +201,7 @@ export default class Heatmap extends Vue {
     
     d3.selectAll("#heatmapSVG").remove()
     d3.select("#overflowDiv").remove()
+    d3.selectAll("#heatmapSliderSVG").remove()
     d3.selectAll("#heatmapLegend").selectAll("*").remove()
     const segments = ["HA", "M1", "NA", "NP"];
     const $this = this;
@@ -362,6 +367,82 @@ export default class Heatmap extends Vue {
       .attr("font-size", "0.8em")
       .text("Relative Depth of Mutations")
     
+    //Now make the brushable 
+    let contextheight = 70
+    this.context = d3.select("#heatmapSlider")
+    .append("svg").attr("id", "heatmapSliderSVG")
+    .attr("width", this.width)
+    .attr("height", contextheight)
+    .append("g")
+    .attr("class", "context")
+    .attr("transform", `translate(${0},${0})`)
+    let scaleX = d3.scaleLinear().domain([0, position_max])
+    .range([0, this.width])
+    let boxHeight = contextheight / preps.length
+    let scaleY = d3.scaleOrdinal().domain(preps)
+    .range(preps.map((d: any, i: number) => {
+        const spacing = boxHeight / 2;
+        return (i * boxHeight ) ;
+      })
+    );    
+    let subBars = this.context.selectAll(".subBar").data(this.DataHandler.cells_full)
+    .join(
+      function (enter: any) {
+        return enter
+        .append("rect")
+		    .classed('subBar', true)
+        .attr("transform", (d: any, i: any) => {
+          return "translate(" + scaleX(d.position) + "," + scaleY(d.experiment) + ")";
+        })
+             
+        .style("cursor", "pointer")
+        .attr("width", $this.width / position_max )
+        .attr("height",  boxHeight )
+        .attr("fill", (d: any) => {
+          return $this.calculateColor(d)
+        })
+      },
+      function (update: any){
+        return update
+        .attr("transform", (d: any, i: any) => {
+          return "translate(" + scaleX(d.position) + "," + scaleY(d.prep) + ")";
+        })
+        .attr("fill", (d: any) => {
+          return $this.calculateColor(d)
+        })
+      },
+      function (exit: any) {
+        return exit.remove()
+      }
+    )
+    var brush: any= d3.brushX()
+    .extent([[0, 0], [this.width, contextheight]])
+    .on("brush", brushed)
+    .on("end", brushended);
+    function brushended({selection}: any) {
+      if (!selection) {
+        $this.DataHandler.updatePositions(d3.extent($this.DataHandler.cells_full, (d:any)=>{return d.position}))
+        $this.DataHandler.updateCells()
+        $this.updateHeatmap()
+      }
+    }
+    this.context.append("g")
+      .attr("class", "x brush")
+      .call(brush)
+      .selectAll("rect")
+      .attr("y", -6)
+      .attr("height", contextheight + 7);
+    function brushed({selection}:any) {
+      if (selection){
+      let ranges: any = selection.map(scaleX.invert, scaleX).map((d:any) => { return Math.round(d) })
+      console.log(ranges)
+      $this.DataHandler.updatePositions(ranges)
+      $this.DataHandler.updateCells()
+      }
+      $this.updateHeatmap()
+    }
+
+
     this.updateHeatmap()
   }
 
@@ -395,13 +476,11 @@ export default class Heatmap extends Vue {
       this.positions = this.positions.map((d:any)=>{
         return d.position
       })
-      // console.log(cells)
       cells = cells.filter((d:any)=>{ return this.positions.indexOf(d.position) > -1  })
     }
     const min = Math.max(this.DataHandler.position_ranges[0], d3.min($this.positions))
     const max = Math.min(this.position_max, d3.max($this.positions))
     this.positions = this.positions.filter((d:any)=>{ return d <= max && d >= min})
-    // console.log("positions uniq", this.positions_unique, "positions", this.positions, "min", min , "max", max)
     if (this.scrollDirection == 'x'){
       scrollAttr['x'] = this.positions
       scrollAttr.xTicks = this.positions_unique
@@ -432,7 +511,6 @@ export default class Heatmap extends Vue {
     this.scaleX
       .domain(scrollAttr.x)
       .range([scrollAttr.marginA, over - scrollAttr.marginB]);
-    // console.log("scroll y old", scrollAttr.y)
     if (! this.sortBy){
       try{
         scrollAttr.y = scrollAttr.y.sort((a: any, b:any) => {
@@ -455,8 +533,6 @@ export default class Heatmap extends Vue {
     );
     this.yAxis = d3.axisLeft(this.scaleY)
           .ticks(scrollAttr.y.length);
-    // console.log("scaleY", this.scaleY.domain())
-    // const difference = this.positions_unique.length - this.positions.length
     this.xAxisT = d3
       .axisTop(this.scaleX)
       .tickSizeOuter(0)
@@ -617,10 +693,6 @@ export default class Heatmap extends Vue {
         )
   }
   focusColumn(position: any, focus: boolean){
-    // const blocks: any = d3.selectAll(".block").filter((d:any)=>{
-    //   return d.position == position
-    // })
-    // blocks.classed("focusedColumn", true)
     let scaleXpost: any = this.scaleX(position)
     let listScales: any[] = [scaleXpost, scaleXpost + this.boxWidth] 
     d3.selectAll(".focus").remove()
@@ -642,10 +714,7 @@ export default class Heatmap extends Vue {
     }
   }
   unfocusColumn(position:number){
-    // d3.selectAll(".block").filter((d:any)=>{
-    //   return d.position == position
-    // }).classed("focusedColumn", false)
-    d3.select("#focus").remove()
+    d3.selectAll(".focus").remove()
   }
   frac2Color(frac: number){
     let color = '';

@@ -4,25 +4,13 @@
     <b-table  
       hover 
       :items="ligands"
+      v-if="ligands && ligands.length > 0"
       sticky-header="300px"
-      @row-hovered="rowHovered"
-      @row-unhovered="rowunHovered"
+      @row-clicked="rowClicked"
+      v-b-tooltip.hover.right title="Click to view in heatmap and molecule viewer"
+      style="cursor: pointer"
       :fields="[
-        {
-          key: 'name',
-          label: 'Name',
-          sticky: true
-        },
-        {
-          key: 'dataType',
-          label: 'Type',
-          sticky: true
-        },
-        {
-          key: 'entity',
-          label: 'Chain',
-          sticky: true
-        },
+        
         {
           key: 'startIndex',
           label: 'Start Index',
@@ -34,6 +22,11 @@
           sticky: true
         },
         {
+          key: 'dataType',
+          label: 'Type',
+          sticky: true
+        },
+        {
           key: 'startCode',
           label: 'Start',
           sticky: true
@@ -42,9 +35,22 @@
           key: 'endCode',
           label: 'End',
           sticky: true
+        },
+        {
+          key: 'name',
+          label: 'Name',
+          sticky: true
+        },
+        {
+          key: 'entity',
+          label: 'Chain',
+          sticky: true
         }
       ]"
-      ></b-table>
+      >
+      </b-table>
+      <p class="warning" v-else-if="ligandQuerying">Getting Ligand information</p>
+      <p class="warning" v-else>No ligand information available</p>
   </div>
 </template>
 
@@ -58,16 +64,14 @@ import swal from 'vue-sweetalert2'
 export default class BindingSites extends Vue {
 
   ligands: any[] = []
-
+  ligandQuerying = false
   @Prop({ required: true, default: 6 })
   public chains!: any;
   @Watch("chains", {deep:true})
   onColWidthChanged(value: any, oldValue: any) {
-    console.log("chains changed")
     this.queryLigands(value)
   }
   mounted(){
-    console.log(this.chains)
     this.queryLigands(this.chains)
   }
   async getdata(string:string){
@@ -75,7 +79,7 @@ export default class BindingSites extends Vue {
       .get(string)
     return response
   }
-  rowHovered(item: any){
+  rowClicked(item: any){
     let event: any = item
     event.focus = true
     this.$emit('siteHover', item)
@@ -86,36 +90,34 @@ export default class BindingSites extends Vue {
     this.$emit('siteHover', item)
   }
   async queryLigands(chains: any){
-    console.log("querying ligands")
-    // const uniq_entities = [...new Set(chains.map((d: any) => d.entity_id))];
     let promises: any[] = []
-    
+    let ligands: any[] = []
+    this.ligandQuerying = true
     chains.entities.forEach((d:any)=>{
-      let data= this.getdata(`https://www.ebi.ac.uk/pdbe/graph-api/pdbe_pages/binding_sites/${chains.id}/${d}`).then((e:any)=>{
-        if (e.data){
-          e.data[chains.id].data.forEach((f:any)=>{
-            console.log(f)
-            f.residues.map((g:any)=>{ 
-              g.entity = d
-              g.name = f.accession
-              g.dataType = f.dataType
-              return g
-            })
-            this.ligands = f.residues
-          })
-        }
-      
-      })
-      // promises.push(this.getdata(`https://www.ebi.ac.uk/pdbe/graph-api/pdbe_pages/binding_sites/${options.moleculeId}/${d}`))
-    
+      promises.push(this.getdata(`https://www.ebi.ac.uk/pdbe/graph-api/pdbe_pages/binding_sites/${chains.id}/${d}`))
     })
-    // Promise.all(promises).then((data:any)=>{
-    //   console.log(data)
-    // })
-    // .catch((err)=>{
-    //   console.log(err)
-    // })
-
+    Promise.allSettled(promises).then((responses:any)=>{
+      responses.forEach((response:any)=>{
+        if (response.status == 'fulfilled'){
+          if (response.value.data){
+            let data:any = response.value.data
+            data[chains.id].data.forEach((f:any)=>{
+              f.residues.map((g:any, i: any)=>{ 
+                g.entity = f.additionalData.entityId
+                g.name = f.accession
+                g.dataType = f.dataType
+                return g
+              })
+              ligands.push(...f.residues)
+            })
+          }
+        }
+      })
+      this.ligands = ligands
+      this.ligandQuerying = false
+    }).catch((err:any)=>{
+      console.log(err)
+    })
   }
 
   

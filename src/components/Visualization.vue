@@ -7,7 +7,7 @@
           @sliderUpdate="sliderUpdate"/>
         <hr class="solid">
       </div>
-      <div class="col-lg-8 pr-5" v-if="DataHandler.cells && DataHandler.cells.length > 0">      
+      <div class="col-lg-12 pr-5" v-if="DataHandler.cells && DataHandler.cells.length > 0">      
         <Heatmap 
           ref="heatmap"
           :column_width=column_width 
@@ -19,7 +19,7 @@
         >
         </Heatmap>
       </div>
-      <div class="col-lg-4 pb-1">
+      <div class="col-lg-12 pb-1">
         <MoleculeViewer 
           :segment=segment 
           :position=position
