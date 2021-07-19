@@ -107,7 +107,7 @@ export default class VisualizationOptions extends Vue {
 
   public depth_threshold = 0
   public frequency_threshold = 0.2
-  public column_width = 6
+  public column_width = 9
   public data:any = null
   public cells: any = null
   public customfile: any = null

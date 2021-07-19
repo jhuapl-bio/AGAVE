@@ -29,6 +29,7 @@
     <div class="col-lg-12 pb-1">
         <BindingSites 
           @siteHover="siteHover" 
+          :positions="positions"
           :chains=chains>
         </BindingSites>
     </div>
@@ -68,6 +69,7 @@ export default class MoleculeViewer extends Vue {
   public referenceSequence: any[] = []
   public isSwitched = true
   public assemblyId = "1"
+  public positions: any[] = [];
   public chains: any = {id: null,  entities: [] };
   public protein_per_segment: any = {
     "H3N2": {
@@ -139,10 +141,14 @@ export default class MoleculeViewer extends Vue {
     this.proteinChange(this.protein_per_segment[this.DataHandler.subtype][this.segment])
   }
   siteHover(item: any){
-    this.localPosition = item.endIndex + this.map_positions[item.entity].positions[1] 
+    this.localPosition = this.determinePosition(item.endIndex, this.map_positions[item.entity].positions[1])
     this.focus()
-    item.position  = this.localPosition
-    this.$emit("siteHover", item)
+    if (this.localPosition >= this.DataHandler.position_ranges[0]
+      && this.localPosition <= this.DataHandler.position_ranges[1]){
+      item.position  = this.localPosition
+      
+      this.$emit("siteHover", item)
+    }
   }
   
   parseError(err: any){

@@ -24,7 +24,7 @@
         </div>
       </b-col>
       <b-col sm="12">
-        <div id="heatmapSlider" ref="heatmapSlider"></div>
+        <div id="heatmapSlider"  ref="heatmapSlider"></div>
       </b-col>
       <b-col sm="12">
         <div id="heatmapLegend" ref="heatmapLegend"></div>
@@ -60,7 +60,7 @@ export default class Heatmap extends Vue {
     heatmapLegend: HTMLElement;
     heatmapSVG: HTMLElement;
   };
-  @Prop({ required: false, default: 6 })
+  @Prop({ required: false, default: 9 })
   public column_width!: number;
   @Prop({ required: true, default: null })
   public DataHandler!: DataHandler;
@@ -165,15 +165,15 @@ export default class Heatmap extends Vue {
   positions_unique: any[] = [];
   positions: any[] = [];
   preps: any  = null;
-  containerHeight = 900;
+  containerHeight = 600;
   chartHeight = Math.min(this.containerHeight * 1);
   legendWidth = 0;
   legendHeight = 0;
   legendPadding = 15;
   svg:any = null
   margin = {
-    top: 0.075 * this.chartHeight,
-    bottom: 0.1 * this.chartHeight,
+    top: 0.13 * this.chartHeight,
+    bottom: 0.095 * this.chartHeight,
     left: 0.2 * this.width,
     right: 0.05 * this.width,
   };
@@ -238,12 +238,10 @@ export default class Heatmap extends Vue {
     const svg = heatmapdiv.append("svg")
       .attr("id", "heatmapSVG")
       .attr("ref", "heatmapSVG")
-      .attr("width", this.width)
-      .attr("height", this.chartHeight)
       .style("position", "absolute")
       .style("pointer-events", "none")
       .style("z-index", 1)
-      // .attr("viewBox", `0 0 ${this.width} ${this.chartHeight}`)
+      .attr("viewBox", `0 0 ${this.width} ${this.chartHeight}`)
     this.svg = svg
     const body = heatmapdiv.append("div").attr("id","overflowDiv")
       .style("overflow-x", "scroll")
@@ -283,7 +281,7 @@ export default class Heatmap extends Vue {
     }
     const legend_margin: number= this.legendWidth - this.legendPadding
     const boxWidth = this.legendWidth / 4 / legendVals.length
-
+    const legend_BoxHeight = this.legendHeight - this.legendPadding
     d3.select('#heatmapLegend')
     .append("svg")
     .attr("width", this.legendWidth)
@@ -303,7 +301,7 @@ export default class Heatmap extends Vue {
       return "_"+String(d).replace("-", "_").replace(".", "_")
     })
     .attr("width", boxWidth)
-    .attr("height", this.legendPadding) 
+    .attr("height", legend_BoxHeight) 
     .style("fill", (d:any)=>{
       const frac = (d + 3.5 ) / 3.5    
       let col = this.frac2Color(frac)
@@ -349,7 +347,7 @@ export default class Heatmap extends Vue {
       .append("g")
       .attr("class", "legendyAxis")
       .attr("id", "legendyAxis")
-      .attr("transform", "translate(" + (0) + "," + this.legendPadding+ ")")
+      .attr("transform", "translate(" + (0) + "," + legend_BoxHeight+ ")")
       .style("stroke-width", 1)
       .call(legendYAxis)
       .selectAll('text')
@@ -371,8 +369,7 @@ export default class Heatmap extends Vue {
     let contextheight = 70
     this.context = d3.select("#heatmapSlider")
     .append("svg").attr("id", "heatmapSliderSVG")
-    .attr("width", this.width)
-    .attr("height", contextheight)
+    .attr("viewBox", `0 0 ${this.width} ${contextheight}`)
     .append("g")
     .attr("class", "context")
     .attr("transform", `translate(${0},${0})`)
@@ -417,13 +414,15 @@ export default class Heatmap extends Vue {
     )
     var brush: any= d3.brushX()
     .extent([[0, 0], [this.width, contextheight]])
-    .on("brush", brushed)
-    .on("end", brushended);
-    function brushended({selection}: any) {
-      if (!selection) {
+    .on("end", brushended)
+    // .on("brush", brushed);
+    function brushended(event: any) {
+      if (event && !event.selection) {
         $this.DataHandler.updatePositions(d3.extent($this.DataHandler.cells_full, (d:any)=>{return d.position}))
         $this.DataHandler.updateCells()
         $this.updateHeatmap()
+      } else {
+        brushed(event)
       }
     }
     this.context.append("g")
@@ -435,14 +434,11 @@ export default class Heatmap extends Vue {
     function brushed({selection}:any) {
       if (selection){
       let ranges: any = selection.map(scaleX.invert, scaleX).map((d:any) => { return Math.round(d) })
-      console.log(ranges)
       $this.DataHandler.updatePositions(ranges)
       $this.DataHandler.updateCells()
       }
       $this.updateHeatmap()
     }
-
-
     this.updateHeatmap()
   }
 
@@ -512,7 +508,7 @@ export default class Heatmap extends Vue {
       .domain(scrollAttr.x)
       .range([scrollAttr.marginA, over - scrollAttr.marginB]);
     if (! this.sortBy){
-      try{
+      try {
         scrollAttr.y = scrollAttr.y.sort((a: any, b:any) => {
           let datea = a.split("-")
           let dateb = b.split("-")
@@ -547,14 +543,18 @@ export default class Heatmap extends Vue {
     .tickFormat((interval:any,i:any) => {
       return i%2 !== 1 ? " ": scrollAttr.xTicks[i];
     });
-    d3.select("#yAxis").attr("transform", "translate(" + this.margin.left + "," + (this.boxHeight/2)+ ")")
+    let scaleYText: any = d3.select("#yAxis")
+          .attr("transform", "translate(" + this.margin.left + "," + (this.boxHeight/2)+ ")")
           .style("stroke-width", 0)
           .call(this.yAxis)
           .call(g => g.select(".domain").remove())
           .selectAll('text')
+          .classed("scaleYText", true)
           .style('text-anchor', 'end')
-          .attr('transform', 'rotate(0)').style("font-size", "1em")
-    d3.select('#xAxisT')
+          .attr('transform', 'rotate(0)')
+          .style("font-size", "1em")
+    
+    let scaleXTestT: any = d3.select('#xAxisT')
           .attr("transform", "translate(" + (0) + "," + (this.margin.top) + ")")
           .style("fill", null)
           .style("stroke-width", 0.2)
@@ -563,21 +563,41 @@ export default class Heatmap extends Vue {
           .attr("y", -9)
           .attr("x", 0)
           .attr("dy", ".35em")
-          .style("font-size", "1em")
           .attr("transform", "rotate(45)")
-          .style("text-anchor", "end");
-    d3.select('#xAxisB')
+          .style("text-anchor", "end")
+          .style("font-size", "1em");
+    let scaleXTestB: any = d3.select('#xAxisB')
           .attr("transform", "translate(" + (0) + "," + (this.chartHeight - this.margin.bottom) + ")")
           .style("fill", null)
           .style("stroke-width", 0.2)
           .call(this.xAxisB)
           .selectAll('text')
-          .attr("y", 0)
-          .attr("x", 9)
-          .attr("dy", ".35em")
-          .style("font-size", "1em")
+          .classed("scaleXText", true)
+          // .attr("y", 0)
+          // .attr("x", 9)
+          // .attr("dy", ".35em")
           .attr("transform", "rotate(45)")
-          .style("text-anchor", "start");
+          .style("text-anchor", "start")
+          .style("font-size", "1em");
+    
+    
+    try {
+      let maxYTick: any = d3.max(scaleXTestB.nodes().map((d:any)=>{
+          return d.getBBox().height
+        })
+      )
+      scaleYText.style("font-size", Math.min(maxYTick, boxHeight))
+      let maxXTick: any = d3.max(scaleXTestB.nodes().map((d:any)=>{
+          return d.getBBox().width
+        })
+      )
+      if (maxXTick > boxWidth){
+        scaleXTestB.style("font-size", Math.min(maxXTick, boxWidth))
+        scaleXTestT.style("font-size", Math.min(maxXTick, boxWidth))
+      }      
+    } catch(err: any){
+      console.error(err)
+    }
     d3.select('#innerheatmapSVG')
     .attr("width", over)
     .style("fill", "white")
