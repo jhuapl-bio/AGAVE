@@ -33,7 +33,9 @@
         <b-switch v-model="isFlipped" hidden :disabled="!this.DataHandler.cells" >
                 {{ ( isFlipped ? 'Flip Axis' : 'Flip Axis' ) }}
         </b-switch>
-        
+      </b-col>
+      <b-col sm="12">
+          <!-- <BarPlot :DataHandler="DataHandler"></BarPlot> -->
       </b-col>
     </b-row>
     <canvas id="mycanvas"></canvas>
@@ -49,7 +51,13 @@ import swal from 'vue-sweetalert2'
 import { BIconArrowReturnRight } from "bootstrap-vue";
 import * as canvas from 'canvas'
 import DataHandler from "@/shared/DataHandler";
-@Component({})
+import BarPlot from '@/components/BarPlot.vue'
+@Component({
+  components: {
+    BarPlot
+  }
+
+})
 export default class Heatmap extends Vue {
 
   private localDataHelper = new LocalDataHelper();
@@ -632,6 +640,7 @@ export default class Heatmap extends Vue {
               .attr("width", $this.boxWidth )
               .attr("height", $this.boxHeight)
               .on("click", (d:any, u:any)=>{
+                $this.DataHandler.selectedPosition = u.position
                 $this.$emit("changePosition", u.position)
               })
               .on("mousemove", (event: any, u: any, n:any, i:number) => {

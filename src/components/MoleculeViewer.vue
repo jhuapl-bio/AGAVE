@@ -141,7 +141,7 @@ export default class MoleculeViewer extends Vue {
     this.proteinChange(this.protein_per_segment[this.DataHandler.subtype][this.segment])
   }
   siteHover(item: any){
-    this.localPosition = this.determinePosition(item.endIndex, this.map_positions[item.entity].positions[1])
+    this.localPosition = item.endIndex + this.map_positions[item.entity].positions[1]
     this.focus()
     if (this.localPosition >= this.DataHandler.position_ranges[0]
       && this.localPosition <= this.DataHandler.position_ranges[1]){

@@ -8,6 +8,8 @@ export default class DataHandler {
     referenceSequence: number[] = []
     position_ranges: number[] = []
     xvalues: any[] = []
+    pdb: any = null
+    selectedPosition: number = 0
     yvalues: any[] = []
     cells: any = null
     cells_full: any = null
