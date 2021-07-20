@@ -165,7 +165,7 @@ export default class Heatmap extends Vue {
   positions_unique: any[] = [];
   positions: any[] = [];
   preps: any  = null;
-  containerHeight = 600;
+  containerHeight = 800;
   chartHeight = Math.min(this.containerHeight * 1);
   legendWidth = 0;
   legendHeight = 0;
