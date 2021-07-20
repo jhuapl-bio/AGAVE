@@ -9,9 +9,8 @@ export default class LocalDataHelper {
   }
   public async readTSV(filepath: string)
   {
-
     // const data = require("/data/" + filepath)
-    let data = await d3.tsv(`/data/${filepath}`)
+    let data = await d3.tsv(`${process.env.BASE_URL}data/${filepath}`)
     
     return data.slice(0, 2)
 
@@ -42,14 +41,16 @@ export default class LocalDataHelper {
 
   }
 
-  public async readJSON(filepath: string)
+  public readJSON(filepath: string)
   {
-    try{
-      let data = await d3.json(`/data/${filepath}`)
-      return data
-    } catch(err){
-      throw err
-    }
+    return new Promise<void>(function(resolve,reject){
+      d3.json(`${process.env.BASE_URL}data/${filepath}`).then((data:any)=>{
+        resolve(data)
+      }).catch((error)=>{
+        console.log("error")
+        reject(error)
+      })
+    })
 
     // Tom's D3 code for parsing data before consuming it. This could be useful?
 

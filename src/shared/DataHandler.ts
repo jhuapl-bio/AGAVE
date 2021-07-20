@@ -4,7 +4,7 @@ import LocalDataHelper from "@/shared/LocalDataHelper";
 interface StringMap { [key: string]: string; }
 
 export default class DataHandler {
-
+    sort: boolean = true
     referenceSequence: number[] = []
     position_ranges: number[] = []
     xvalues: any[] = []
@@ -22,7 +22,24 @@ export default class DataHandler {
     position_max: any = 1
     consensus_map: any  = null
     selected_consensus: any = {}
+    defaultDataList: any = [
+        {
+            id: "New",
+            label: "BARDA",
+            virus: "H1N1",
+            subfolder: "grouped"
+        },
+        {
+            id: "Gaydos",
+            label: "Gaydos",
+            virus: "H3N2",
+            subfolder: "grouped"
+        }
+    ]
+    data_selected: any  = null
+    subtype: string = "H1N1"
     public  constructor() {
+        this.data_selected = this.defaultDataList[0]
     }
     public updateReference(referenceSequence: any){
         this.referenceSequence = referenceSequence
@@ -41,12 +58,21 @@ export default class DataHandler {
     {
         this.position_ranges = positions
     }
+    public updateSubtype(subtype: string)
+    {
+        this.subtype = subtype
+    }
     public updateCells(){
         let cells_filtered= this.cells_full.filter((d:any)=>{
             return d.position >= this.position_ranges[0] && d.position <= this.position_ranges[1]
         })
         this.cells = cells_filtered
     }  
+    public fullUpdate(){
+        this.updateData()
+        this.updateCells()
+        return
+    }
     public updateData(){
         // Format data into cells
         const $this = this
@@ -60,60 +86,76 @@ export default class DataHandler {
         data.forEach((prep:any)=>{
             consensus_map.push({experiment: prep.experiment, residues: prep.residues.map((d:any, i:number)=>{return d.consensus_aa +"." + d.position})})
             prep.residues.forEach((residue:any)=>{
-            cells.push({ unique: [...new Set(residue.counts.map((d: any) => d.aa))], segment:this.segment, max: residue.consensus_aa_count, experiment: prep.experiment, depth: residue.depth, position: +residue.position, total:+residue.depth, count: residue.counts.length, aa: residue.consensus_aa, consensus_count: residue.consensus_aa_count  })
+                cells.push({ 
+                    unique: residue.counts.map((d:any)=>{
+                        return { aa: d.aa, proportion: (d.count / +residue.depth).toFixed(3)}
+                    }),
+                    segment:this.segment, 
+                    max: residue.consensus_aa_count, 
+                    experiment: prep.experiment, 
+                    depth: residue.depth, 
+                    position: +residue.position, 
+                    total:+residue.depth, 
+                    count: residue.counts.length, 
+                    aa: residue.consensus_aa, 
+                    consensus_count: residue.consensus_aa_count  
+                })
             })
         })
-        console.log(consensus_map, data)
         this.consensus_map = consensus_map
         this.selected_consensus = this.consensus_map[0]
-        console.log("total max", this.consensus_map, this.selected_consensus)
         const min: any = d3.min(cells.map((d:any)=>{return +d.position}))
         const max: any = d3.max(cells.map((d:any)=>{return +d.position}))
         this.position_max = max
         this.position_ranges = [min, max]
         this.cells_full = cells
     }
+    private parseGroups(group: any, groups: any){
+        let grp
+        if (! group || group.length == 0){
+            grp = [groups[0]]
+        } else {
+            let newgroups: any = []
+            group.forEach((d:any)=>{
+                if (groups.indexOf(group) <= -1){
+                    newgroups.push(d)
+                }
+            })
+            if (newgroups.length == 0){
+                grp = newgroups[0]
+            } else {
+                grp = newgroups
+            }
+        }
+        return grp
+    }
     public async getData(string:any, type: string){
+        const $this = this
         let data:any = null
         try{
             if (type == 'file'){
-                let data: any = await this.localDataHelper.readJSON(string)
-                this.groups = [...new Set(data.map((d: any) => d.group))];
-                if (! this.group || this.group.length == 0){
-                    this.group = [this.groups[0]]
-                } else {
-                    let newgroups: any = []
-                    this.group.forEach((d:any)=>{
-                    if (this.groups.indexOf(this.group) <= -1){
-                        newgroups.push(d)
-                    }
-                    })
-                    this.group = newgroups
-                }
-                this.raw_data = data
-                this.updateData()
-                this.updateCells()
+                data = await $this.localDataHelper.readJSON(string)
+                update(data)
+                return 
             } else {
-                data = (this.localDataHelper.parseJSON(string))
-                this.groups = [...new Set(data.map((d: any) => d.group))];
-                if (! this.group || this.group.length == 0){
-                    this.group = [this.groups[0]]
-                } else {
-                    let newgroups: any = []
-                    this.group.forEach((d:any)=>{
-                    if (this.groups.indexOf(this.group) <= -1){
-                        newgroups.push(d)
-                    }
-                    })
-                    this.group  = newgroups
-                }
-                this.raw_data = data
-                this.updateData()
-                this.updateCells()
-            } 
+                data = ($this.localDataHelper.parseJSON(string))
+                update(data)
+                // resolve()
+                return
+            }
+            
         } catch(err){
+            this.raw_data = []
+            // this.cells = []
+            // this.group = []
             throw err
         }
+
+        function update(data: any){
+            $this.groups = [...new Set(data.map((d: any) => d.group))];
+            let group: any  = $this.parseGroups($this.group, $this.groups)
+            $this.group = group
+            $this.raw_data = data
+        }
     }
-  
 } 

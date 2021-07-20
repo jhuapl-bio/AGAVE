@@ -20,7 +20,8 @@ const routes: Array<RouteConfig> = [
 
 const router = new VueRouter({
   mode: 'history',
-  routes
+  routes,
+  base: '/BARDA'
 })
 
 export default router
