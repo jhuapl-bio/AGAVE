@@ -284,8 +284,7 @@ export default class Heatmap extends Vue {
     const legend_BoxHeight = this.legendHeight - this.legendPadding
     d3.select('#heatmapLegend')
     .append("svg")
-    .attr("width", this.legendWidth)
-    .attr("height", this.legendHeight)
+    .attr("viewBox", `0 0 ${this.legendWidth} ${this.legendHeight}`)
     .attr("transform", `translate(${0},${this.legendPadding})`)
     .append("g")
     .attr("class", "legendG")
