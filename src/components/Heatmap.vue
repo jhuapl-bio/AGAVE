@@ -1,9 +1,7 @@
 <template>
-  <div style="padding-top: 10px; width: 100%; ">
-    
+  <div style="padding-top: 10px; width: 100%; ">    
     <b-row>
-      <b-col sm="12">
-        
+      <b-col class="col-lg-12 pb-1">
         <div id="heatmapDiv" ref="heatmapDiv">
           <p v-if="!DataHandler || DataHandler.cells.length < 1">No data available</p>
           <div class="tooltip"  id="tooltipHeatmap" style="opacity: 0; font-size: 12px; display:block">
@@ -23,19 +21,16 @@
           </div>
         </div>
       </b-col>
-      <b-col sm="12">
+      <b-col class="col-lg-12 pb-1">
         <div id="heatmapSlider"  ref="heatmapSlider"></div>
       </b-col>
-      <b-col sm="12">
+      <b-col class="col-lg-12 pb-1">
         <div id="heatmapLegend" ref="heatmapLegend"></div>
         <b-button @click="downloadSVG()">Save SVG</b-button>
         <a hidden id='imgId' target="_blank">Save SVG</a>
         <b-switch v-model="isFlipped" hidden :disabled="!this.DataHandler.cells" >
                 {{ ( isFlipped ? 'Flip Axis' : 'Flip Axis' ) }}
         </b-switch>
-      </b-col>
-      <b-col sm="12">
-          <!-- <BarPlot :DataHandler="DataHandler"></BarPlot> -->
       </b-col>
     </b-row>
     <canvas id="mycanvas"></canvas>
@@ -51,10 +46,9 @@ import swal from 'vue-sweetalert2'
 import { BIconArrowReturnRight } from "bootstrap-vue";
 import * as canvas from 'canvas'
 import DataHandler from "@/shared/DataHandler";
-import BarPlot from '@/components/BarPlot.vue'
 @Component({
   components: {
-    BarPlot
+    
   }
 
 })
@@ -644,56 +638,10 @@ export default class Heatmap extends Vue {
                 $this.$emit("changePosition", u.position)
               })
               .on("mousemove", (event: any, u: any, n:any, i:number) => {
-                d3.select(
-                  "#" +
-                    "_"+u.experiment.replaceAll(" ", "_").replaceAll("-", "_") + u.position 
-                )
-                .style("fill", "yellow");
-                const ratio: number = (u.max / u.depth)
-                $this.focusColumn(u.position, false)
-
-                d3.select("#tooltipHeatmap")
-                  .style(
-                    "left",
-                    () => {
-                      const w: any = (d3.select("#tooltipHeatmap").node() ? (d3.select("#tooltipHeatmap").node() as any).getBoundingClientRect().width : 0 )
-                      return ( d3.pointer(event, $this.svg.node() )[0] - w ) + "px"
-                    }
-                  )
-                  .style(
-                    "top",
-                    () => {
-                      const h: any = (d3.select("#tooltipHeatmap").node() ? (d3.select("#tooltipHeatmap").node() as any).getBoundingClientRect().height : 0 )
-                      return (d3.pointer(event, $this.svg.node() )[1] -h / 2  ) + "px"
-                    }
-                  )
-                  .style("opacity", "1").select("#tooltipcontent")
-                  .html(`Pos: ${u.position}<br>
-                  Experiment: ${u.experiment}<br>
-                  Depth: ${u.depth}<br>
-                  Total: ${u.total}<br>
-                  Consensus Residue: ${u.aa}<br>
-                  Consensus / Total: ${ratio.toFixed(3)} ${( !$this.isSwitched ? `<br>Ref. Residue: ${$this.positions_unique[$this.positions.indexOf(u.position)]}`: '')} `)
-                  $this.tooltiptable = u.unique.map((d:any)=>{
-                    if (d.aa == u.aa){
-                      d._rowVariant = 'info'
-                    } else if (ratio <= d.proportion){
-                      d._rowVariant = 'danger'
-                    }
-                    return d
-                  })
+                $this.highlightCell(event, u)
               })
               .on("mouseleave", (d: any, u: any) => {
-                d3.select(
-                  "#" +
-                    
-                    "_"+u.experiment.replaceAll(" ", "_").replaceAll("-", "_") + u.position
-                )
-                .style("fill", (d: any) => {
-                  return $this.calculateColor(d)
-                });
-                $this.unfocusColumn(u.position)
-                d3.select("#tooltipHeatmap").style("opacity", "0");
+                $this.unHighlight(event, u)
               });
           },
           function (update: any) {
@@ -719,6 +667,60 @@ export default class Heatmap extends Vue {
             return exit.remove()
           }
         )
+  }
+  highlightCell(event: any, u: any){
+    const $this = this
+    d3.select(
+      "#" +
+        "_"+u.experiment.replaceAll(" ", "_").replaceAll("-", "_") + u.position 
+    )
+    .style("fill", "yellow");
+    const ratio: number = (u.max / u.depth)
+    $this.focusColumn(u.position, false)
+
+    d3.select("#tooltipHeatmap")
+      .style(
+        "left",
+        () => {
+          const w: any = (d3.select("#tooltipHeatmap").node() ? (d3.select("#tooltipHeatmap").node() as any).getBoundingClientRect().width : 0 )
+          return ( d3.pointer(event, $this.svg.node() )[0] - w ) + "px"
+        }
+      )
+      .style(
+        "top",
+        () => {
+          const h: any = (d3.select("#tooltipHeatmap").node() ? (d3.select("#tooltipHeatmap").node() as any).getBoundingClientRect().height : 0 )
+          return (d3.pointer(event, $this.svg.node() )[1] -h / 2  ) + "px"
+        }
+      )
+      .style("opacity", "1").select("#tooltipcontent")
+      .html(`Pos: ${u.position}<br>
+      Experiment: ${u.experiment}<br>
+      Depth: ${u.depth}<br>
+      Total: ${u.total}<br>
+      Consensus Residue: ${u.aa}<br>
+      Consensus / Total: ${ratio.toFixed(3)} ${( !$this.isSwitched ? `<br>Ref. Residue: ${$this.positions_unique[$this.positions.indexOf(u.position)]}`: '')} `)
+      $this.tooltiptable = u.unique.map((d:any)=>{
+        if (d.aa == u.aa){
+          d._rowVariant = 'info'
+        } else if (ratio <= d.proportion){
+          d._rowVariant = 'danger'
+        }
+        return d
+      })
+  }
+  unHighlight(event: any, u: any){
+    const $this = this
+    d3.select(
+      "#" +
+        
+        "_"+u.experiment.replaceAll(" ", "_").replaceAll("-", "_") + u.position
+    )
+    .style("fill", (d: any) => {
+      return $this.calculateColor(d)
+    });
+    this.unfocusColumn(u.position)
+    d3.select("#tooltipHeatmap").style("opacity", "0");
   }
   focusColumn(position: any, focus: boolean){
     let scaleXpost: any = this.scaleX(position)

@@ -19,15 +19,21 @@
         >
         </Heatmap>
       </div>
-      <div class="col-lg-4 pb-1">
-        <MoleculeViewer 
+      <b-col v-if="switchedViewer" class="col-lg-4 pb-1">
+          <BarPlot 
+            v-if ="DataHandler.cells"
+            :DataHandler="DataHandler"
+          ></BarPlot>
+      </b-col>
+      <div v-else class="col-lg-4 pb-1">
+        <!-- <MoleculeViewer 
           :segment=segment 
           :position=position
           :DataHandler=DataHandler
           @siteHover="siteHover"  
           @changeReferenceSequence="changeReferenceSequence"
           >
-        </MoleculeViewer>
+        </MoleculeViewer> -->
       </div>
     </div>
   </div>
@@ -40,12 +46,14 @@ import Heatmap from './Heatmap.vue'
 import MoleculeViewer from './MoleculeViewer.vue'
 import LocalDataHelper from "@/shared/LocalDataHelper";
 import DataHandler from "@/shared/DataHandler";
+import BarPlot from '@/components/BarPlot.vue'
 
 @Component({
   components: {
     Heatmap,
     VisualizationOptions,
-    MoleculeViewer
+    MoleculeViewer,
+    BarPlot
   }
 })
 export default class Visualization extends Vue {
@@ -61,6 +69,7 @@ export default class Visualization extends Vue {
   public sortBy: boolean = true
   public referenceSequence: any[] = [];
   private localDataHelper = new LocalDataHelper();
+  public switchedViewer = true
   private DataHandler = new DataHandler()
   $refs!: {
     heatmap: any;

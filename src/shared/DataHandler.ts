@@ -9,7 +9,7 @@ export default class DataHandler {
     position_ranges: number[] = []
     xvalues: any[] = []
     pdb: any = null
-    selectedPosition: number = 0
+    selectedPosition: number = 158
     yvalues: any[] = []
     cells: any = null
     cells_full: any = null
@@ -26,20 +26,21 @@ export default class DataHandler {
     selected_consensus: any = {}
     defaultDataList: any = [
         {
+            id: "Gaydos",
+            label: "Gaydos",
+            virus: "H3N2",
+            subfolder: "grouped"
+        },
+        {
             id: "New",
             label: "BARDA",
             virus: "H1N1",
             subfolder: "grouped"
         },
-        {
-            id: "Gaydos",
-            label: "Gaydos",
-            virus: "H3N2",
-            subfolder: "grouped"
-        }
+        
     ]
     data_selected: any  = null
-    subtype: string = "H1N1"
+    subtype: string = "H3N2"
     public  constructor() {
         this.data_selected = this.defaultDataList[0]
     }
