@@ -1,9 +1,20 @@
 <template>
-  <div class="">
-    <h2>Positions</h2>
-    <div id="barPlotDiv" :style="{height: containerHeight+'px'}" ref="barPlotDiv"></div>
-    <div id="barPlotLegend"  ref="barPlotLegend"></div>
-  </div>
+  <b-row class="">
+    <b-col class="col-lg-8 pb-1">
+      <div id="barPlotDiv" :style="{height: containerHeight+'px'}" ref="barPlotDiv"></div>
+      <div id="barPlotLegend"  ref="barPlotLegend"></div>    
+    </b-col>
+    <b-col class="col-lg-4 pb-1">
+      <b-field label="Scale" class="">
+        <b-select
+        :options="scales"
+        v-model="selected_scale"
+        @change="makeBarPlot()"
+        >
+        </b-select>
+      </b-field>
+    </b-col>
+  </b-row>
 </template>
 
 <script lang="ts">
@@ -19,30 +30,38 @@ export default class BindingSites extends Vue {
   public DataHandler!: any;
   @Watch("DataHandler.selectedPosition", {deep:true})
   onDataHandlerChanged(value: any, oldValue: any) {
-    console.log("value new datahandler", value)
+    this.localPosition = value
+    this.makeBarPlot()
+  }
+  changeDataHandler(){
+    this.makeBarPlot()
   }
   $refs!: {
     barPlotDiv: HTMLElement;
   };
 
   public svg: any = null
-  containerHeight = 800;
+  containerHeight = 300;
   chartHeight = this.containerHeight
   width = 0
   localPosition = 158
-  margin = {
-    top: 0.13 * this.chartHeight,
-    bottom: 0.095 * this.chartHeight,
-    left: 0.2 * this.width,
-    right: 0.05 * this.width,
+  margin: any = {
+    top: 0.045 * this.chartHeight,
+    bottom: 0.15 * this.chartHeight,
+    left: 0.05 * this.width,
+    right: 0.0001 * this.width,
   };
+  public scales = ['Linear', 'Sqrt', 'Log']
+  public selected_scale = this.scales[0]
   
 
   makeBarPlot(){
-    console.log("make bar plot", this.width, this.DataHandler)
+    console.log("make bar plot")
     const $this = this
     d3.select("#barPlotDiv").select("svg").remove()
+    d3.select('#barPlotLegend').select("svg").remove()
     this.svg = d3.select("#barPlotDiv").append("svg")
+    
     .attr("id", "barPlotSVG")
     .attr("ref", "barPlotSVG")
     .style("position", "absolute")
@@ -70,34 +89,60 @@ export default class BindingSites extends Vue {
       })
       return r
     })
-    let mapped_positions: any = {}
-
-    preps.forEach((d:any)=>{
-      mapped_positions[d] = 0
-    })
-
-    let scaleX: any = d3.scaleBand().domain(preps)
-    .range([0, this.width])
     
-    let scaleY: any = d3.scaleLinear().domain([0, 1])
-    .range([0, this.chartHeight- this.margin.bottom])
+    let boxHeight: any = this.chartHeight / preps.length
+    let chartWidth = this.width - this.margin.right
+    this.chartHeight = this.containerHeight - this.margin.top - this.margin.bottom
+    let scaleY: any = d3.scaleBand().domain(preps)
+    .range([this.margin.top, this.chartHeight ])
+    
+    let scaleX: any = null
+    if (this.selected_scale == 'Linear'){
+      scaleX = d3.scaleLinear().domain([0, 1])
+      .range([this.margin.left, chartWidth ])
+    } else if (this.selected_scale == 'Sqrt' ){
+      scaleX = d3.scaleSqrt().domain([0, 1])
+      .range([this.margin.left, chartWidth ])
+    }
+    else {
+      scaleX = d3.scaleLog().clamp(true).domain([0, 1])
+      .range([this.margin.left, chartWidth ])
+    }
+    console.log(this.selected_scale, "sclll")
+      
     let scaleColor: any = d3.scaleOrdinal().domain(colors).range(colors);
     
     let xAxisB: any = d3
       .axisBottom(scaleX)
-      .ticks(20)
+      .ticks(5)
       .tickSizeOuter(0)
       .tickSize(0)
-    svgG.append("g")
+    let xAxis: any = svgG.append("g")
     .attr("class", "xAxis")
     .attr("id", "xAxisTBar")
-    .attr("transform", "translate(" + (0) + "," + (this.containerHeight - this.margin.bottom) + ")")
+    .attr("transform", "translate(" + (0) + "," + (this.chartHeight + this.margin.top - this.margin.left/4)  + ")")
     .style("fill", null)
     .style("stroke-width", 0.2)
     .call(xAxisB)
-    .selectAll('text')
+    xAxis.selectAll('text')
     .style('text-anchor', 'start')
-    .attr('transform', 'rotate(45)').style("font-size", "0.95em")
+    .attr('transform', 'rotate(45)').style("font-size", "1em")
+
+    let yAxisB: any = d3
+      .axisLeft(scaleY)
+      .ticks(5)
+      .tickSizeOuter(0)
+      .tickSize(0)
+
+
+    let yAxis: any = svgG.append("g")
+    .attr("class", "yAxis")
+    .attr("id", "yAxisTBar")
+    .attr("transform", "translate(" + (this.margin.left ) + "," + (boxHeight / 8) + ")")
+    .style("fill", null)
+    .style("stroke-width", 0.2)
+    .call(yAxisB)
+
     let stacks: any = d3.stack().keys(aas)
     (data)
     .map((d:any)=>{
@@ -118,13 +163,13 @@ export default class BindingSites extends Vue {
         .append("rect")
 		    .classed('posBar', true)
         .attr("transform", (d: any, i: any) => {
-          return "translate(" + scaleX(d.data.prep) + "," +  ( scaleY(d[0]) ) + ")";
+          return "translate(" + scaleX(d[0]) + "," +  ( scaleY(d.data.prep) ) + ")";
         })
         .style("cursor", "pointer")
-        .attr("width", $this.width / preps.length )
+        .attr("height", boxHeight )
         .style("stroke", "#fff")
-        .attr("height",  (d:any, i:any)=>{          
-          return scaleY(d[1]) - scaleY(d[0])
+        .attr("width",  (d:any, i:any)=>{          
+          return scaleX(d[1]) - scaleX(d[0])
         })
         .style("fill", (d: any) => {
           return scaleColor(d.key)
@@ -138,59 +183,87 @@ export default class BindingSites extends Vue {
       }
     )
 
-    let legendHeight: number = 30
+
+    let legendHeight: number = $this.chartHeight   * 0.5
     let legendWidth: number = this.width
+    
     let legendMargin: any = {
       top: legendHeight * 0.1,
       left: legendHeight * 0.1,
       right: legendHeight * 0.1,
-      bottom: legendHeight * 0.1
+      bottom: legendHeight * 0.2
     }
+    legendHeight  = legendHeight - legendMargin.top - legendMargin.bottom
+    let legendBoxHeight: number = legendHeight  * 0.2
+    let legendBox: number = legendWidth  / aas.length
+
     let g: any = d3.select("#barPlotLegend")
     .append("svg")
     .attr("id", "barPlotLegendSVG")
-    .attr("viewBox", `0 0 ${legendWidth} ${100}`)
+    .attr("viewBox", `0 0 ${legendWidth} ${legendHeight}`)
     .append("g")
+
+
     scaleX = d3.scaleBand().domain(aas)
-    .range([0, legendWidth])
+    .range([0, legendWidth  ])
     
     g.selectAll(".posBarLegRect")
     .data(aas)
     .enter()
     .append("rect")
     .attr("transform", (d:any) =>{
-      return "translate(" + scaleX(d) + "," + (legendMargin.top) + ")"
+      return "translate(" + scaleX(d) + "," + (0) + ")"
     })
-    .attr("height", legendHeight - legendMargin.top - legendMargin.bottom)
-    .attr("width", legendWidth / aas.length )
+    .attr("height",  legendBoxHeight )
+    .attr("width", legendBox )
     .style("fill", (d:any) => scaleColor(d))
     
     
-    let xAxisT: any = d3
+    let xAxisLegB: any = d3
       .axisBottom(scaleX)
       .ticks(20)
       .tickSizeOuter(0)
       .tickSize(0)
-    g.append("g")
+    let xAxisLeg: any = g.append("g")
     .attr("class", "xAxis")
-    
-    .attr("id", "xAxisTBar")
-    .attr("transform", "translate(" + (0) + "," + (legendHeight - legendMargin.bottom) + ")")
+    .attr("id", "xAxisRBar")
+    .attr("transform", "translate(" + (0) + "," + (legendBoxHeight) + ")")
     .style("fill", null)
     .style("stroke-width", 0.2)
-    .call(xAxisT)
+    .call(xAxisLegB)
     .call((g:any) => g.select(".domain").remove())
     .selectAll('text')
     .style('text-anchor', 'middle')
     .attr('transform', 'rotate(0)').style("font-size", "1em")
-    
-
+    try {
+      let maxyTick: any = d3.max(yAxis.selectAll("g").nodes().map((d:any)=>{
+          return d.getBBox().height
+        })
+      )      
+      if (maxyTick > boxHeight){
+        yAxis.style("font-size", `${ boxHeight / (maxyTick*5) }em`)
+      }    
+      maxyTick =  d3.max(yAxis.selectAll("g").nodes().map((d:any)=>{
+        console.log(d.getBBox())
+          return d.getBBox().width
+        })
+      )
+      if (maxyTick > this.margin.left){
+        const l = this.margin.left
+        console.log(this.margin.left, maxyTick)
+        yAxis.style("font-size", `${ (l) / (maxyTick*2) }em`)
+      }   
+    } catch(err: any){
+      console.error(err)
+    }
 
 
   }
 
   mounted(){
-    this.width = this.$refs.barPlotDiv.clientWidth;
+    this.width = this.$refs.barPlotDiv.clientWidth 
+    this.margin.right= 0.05 * this.width
+    this.margin.left  = 0.2 * this.width
     this.localPosition = 158
     this.makeBarPlot()
   }

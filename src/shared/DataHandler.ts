@@ -9,7 +9,7 @@ export default class DataHandler {
     position_ranges: number[] = []
     xvalues: any[] = []
     pdb: any = null
-    selectedPosition: number = 158
+    selectedPosition: number = 1
     yvalues: any[] = []
     cells: any = null
     cells_full: any = null
@@ -31,6 +31,7 @@ export default class DataHandler {
             virus: "H3N2",
             subfolder: "grouped"
         },
+
         {
             id: "New",
             label: "BARDA",

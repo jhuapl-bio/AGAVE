@@ -5,7 +5,7 @@
       hover 
       :items="ligands"
       v-if="ligands && ligands.length > 0"
-      sticky-header="300px"
+      sticky-header="22rem"
       @row-clicked="rowClicked"
       v-b-tooltip.hover.right title="Click to view in heatmap and molecule viewer"
       style="cursor: pointer"

@@ -1,39 +1,41 @@
 <template>
-  <div class="col-lg-12 pb-1">
-    <div class="">
-      <b-field :label="this.title"></b-field>
-      <div >
-        <b-input-group prepend="PDB ID" class="mt-3">
-          <b-form-input type="text" v-model="protein" ></b-form-input>
-          <b-input-group-append>
-            <b-button
-              elevation="2"
-              @click="proteinChange(protein.toLowerCase())"
-            >Change Protein</b-button>
-          </b-input-group-append>
-        </b-input-group>
+  <b-row> 
+    <b-col class="col-lg-12 pb-1">
+      <div class="">
+        <b-field :label="this.title"></b-field>
+        <div >
+          <b-input-group prepend="PDB ID" class="mt-3">
+            <b-form-input type="text" v-model="protein" ></b-form-input>
+            <b-input-group-append>
+              <b-button
+                elevation="2"
+                @click="proteinChange(protein.toLowerCase())"
+              >Change Protein</b-button>
+            </b-input-group-append>
+          </b-input-group>
+        </div>
+        <div ref="viewer" class="viewer"></div>
+        <b-field label="Molecule Structure" class="column is-narrow pl-0">
+          <b-switch v-model="isSwitched">
+            {{ ( isSwitched ? 'Biological Assembly' : 'Asymmetric Unit' ) }}
+          </b-switch>
+        </b-field>
+        <b-field v-if="queryingReferenceSequence" label="Querying Reference Sequence..."></b-field>
+        <b-field v-if="queryingResidueMapping" label="Querying Residue Mapping.."></b-field>
+        <b-field v-if="chain_focus" :label="'Chains at '+this.localPosition" class="column is-narrow">
+          <b-select placeholder="Chain" @change="focus()"  v-model="chain_focus" :options="available_focus_chains">
+          </b-select>
+        </b-field>
       </div>
-      <div ref="viewer" class="viewer"></div>
-      <b-field label="Molecule Structure" class="column is-narrow pl-0">
-        <b-switch v-model="isSwitched">
-          {{ ( isSwitched ? 'Biological Assembly' : 'Asymmetric Unit' ) }}
-        </b-switch>
-      </b-field>
-      <b-field v-if="queryingReferenceSequence" label="Querying Reference Sequence..."></b-field>
-      <b-field v-if="queryingResidueMapping" label="Querying Residue Mapping.."></b-field>
-      <b-field v-if="chain_focus" :label="'Chains at '+this.localPosition" class="column is-narrow">
-        <b-select placeholder="Chain" @change="focus()"  v-model="chain_focus" :options="available_focus_chains">
-        </b-select>
-      </b-field>
-    </div>
-    <div class="col-lg-12 pb-1">
+    </b-col>
+    <b-col class="col-lg-12 pb-1">
         <BindingSites 
           @siteHover="siteHover" 
           :positions="positions"
           :chains=chains>
         </BindingSites>
-    </div>
-  </div>
+    </b-col>
+  </b-row>
 </template>
 
 <script lang="ts">

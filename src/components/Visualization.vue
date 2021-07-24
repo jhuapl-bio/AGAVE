@@ -1,6 +1,6 @@
 <template>
   <div class="container-fluid">
-    <div class="row">
+    <div class="row" style="padding: 0px; margin: 0">
       <div class="col-lg-12 pr-5">
         <VisualizationOptions 
           :referenceSequence=referenceSequence
@@ -18,23 +18,28 @@
           @changePosition="changePosition"
         >
         </Heatmap>
+        <hr>
+        <BarPlot 
+          ref="barplot"
+          v-if="DataHandler.cells"
+          :DataHandler="DataHandler"
+        ></BarPlot>
       </div>
-      <b-col v-if="switchedViewer" class="col-lg-4 pb-1">
-          <BarPlot 
-            v-if ="DataHandler.cells"
-            :DataHandler="DataHandler"
-          ></BarPlot>
-      </b-col>
-      <div v-else class="col-lg-4 pb-1">
-        <!-- <MoleculeViewer 
+      <b-col class="col-lg-4 pb-1">
+        <MoleculeViewer 
           :segment=segment 
           :position=position
           :DataHandler=DataHandler
           @siteHover="siteHover"  
           @changeReferenceSequence="changeReferenceSequence"
           >
-        </MoleculeViewer> -->
-      </div>
+        </MoleculeViewer>
+      </b-col>
+      <b-col class="col-lg-12 pb-1">
+        
+        
+      </b-col>
+      <canvas id="mycanvas"></canvas>
     </div>
   </div>
 </template>
@@ -73,6 +78,7 @@ export default class Visualization extends Vue {
   private DataHandler = new DataHandler()
   $refs!: {
     heatmap: any;
+    barplot: any;
   };
   sliderUpdate(gh: {target: string, value: any}) {
     const target = gh.target
@@ -82,6 +88,7 @@ export default class Visualization extends Vue {
       this.segment = value.segment
       if (this.$refs.heatmap){
         this.$refs.heatmap.changeDataHandler()
+        this.$refs.barplot.changeDataHandler()
       }
     }
     

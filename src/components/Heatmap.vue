@@ -33,7 +33,7 @@
         </b-switch>
       </b-col>
     </b-row>
-    <canvas id="mycanvas"></canvas>
+    
   </div>
 </template>
 
