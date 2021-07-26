@@ -26,18 +26,19 @@ export default class DataHandler {
     selected_consensus: any = {}
     defaultDataList: any = [
         {
+            id: "New",
+            label: "BARDA",
+            virus: "H1N1",
+            subfolder: "grouped"
+        },
+        {
             id: "Gaydos",
             label: "Gaydos",
             virus: "H3N2",
             subfolder: "grouped"
         },
 
-        {
-            id: "New",
-            label: "BARDA",
-            virus: "H1N1",
-            subfolder: "grouped"
-        },
+        
         
     ]
     data_selected: any  = null
