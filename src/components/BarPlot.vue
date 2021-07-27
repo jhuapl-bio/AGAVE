@@ -70,6 +70,9 @@ export default class BindingSites extends Vue {
     var svg_xml = (new XMLSerializer()).serializeToString(svg),
     blob = new Blob([svg_xml], {type:'image/svg+xml;charset=utf-8'}),
     url = window.URL.createObjectURL(blob);
+
+    
+    
     var img = new Image();
     const w = this.width
     const h = this.containerHeight + 50
@@ -95,6 +98,7 @@ export default class BindingSites extends Vue {
       a.click()  
     }
     img.src = url
+    
     
   }
 
@@ -170,7 +174,7 @@ export default class BindingSites extends Vue {
       .range([this.chartHeight, this.margin.top ])
     }
     else {
-      scaleY = d3.scaleLog().clamp(true).domain([0,1])
+      scaleY = d3.scaleSymlog().clamp(true).domain([0,1])
       .range([this.chartHeight, this.margin.top ])
     }
       
