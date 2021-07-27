@@ -2,7 +2,7 @@
   <b-row class="">
     <b-col class="col-lg-10 pb-1">
       <div id="barPlotDiv" :style="{height: containerHeight+'px'}" ref="barPlotDiv"></div>
-      <div id="barPlotLegend" style="padding-top: 10px"  ref="barPlotLegend"></div>    
+      <div id="barPlotLegend" style="padding-top: 50px"  ref="barPlotLegend"></div>    
     </b-col>
     <b-col class="col-lg-2 pb-1">
       <b-field label="Scale" class="">
@@ -51,7 +51,7 @@ export default class BindingSites extends Vue {
   localPosition = 158
   margin: any = {
     top: 0.045 * this.chartHeight,
-    bottom: 0.15 * this.chartHeight,
+    bottom: 0.45 * this.chartHeight,
     left: 0.05 * this.width,
     right: 0.0001 * this.width,
   };
@@ -59,13 +59,13 @@ export default class BindingSites extends Vue {
   public scales = ['Linear', 'Sqrt', 'Log']
   public selected_scale = this.scales[0]
   downloadSVG(evt:any) {
-    var svg:any = document.querySelector("#barPlotSVG");
+    var svg:any = document.querySelector("#innerheatmapSVGBarPlot");
     var svg_xml = (new XMLSerializer()).serializeToString(svg),
     blob = new Blob([svg_xml], {type:'image/svg+xml;charset=utf-8'}),
     url = window.URL.createObjectURL(blob);
     var img = new Image();
     const w = this.width
-    const h = this.containerHeight
+    const h = this.containerHeight + 50
     img.width = this.width
     img.height = h;
     const $this = this
@@ -77,8 +77,9 @@ export default class BindingSites extends Vue {
 
       var ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0, w, h);
-      ctx.font = "20px Arial";
-      ctx.fillText($this.DataHandler.segment, w / 2 , $this.margin.top / 2)
+      ctx.font = "16px Arial";
+      // let localPosition: number = this.localPosition
+      ctx.fillText(`Segment: ${$this.DataHandler.segment}, Position: ${$this.localPosition}`, w / 2 , h - 25 )
       window.URL.revokeObjectURL(url);
       var canvasdata = canvas.toDataURL('image/jpeg');
       var a: any = document.getElementById('imgId');
@@ -118,6 +119,8 @@ export default class BindingSites extends Vue {
     const innerSvg = body.append("svg")
       .attr("id", "innerheatmapSVGBarPlot")
       .style("display", "block")
+      .style("background", "#fff")
+      .style("fill", "#fff")
       .attr("width", this.width)
       .attr("height", this.containerHeight)
 
@@ -146,23 +149,22 @@ export default class BindingSites extends Vue {
     
     
     let chartWidth = this.width - this.margin.right
-    let boxDim: any = chartWidth / preps.length
+    let boxDim: any = (chartWidth - this.margin.left) / preps.length
     this.chartHeight = this.containerHeight - this.margin.top - this.margin.bottom
-    console.log("height", this.chartHeight, this.containerHeight)
     let scaleX: any = d3.scaleBand().domain(preps)
     .range([this.margin.left, chartWidth ])
     
     let scaleY: any = null
     if (this.selected_scale == 'Linear'){
       scaleY = d3.scaleLinear().domain([0, 1])
-      .range([this.margin.top, this.chartHeight ])
+      .range([this.chartHeight, this.margin.top ])
     } else if (this.selected_scale == 'Sqrt' ){
-      scaleY = d3.scaleSqrt().domain([0, 1])
-      .range([this.margin.top, this.chartHeight ])
+      scaleY = d3.scaleSqrt().domain([1, 0])
+      .range([this.chartHeight, this.margin.top ])
     }
     else {
-      scaleY = d3.scaleLog().clamp(true).domain([0, 1])
-      .range([this.margin.top, this.chartHeight ])
+      scaleY = d3.scaleLog().clamp(true).domain([1, 0])
+      .range([this.chartHeight, this.margin.top ])
     }
       
     let scaleColor: any = d3.scaleOrdinal().domain(colors).range(colors);
@@ -175,7 +177,7 @@ export default class BindingSites extends Vue {
     let xAxis: any = svgG.append("g")
     .attr("class", "xAxis")
     .attr("id", "xAxisTBar")
-    .attr("transform", "translate(" + (0) + "," + (this.chartHeight + this.margin.top )  + ")")
+    .attr("transform", "translate(" + (0) + "," + (this.chartHeight )  + ")")
     .style("fill", null)
     .style("stroke-width", 0.2)
     .call(xAxisB)
@@ -193,7 +195,7 @@ export default class BindingSites extends Vue {
     let yAxis: any = svgG.append("g")
     .attr("class", "yAxis")
     .attr("id", "yAxisTBar")
-    .attr("transform", "translate(" + (this.margin.left ) + "," + (boxDim / 8) + ")")
+    .attr("transform", "translate(" + (this.margin.left ) + "," + (0) + ")")
     .style("fill", null)
     .style("stroke-width", 0.2)
     .call(yAxisB)
@@ -211,6 +213,7 @@ export default class BindingSites extends Vue {
     .selectAll(".barG")
     .data(stacks).enter()
     .append("g")
+    
     .classed("barG", true)
     .selectAll(".posBar")
     .data((d:any)=>{return d})
@@ -220,13 +223,13 @@ export default class BindingSites extends Vue {
         .append("rect")
 		    .classed('posBar', true)
         .attr("transform", (d: any, i: any) => {
-          return "translate(" + scaleX(d.data.prep) + "," +  ( scaleY(d[0])  ) + ")";
+          return "translate(" + scaleX(d.data.prep) + "," +  ( scaleY(d[1])  ) + ")";
         })
         .style("cursor", "pointer")
         .attr("width",  boxDim )
         .style("stroke", "#fff")
         .attr("height",  (d:any, i:any)=>{   
-          return scaleY(d[1]) - scaleY(d[0])
+          return scaleY(d[0]) - scaleY(d[1])
         })
         .style("fill", (d: any) => {
           return scaleColor(d.key)
@@ -241,76 +244,76 @@ export default class BindingSites extends Vue {
     )
 
 
-    // let legendHeight: number = $this.chartHeight   * 0.5
-    // let legendWidth: number = this.width
+    let legendHeight: number = $this.chartHeight   * 1
+    let legendWidth: number = this.width
     
-    // let legendMargin: any = {
-    //   top: legendHeight * 0.1,
-    //   left: legendHeight * 0.1,
-    //   right: legendHeight * 0.1,
-    //   bottom: legendHeight * 0.2
-    // }
-    // legendHeight  = legendHeight - legendMargin.top - legendMargin.bottom
-    // let legendBoxHeight: number = legendHeight  * 0.2
-    // let legendBox: number = legendWidth  / aas.length
+    let legendMargin: any = {
+      top: legendHeight * 0.1,
+      left: legendHeight * 0.1,
+      right: legendHeight * 0.1,
+      bottom: legendHeight * 0.2
+    }
+    legendHeight  = legendHeight - legendMargin.top - legendMargin.bottom
+    let legendBoxHeight: number = legendHeight * 0.5  
+    let legendBox: number = legendWidth  / aas.length
 
-    // let g: any = d3.select("#barPlotLegend")
-    // .append("svg")
-    // .attr("id", "barPlotLegendSVG")
-    // .attr("viewBox", `0 0 ${legendWidth} ${legendHeight}`)
-    // .append("g")
+    let g: any = d3.select("#barPlotLegend")
+    .append("svg")
+    .attr("id", "barPlotLegendSVG")
+    .attr("viewBox", `0 0 ${legendWidth} ${legendHeight}`)
+    .append("g")
 
 
-    // scaleX = d3.scaleBand().domain(aas)
-    // .range([0, legendWidth  ])
+    scaleX = d3.scaleBand().domain(aas)
+    .range([0, legendWidth  ])
     
-    // g.selectAll(".posBarLegRect")
-    // .data(aas)
-    // .enter()
-    // .append("rect")
-    // .attr("transform", (d:any) =>{
-    //   return "translate(" + scaleX(d) + "," + (0) + ")"
-    // })
-    // .attr("height",  legendBoxHeight )
-    // .attr("width", legendBox )
-    // .style("fill", (d:any) => scaleColor(d))
+    g.selectAll(".posBarLegRect")
+    .data(aas)
+    .enter()
+    .append("rect")
+    .attr("transform", (d:any) =>{
+      return "translate(" + scaleX(d) + "," + (0) + ")"
+    })
+    .attr("height",  legendBoxHeight )
+    .attr("width", legendBox )
+    .style("fill", (d:any) => scaleColor(d))
     
     
-    // let xAxisLegB: any = d3
-    //   .axisBottom(scaleX)
-    //   .ticks(20)
-    //   .tickSizeOuter(0)
-    //   .tickSize(0)
-    // let xAxisLeg: any = g.append("g")
-    // .attr("class", "xAxis")
-    // .attr("id", "xAxisRBar")
-    // .attr("transform", "translate(" + (0) + "," + (legendBoxHeight) + ")")
-    // .style("fill", null)
-    // .style("stroke-width", 0.2)
-    // .call(xAxisLegB)
-    // .call((g:any) => g.select(".domain").remove())
-    // .selectAll('text')
-    // .style('text-anchor', 'middle')
-    // .attr('transform', 'rotate(0)').style("font-size", "1em")
-    // try {
-    //   let maxyTick: any = d3.max(yAxis.selectAll("g").nodes().map((d:any)=>{
-    //       return d.getBBox().height
-    //     })
-    //   )      
-    //   if (maxyTick > boxDim){
-    //     yAxis.style("font-size", `${ boxDim / (maxyTick*5) }em`)
-    //   }    
-    //   maxyTick =  d3.max(xAxis.selectAll("g").nodes().map((d:any)=>{
-    //       return d.getBBox().height
-    //     })
-    //   )
-    //   if (maxyTick > this.margin.bottom){
-    //     const l = this.margin.bottom
-    //     xAxis.style("font-size", `${ (l) / (maxyTick*2) }em`)
-    //   }   
-    // } catch(err: any){
-    //   console.error(err)
-    // }
+    let xAxisLegB: any = d3
+      .axisBottom(scaleX)
+      .ticks(20)
+      .tickSizeOuter(0)
+      .tickSize(0)
+    let xAxisLeg: any = g.append("g")
+    .attr("class", "xAxis")
+    .attr("id", "xAxisRBar")
+    .attr("transform", "translate(" + (0) + "," + (legendBoxHeight) + ")")
+    .style("fill", null)
+    .style("stroke-width", 0.2)
+    .call(xAxisLegB)
+    .call((g:any) => g.select(".domain").remove())
+    .selectAll('text')
+    .style('text-anchor', 'middle')
+    .attr('transform', 'rotate(0)').style("font-size", "17px")
+    try {
+      let maxyTick: any = d3.max(yAxis.selectAll("g").nodes().map((d:any)=>{
+          return d.getBBox().height
+        })
+      )      
+      if (maxyTick > boxDim){
+        yAxis.style("font-size", `${ boxDim / (maxyTick) }em`)
+      }    
+      maxyTick =  d3.max(xAxis.selectAll("g").nodes().map((d:any)=>{
+          return d.getBBox().height
+        })
+      )
+      if (maxyTick > this.margin.bottom){
+        const l = this.margin.bottom
+        xAxis.style("font-size", `${ (l) / (maxyTick) }em`)
+      }   
+    } catch(err: any){
+      console.error(err)
+    }
 
 
   }
