@@ -159,11 +159,11 @@ export default class BindingSites extends Vue {
       scaleY = d3.scaleLinear().domain([0, 1])
       .range([this.chartHeight, this.margin.top ])
     } else if (this.selected_scale == 'Sqrt' ){
-      scaleY = d3.scaleSqrt().domain([1, 0])
+      scaleY = d3.scaleSqrt().domain([0,1])
       .range([this.chartHeight, this.margin.top ])
     }
     else {
-      scaleY = d3.scaleLog().clamp(true).domain([1, 0])
+      scaleY = d3.scaleLog().clamp(true).domain([0,1])
       .range([this.chartHeight, this.margin.top ])
     }
       
