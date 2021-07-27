@@ -15,7 +15,14 @@
         
       </b-field>
       <b-field>
-        <b-button @click="downloadSVG()">Save SVG</b-button>
+        <b-button @click="downloadSVG()">Save SVG</b-button>        
+      </b-field>
+      <hr>
+      <b-field>
+        <p style="text-align: center;">Position: {{localPosition}}</p>
+      </b-field>
+      <b-field>
+        <p style="text-align: center;">Segment: {{DataHandler.segment}}</p>
       </b-field>
     </b-col>
   </b-row>
@@ -48,7 +55,7 @@ export default class BindingSites extends Vue {
   containerHeight = 300;
   chartHeight = this.containerHeight
   width = 0
-  localPosition = 158
+  localPosition = 1
   margin: any = {
     top: 0.045 * this.chartHeight,
     bottom: 0.45 * this.chartHeight,
@@ -323,7 +330,7 @@ export default class BindingSites extends Vue {
     this.margin.right= 0.05 * this.width
     this.margin.left  = 0.1 * this.width
     this.width = this.width * 2
-    this.localPosition = 158
+    
     this.makeBarPlot()
   }
 
