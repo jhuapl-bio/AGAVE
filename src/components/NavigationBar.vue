@@ -1,7 +1,7 @@
 <template>
 <b-navbar centered style="color: white;" class="navbar is-aplblue" role="navigation" aria-label="main navigation">
   <div id="navbarBasicExample" class="navbar-menu">
-    <h1 class="navbar-item is-size-3" style="width: 25%">
+    <h1 class="navbar-item is-size-3" style="min-width: 25%; max-width: 50%">
       <span v-for="n in name"
       v-bind:key="n"
       @mouseover="showTitleFull = true" @mouseleave="showTitleFull=false"
@@ -25,7 +25,7 @@
         <img class="navbar-image" src="@/assets/images/apl.logo.large.horizontal.white.svg"/>
       </a>
     </div>
-    <div class="navbar-end" style="width: 25%">
+    <div class="navbar-end" style="min-width: 25%; max-width: 50%">
       <a class="navbar-item" style="opacity: 0.0;">
         About
       </a>
