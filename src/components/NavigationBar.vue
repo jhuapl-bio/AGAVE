@@ -1,31 +1,31 @@
 <template>
 <b-navbar centered style="color: white;" class="navbar is-aplblue" role="navigation" aria-label="main navigation">
-    <div id="navbarBasicExample" class="navbar-menu">
-      <h1 class="navbar-item is-size-3" style="">
-        <span v-for="n in name"
-        v-bind:key="n"
-        @mouseover="showTitleFull = true" @mouseleave="showTitleFull=false"
-        style="color: #fff; cursor: default">
-          {{n.substring(0,1)}}
-        </span>
-        <transition name="slide-fade">
-          <div style="display:flex" v-if="showTitleFull">
-            <div >
-              <span v-for="n in name"
-                v-bind:key="n"
-                style="color: #fff;">
-                <small style="font-size: 14px">{{n}} </small>
-              </span> 
-            </div>
+  <div id="navbarBasicExample" class="navbar-menu">
+    <h1 class="navbar-item is-size-3" style="width: 25%">
+      <span v-for="n in name"
+      v-bind:key="n"
+      @mouseover="showTitleFull = true" @mouseleave="showTitleFull=false"
+      style="color: #fff; cursor: default">
+        {{n.substring(0,1)}}
+      </span>
+      <transition name="slide-fade">
+        <div style="display:flex" v-if="showTitleFull">
+          <div >
+            <span v-for="n in name"
+              v-bind:key="n"
+              style="color: #fff;">
+              <small style="font-size: 14px">{{n}} </small>
+            </span> 
           </div>
-        </transition> 
-      </h1>
+        </div>
+      </transition> 
+    </h1>
     <div class="navbar-start">
       <a id="logo" class="navbar-item force-center" href="https://jhu.edu">
         <img class="navbar-image" src="@/assets/images/apl.logo.large.horizontal.white.svg"/>
       </a>
     </div>
-    <div class="navbar-end">
+    <div class="navbar-end" style="width: 25%">
       <a class="navbar-item" style="opacity: 0.0;">
         About
       </a>
