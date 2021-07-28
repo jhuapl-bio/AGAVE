@@ -1,68 +1,70 @@
 <template>
-  <div style="">
-    <nav class="navbar is-aplblue" style="">
-      <div class="navbar-title" style="width: 100%">
-        <div class="navbar-brand pl-3">
-          <div class="navbar-image is-size-2" style="float:right">
+<b-navbar centered style="color: white;" class="navbar is-aplblue" role="navigation" aria-label="main navigation">
+    <div id="navbarBasicExample" class="navbar-menu">
+      <h1 class="navbar-item is-size-3" style="">
+        <span v-for="n in name"
+        v-bind:key="n"
+        @mouseover="showTitleFull = true" @mouseleave="showTitleFull=false"
+        style="color: #fff; cursor: default">
+          {{n.substring(0,1)}}
+        </span>
+        <transition name="slide-fade">
+          <div style="display:flex" v-if="showTitleFull">
+            <div >
+              <span v-for="n in name"
+                v-bind:key="n"
+                style="color: #fff;">
+                <small style="font-size: 14px">{{n}} </small>
+              </span> 
+            </div>
+          </div>
+        </transition> 
+      </h1>
+    <div class="navbar-start">
+      <a id="logo" class="navbar-item force-center" href="https://jhu.edu">
+        <img class="navbar-image" src="@/assets/images/apl.logo.large.horizontal.white.svg"/>
+      </a>
+    </div>
+    <!-- <div class="navbar-end">
+      <a class="navbar-item">
+        About
+      </a>
+    </div> -->
+  </div>
+       
+  </b-navbar>
+  <!-- <div style="">
+    <nav class="navbar is-aplblue" centered>
+      <div class="navbar-brand">
+        <h1 class="navbar-item is-size-3" style="">
+          <span v-for="n in name"
+          v-bind:key="n"
+          @mouseover="showTitleFull = true" @mouseleave="showTitleFull=false"
+          style="color: #fff; cursor: default">
+            {{n.substring(0,1)}}
+          </span>
+          <transition name="slide-fade">
+            <div style="display:flex" v-if="showTitleFull">
+              <div >
+                <span v-for="n in name"
+                  v-bind:key="n"
+                  style="color: #fff;">
+                  <small style="font-size: 14px">{{n}} </small>
+                </span> 
+              </div>
+            </div>
+          </transition> 
+        </h1>
+      </div>
+      <div class="navbar-image is-size-1" style="">
             <a href="https://jhu.edu" >
-              <img class="navbar-image" src="@/assets/images/apl.shield.large.white.svg"/>
+              <img class="navbar-image" src="@/assets/images/apl.logo.small.horizontal.white.svg"/>
             </a>
             
-          </div>
-          <h1 class="navbar-item is-size-2" style="float:left">
-            <!-- {{name.join(" ")}} -->
-            <div class="vertical">
-            </div>
-            <span v-for="n in name"
-            v-bind:key="n"
-            @mouseover="showTitleFull = true" @mouseleave="showTitleFull=false"
-            style="color: #fff; cursor: default">
-              {{n.substring(0,1)}}
-              <!-- <strong style="color: #fff;">{{n.substring(0,1)}}</strong><small style="font-size: 14px">{{n.substring(1,n.length)}}</small> -->
-            </span>
-            <transition name="slide-fade">
-              <div style="display:flex" v-if="showTitleFull">
-                <div class = "vertical" >
-                </div>
-                <div >
-                  <span v-for="n in name"
-                    v-bind:key="n"
-                    style="color: #fff;">
-                    <small style="font-size: 14px">{{n}} </small>
-                  </span> 
-                </div>
-              </div>
-              
-            </transition> 
-            <!-- <div style="display:block">
-            <span v-for="n in name"
-            v-bind:key="n"
-            style="color: #fff; cursor: default"
-            @mouseover="showTitleFull = true" @mouseleave="showTitleFull=false"
-            >
-              <strong style="color: #fff">{{n.substring(0,1)}}
-              </strong>
-            </span>
-            <transition name="fade">
-              <p style="font-size: 12px" v-if="showTitleFull">{{name.join("")}}</p>
-            </transition>
-            </div> -->
-            <!-- <div style="display:block; font-size: 12px;">
-            <span v-for="n in name"
-            v-bind:key="n"
-            style="color: #fff; font-size: 29px; cursor: default"
-            >
-              {{n.substring(0,1)}}
-            </span>
-            <hr>
-            {{name.join("")}}
-            </div> -->
-          </h1>
         </div>
-      </div>
     </nav>
     
-  </div>
+  </div> -->
 </template>
 
 <script lang="ts">
@@ -80,13 +82,42 @@ export default class NavigationBar extends Vue {
 
 <style scoped lang="scss">
   .navbar-image {
-    max-height: 6rem;
+    max-height: 16rem;
+    min-height: 6rem;
     padding-top: 0;
     padding-bottom: 0;
-    // padding-left: 6rem;
   }
-  .navbar-title {
-    padding-left: 4rem;
+  .navbar, .navbar-brand, .navbar-item, .navbar-image{
+    padding-top: 0px;
+    padding-bottom: 0px;
+    text-align: center;
+  }
+
+  .navbar-start{
+    flex-grow: 1;
+    justify-content: center;
+    text-align: center;
+  }
+
+  @media screen and (max-width: $desktop - 1px){
+      #logo{
+          display: none;
+      }
+      .force-center{
+          position: absolute;
+          left: 50%;
+          transform: translateX(-50%);
+      }
+      .navbar-end{
+          display: flex;
+          justify-content: center;
+      }
+  }
+
+  @media screen and (min-width: $desktop){
+      .navbar-brand{
+          display: none;
+      }
   }
   .bg-is-inherited {
     background-color: inherit;
@@ -99,9 +130,7 @@ export default class NavigationBar extends Vue {
     height: 4.5rem;
     width: 4.5rem;
   }
-  nav {
-    display:block
-  }
+  
   a {
     color: white;
   }
