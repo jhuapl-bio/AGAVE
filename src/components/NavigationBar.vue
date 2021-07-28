@@ -25,11 +25,11 @@
         <img class="navbar-image" src="@/assets/images/apl.logo.large.horizontal.white.svg"/>
       </a>
     </div>
-    <!-- <div class="navbar-end">
-      <a class="navbar-item">
+    <div class="navbar-end">
+      <a class="navbar-item" style="opacity: 0.0;">
         About
       </a>
-    </div> -->
+    </div>
   </div>
        
   </b-navbar>
