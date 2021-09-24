@@ -1,11 +1,18 @@
 <template>
   <div class="container-fluid">
     <div class="row" style="padding: 0px; margin: 0">
-      <div class="col-lg-12 pr-5">
+      <div class="col-lg-12">
+        <h3 class="title">Settings</h3>
         <VisualizationOptions 
-          :referenceSequence=referenceSequence
-          @sliderUpdate="sliderUpdate"/>
+           @sliderUpdate="sliderUpdate"/>
+         
+      </div>
+      <div class="col-lg-12">
         <hr class="solid">
+      </div>
+      <div>
+        <h3 class="title">Heatmap Viewer</h3>
+        <h5 class="subtitle">Click a column in the heatmap to zoom in on its molecular position</h5>
       </div>
       <div class="col-lg-8 pr-5" v-if="DataHandler.cells && DataHandler.cells.length > 0">      
         <Heatmap 
@@ -18,14 +25,8 @@
           @changePosition="changePosition"
         >
         </Heatmap>
-        <hr>
-        <BarPlot 
-          ref="barplot"
-          v-if="DataHandler.cells"
-          :DataHandler="DataHandler"
-        ></BarPlot>
       </div>
-      <b-col class="col-lg-4 pb-1">
+      <b-col class="col-lg-4 pb-1 big-top-margin">
         <MoleculeViewer 
           :segment=segment 
           :position=position
@@ -35,9 +36,17 @@
           >
         </MoleculeViewer>
       </b-col>
-      <b-col class="col-lg-12 pb-1">
-        
-        
+      <div class="col-lg-12">
+        <hr class="solid">
+      </div>
+      <b-col class="col-lg-8 pb-1">
+        <h3 class="title">Stacked Bar Chart</h3>
+        <h5 class="subtitle">Click a column in the heatmap to visualize its diversity</h5>
+        <BarPlot 
+          ref="barplot"
+          v-if="DataHandler.cells"
+          :DataHandler="DataHandler">
+        </BarPlot>
       </b-col>
       <canvas id="mycanvas"></canvas>
     </div>
@@ -113,4 +122,9 @@ export default class Visualization extends Vue {
 </script>
 
 <style scoped lang="scss">
+
+.big-top-margin {
+  margin-top: 4rem;
+}
+
 </style>

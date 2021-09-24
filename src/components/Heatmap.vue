@@ -1,5 +1,5 @@
 <template>
-  <div style="padding-top: 10px; width: 100%; ">    
+  <div style="width: 100%; ">    
     <b-row>
       <b-col class="col-lg-12 pb-1">
         <div id="heatmapDiv" ref="heatmapDiv">

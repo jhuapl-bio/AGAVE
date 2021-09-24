@@ -49,7 +49,7 @@
       </div>
     </b-tab>
 
-    <b-tab title="Customize Heatmap">
+    <b-tab title="Heatmap Settings">
       <div class="columns is-variable is-4">
         <b-field label="Depth Threshold" class="column is-narrow">
           <b-numberinput v-model="depth_threshold" :step="1"  :min="0" :max="100000" controls-position="compact"></b-numberinput>
@@ -76,7 +76,7 @@
       </div>
     </b-tab>
 
-    <b-tab title="Upload Data">
+    <b-tab title="Data Upload">
       <div class="columns is-variable is-4">
         <b-field label="Custom Variant File Input" class="column is-6">
           <b-form-file
