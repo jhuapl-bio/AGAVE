@@ -10,7 +10,7 @@
       <div class="col-lg-12">
         <hr class="solid">
       </div>
-      <div>
+      <div class="col-lg-12">
         <h3 class="title">Heatmap Viewer</h3>
         <h5 class="subtitle">Click a column in the heatmap to zoom in on its molecular position</h5>
       </div>
