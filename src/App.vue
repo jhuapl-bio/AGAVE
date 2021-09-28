@@ -52,8 +52,6 @@ export default class App extends Vue {
     // padding: 1rem;
   }
   .add-padding {
-    padding-left: 5.5rem;
-    padding-right: 5.5rem;
     width: -webkit-fill-available;
   }
 
