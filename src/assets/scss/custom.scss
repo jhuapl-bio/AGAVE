@@ -1,0 +1,137 @@
+// Import Bulma's core
+@import "~bulma/sass/utilities/_all";
+
+// Set your colors
+
+.focusedColumn{
+    stroke: black,
+}
+
+.tooltip {
+    font-family: Arial, sans-serif !important;
+    position: absolute;
+    text-align: center;
+    max-width: 300px;
+    padding: 10px;
+    background: #efefef;
+    border: 0px;
+    border-radius: 4px;
+    pointer-events: none;
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    align-items: center;
+    font-weight: 200;
+    color: #fff;
+    background: #232B2B;
+    box-shadow: 0px 3px 1px rgba(39, 39, 40, 0.6);
+    font-size: 1.1em;
+}
+$aplblue: #002D72;
+$aplblue-invert:findColorInvert($aplblue);
+$aplblue-light: #005Eb8;
+$aplblue-light-invert: findColorInvert($aplblue-light);
+$aplgrey2: #B4B2AD;
+$aplgrey2-invert: findColorInvert($aplgrey2); 
+
+$primary: $aplblue-light;
+$primary-light: findLightColor($primary);
+$primary-dark: findDarkColor($primary);
+$primary-invert: findColorInvert($primary);
+$twitter: #4099FF;
+$twitter-invert: findColorInvert($twitter);
+
+// Lists and maps
+$custom-colors: null !default;
+$custom-shades: null !default;
+
+// Setup $colors to use as bulma classes (e.g. 'is-twitter')
+$colors: mergeColorMaps(
+    (
+        "white": (
+            $white,
+            $black,
+        ),
+        "black": (
+            $black,
+            $white,
+        ),
+        "light": (
+            $light,
+            $light-invert,
+        ),
+        "dark": (
+            $dark,
+            $dark-invert,
+        ),
+        "primary": (
+            $primary,
+            $primary-invert,
+            $primary-light,
+            $primary-dark,
+        ),
+        "link": (
+            $link,
+            $link-invert,
+            $link-light,
+            $link-dark,
+        ),
+        "info": (
+            $info,
+            $info-invert,
+            $info-light,
+            $info-dark,
+        ),
+        "success": (
+            $success,
+            $success-invert,
+            $success-light,
+            $success-dark,
+        ),
+        "warning": (
+            $warning,
+            $warning-invert,
+            $warning-light,
+            $warning-dark,
+        ),
+        "danger": (
+            $danger,
+            $danger-invert,
+            $danger-light,
+            $danger-dark,
+        ),
+        "aplgrey2": (
+            $aplgrey2,
+            $aplgrey2-invert,
+        ),
+        "aplblue": (
+            $aplblue,
+            $aplblue-invert,
+        ),
+        "aplblue-light": (
+            $aplblue-light,
+            $aplblue-light-invert,
+        )
+    ),
+    $custom-colors
+);
+
+// Links
+$link: $primary;
+$link-invert: $primary-invert;
+$link-focus-border: $primary;
+
+// Import Bulma and Buefy styles
+@import "~bulma";
+@import "~buefy/src/scss/buefy";
+
+::-webkit-scrollbar {
+    -webkit-appearance: none;
+    width: 7px;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    border-radius: 4px;
+    background-color: rgba(0, 0, 0, .5);
+    box-shadow: 0 0 1px rgba(255, 255, 255, .5);
+  }
