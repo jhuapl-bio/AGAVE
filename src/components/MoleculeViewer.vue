@@ -63,7 +63,7 @@ export default class MoleculeViewer extends Vue {
   public entity_focus:any = null;
   
   public available_focus_chains: any[] = []
-  public protein: string = "";
+  // public protein: string = "";
   public map_positions:any = {}
   public queryingResidueMapping: boolean = false;
   public queryingReferenceSequence: boolean = false;
@@ -73,7 +73,7 @@ export default class MoleculeViewer extends Vue {
   public assemblyId = "1"
   public positions: any[] = [];
   public chains: any = {id: null,  entities: [] };
-  public protein_per_segment: any = {
+  public protein_per_protein: any = {
     "H3N2": {
       "HA": '4o5n',
       "NP": '1hoc',
@@ -101,7 +101,7 @@ export default class MoleculeViewer extends Vue {
   @Prop({ required: true, default: 55 })
   public position!: string;
   @Prop({ required: true, default: 'HA' })
-  public segment!: string;
+  public protein!: string;
 
   @Prop({ required: true, default: null })
   public DataHandler!: DataHandler
@@ -122,15 +122,15 @@ export default class MoleculeViewer extends Vue {
     }
   }
 
-  @Watch('segment')
-  onSegmentChanged(value: number, oldValue: number) {
-    console.log("new segment", value)
-    this.proteinChange(this.protein_per_segment[this.DataHandler.subtype][this.segment])
+  @Watch('protein')
+  onproteinChanged(value: number, oldValue: number) {
+    console.log("new protein", value)
+    this.proteinChange(this.protein_per_protein[this.DataHandler.organism][this.protein])
   }
 
-  @Watch('DataHandler.subtype')
+  @Watch('DataHandler.organism')
   onDataChanged(value: any, oldValue: any){
-    this.proteinChange(this.protein_per_segment[value][this.segment])
+    this.proteinChange(this.protein_per_protein[value][this.protein])
   }
 
   @Watch('isSwitched')
@@ -140,7 +140,7 @@ export default class MoleculeViewer extends Vue {
     } else {
       this.assemblyId = "preffered"
     }
-    this.proteinChange(this.protein_per_segment[this.DataHandler.subtype][this.segment])
+    this.proteinChange(this.protein_per_protein[this.DataHandler.organism][this.protein])
   }
   siteHover(item: any){
     this.localPosition = item.endIndex + this.map_positions[item.entity].positions[1]
@@ -193,7 +193,7 @@ export default class MoleculeViewer extends Vue {
       // https://www.ebi.ac.uk/pdbe/graph-api/pdbe_pages/uniprot_mapping/4o5n/1
       this.queryingResidueMapping = true;
       // throw new Error("new err")
-      let response: any = await this.getdata(`https://www.ebi.ac.uk/pdbe/graph-api/mappings/uniprot_segments/${options.moleculeId}`)
+      let response: any = await this.getdata(`https://www.ebi.ac.uk/pdbe/graph-api/mappings/uniprot_proteins/${options.moleculeId}`)
       this.title = "Fetching..."
       // console.log("Querying API call finished", response)
       this.map_positions = {}
@@ -302,7 +302,7 @@ export default class MoleculeViewer extends Vue {
     // Available options here: https://github.com/PDBeurope/pdbe-molstar/wiki/1.-PDBe-Molstar-as-JS-plugin
     // Our H3N2 HA protein is 4o5n and our H1N1 HA protein is 3lzg
     const options: any= {
-      moleculeId: this.protein_per_segment[this.DataHandler.subtype][this.segment],
+      moleculeId: this.protein_per_protein[this.DataHandler.organism][this.protein],
       assemblyId: this.assemblyId,
       hideControls: true,
       bgColor: {r:255, g:255, b:255}

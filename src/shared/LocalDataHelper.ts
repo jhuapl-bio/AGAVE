@@ -44,7 +44,9 @@ export default class LocalDataHelper {
   public readJSON(filepath: string)
   {
     return new Promise<void>(function(resolve,reject){
-      d3.json(`${process.env.BASE_URL}data/${filepath}`).then((data:any)=>{
+      console.log("_______", `${process.env.BASE_URL}${filepath}`)
+      d3.json(`${process.env.BASE_URL}${filepath}`).then((data:any)=>{
+        console.log(data)
         resolve(data)
       }).catch((error)=>{
         console.log("error")

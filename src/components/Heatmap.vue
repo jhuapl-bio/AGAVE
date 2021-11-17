@@ -3,7 +3,10 @@
     <b-row>
       <b-col class="col-lg-12 pb-1">
         <div id="heatmapDiv" ref="heatmapDiv">
-          <p v-if="!DataHandler || DataHandler.cells.length < 1">No data available</p>
+          <div v-if="!DataHandler || DataHandler.cells.length < 1">
+            <hr>
+            <strong class="text-danger" >No data available</strong>
+          </div>
           <div class="tooltip"  id="tooltipHeatmap" style="opacity: 0; font-size: 12px; display:block">
             <div  id="tooltipcontent"></div>
             <b-table  striped hover :items="tooltiptable"
@@ -117,7 +120,7 @@ export default class Heatmap extends Vue {
       var ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0, w, h);
       ctx.font = "20px Arial";
-      ctx.fillText($this.DataHandler.segment, w / 2 , $this.margin.top / 2)
+      ctx.fillText($this.DataHandler.protein, w / 2 , $this.margin.top / 2)
       window.URL.revokeObjectURL(url);
       var canvasdata = canvas.toDataURL('image/jpeg');
       var a: any = document.getElementById('imgId');
@@ -189,7 +192,7 @@ export default class Heatmap extends Vue {
   }
 
   defineHeatmap() {
-    console.log("define heatmap")
+    console.log("define heatmap!!!")
     try {
       this.legendWidth = this.$refs.heatmapLegend.clientWidth;
       this.width = this.$refs.heatmapDiv.clientWidth;
@@ -205,7 +208,7 @@ export default class Heatmap extends Vue {
     d3.select("#overflowDiv").remove()
     d3.selectAll("#heatmapSliderSVG").remove()
     d3.selectAll("#heatmapLegend").selectAll("*").remove()
-    const segments = ["HA", "M1", "NA", "NP"];
+    const proteins = ["HA", "M1", "NA", "NP"];
     const $this = this;
     this.makeHeatmap(this.DataHandler.cells)
   }
@@ -344,6 +347,7 @@ export default class Heatmap extends Vue {
       const val: any= parseFloat((Math.pow(10,d)*100).toFixed(3) )
       return ((val > 0.01 ? val : val.toExponential()) + "%")
     });
+
     d3.select("#heatmapLegend").select(".legendG")
       .append("g")
       .attr("class", "legendyAxis")
@@ -418,6 +422,7 @@ export default class Heatmap extends Vue {
     .on("end", brushended)
     // .on("brush", brushed);
     function brushended(event: any) {
+      console.log("brush end")
       if (event && !event.selection) {
         $this.DataHandler.updatePositions(d3.extent($this.DataHandler.cells_full, (d:any)=>{return d.position}))
         $this.DataHandler.updateCells()
@@ -434,9 +439,9 @@ export default class Heatmap extends Vue {
       .attr("height", contextheight + 7);
     function brushed({selection}:any) {
       if (selection){
-      let ranges: any = selection.map(scaleX.invert, scaleX).map((d:any) => { return Math.round(d) })
-      $this.DataHandler.updatePositions(ranges)
-      $this.DataHandler.updateCells()
+        let ranges: any = selection.map(scaleX.invert, scaleX).map((d:any) => { return Math.round(d) })
+        $this.DataHandler.updatePositions(ranges)
+        $this.DataHandler.updateCells()
       }
       $this.updateHeatmap()
     }
@@ -476,6 +481,7 @@ export default class Heatmap extends Vue {
       cells = cells.filter((d:any)=>{ return this.positions.indexOf(d.position) > -1  })
     }
     const min = Math.max(this.DataHandler.position_ranges[0], d3.min($this.positions))
+    console.log(cells,"<cells filtered update")
     const max = Math.min(this.position_max, d3.max($this.positions))
     this.positions = this.positions.filter((d:any)=>{ return d <= max && d >= min})
     if (this.scrollDirection == 'x'){
@@ -499,12 +505,16 @@ export default class Heatmap extends Vue {
     .range([scrollAttr.marginA, ( scrollAttr.long ) * this.column_width - scrollAttr.marginB])
     const minD = this.x(min);
     const maxD = this.x(max);
-    const over = maxD - minD + scrollAttr.marginA + scrollAttr.marginB;
+    let over = this.width
+    if (scrollAttr[this.scrollDirection].length  > 20){
+      over = maxD - minD + scrollAttr.marginA + scrollAttr.marginB;
+    }
     this.oversize = over
-    const boxWidth =
-      (over - scrollAttr.marginA - scrollAttr.marginB) / scrollAttr[this.scrollDirection].length -
+    const boxWidth = 
+      (over - scrollAttr.marginA - scrollAttr.marginB) / (  scrollAttr[this.scrollDirection].length > 0 ? scrollAttr[this.scrollDirection].length : 1) -
       this.border;
     this.boxWidth = boxWidth;
+    console.log(this.boxWidth, this.boxHeight)
     this.scaleX
       .domain(scrollAttr.x)
       .range([scrollAttr.marginA, over - scrollAttr.marginB]);
@@ -604,7 +614,7 @@ export default class Heatmap extends Vue {
     .style("fill", "white")
     const blocks = g.selectAll(".block")
     .data(cells, (d:any, i:any)=>{
-        "_"+d.experiment.replaceAll(" ", "_").replaceAll("-", "_") + d.position +d.prep_id+ $this.DataHandler.segment
+        "_"+d.experiment.replaceAll(" ", "_").replaceAll("-", "_") + d.position +d.prep_id+ $this.DataHandler.protein
     })
     .join(
       function (enter: any) {

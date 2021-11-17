@@ -17,29 +17,31 @@
             </option>
           </b-select>
         </b-field>
-        <b-field label="Segment" class="column is-narrow">
-          <b-select placeholder="Segment" v-model="DataHandler.segment" @change="emitChange($event, { full: true, target: 'segment' })" :options="segments"></b-select>
+        <b-field label="Protein" class="column is-narrow">
+          <b-select placeholder="protein" v-model="DataHandler.protein" @change="emitChange($event, { full: true, target: 'protein' })" :options="DataHandler.proteins"></b-select>
         </b-field>
+        <!-- <b-field label="Show Discordants Only" class="column is-narrow"> -->
+          <b-checkbox 
+            @change="emitChange($event, { full: true, target: 'discordant' })" 
+            v-model="showDiscordantOnly" >Show Discordants Only</b-checkbox>
+        <!-- </b-field> -->
         <b-field label="Group" class="column is-narrow">
           <b-select placeholder="Group" v-if="DataHandler.group" v-model="DataHandler.group" @change="emitChange($event, { full: true, target: 'group' })" multiple :options="DataHandler.groups"></b-select>
         </b-field>
-        <b-field label="Axis Experiment Consensus"  class="column is-narrow" v-if="DataHandler && DataHandler.consensus_map">
-          <b-select :disabled="!isSwitched" placeholder="Mapped Experiment" v-model="DataHandler.selected_consensus" @change="emitChange($event, { full: false, target: 'selected_consensus' })">
-            <option
-            v-for="option in DataHandler.consensus_map"
-            :value="option"
-            :key="option.experiment">
-                {{ option.experiment }}
-            </option>
-          </b-select>
+        <b-field label="Axis Experiment Consensus"  class="column is-narrow" >
+          <b-select :disabled="!isSwitched" placeholder="Mapped Experiment" 
+            :options="DataHandler.experiments"
+            v-model="DataHandler.experiment"
+            @change="emitChange($event, { full: false, target: 'selected_consensus' })">
+          </b-select> 
         </b-field> 
-        <b-field label="Subtype" class="column is-narrow">
+        <b-field label="Organism" class="column is-narrow">
           <b-select 
-          placeholder="Subtype" 
-          v-model="DataHandler.subtype" 
-          @change="emitChange($event, { full: false, target: 'subtype' })">
+          placeholder="Organism" 
+          v-model="DataHandler.organism" 
+          @change="emitChange($event, { full: false, target: 'organism' })">
             <option
-            v-for="option in ['H1N1', 'H3N2']"
+            v-for="option in DataHandler.organisms"
             :value="option"
             :key="option">
               {{ option }}
@@ -110,8 +112,9 @@ export default class VisualizationOptions extends Vue {
   public data:any = null
   public cells: any = null
   public customfile: any = null
-  public segment: string = 'HA'
-  public segments: Array<string> = ['HA', 'NP', 'NA', 'M', 'PB1', 'PB2', 'NS', 'PA']
+  public protein: string = ""
+  public showDiscordantOnly: boolean = true
+  public proteins: Array<string> = []
   public group: any[] = []
   public groups: Array<any> = []
   public isSwitched: boolean = true
@@ -143,18 +146,18 @@ export default class VisualizationOptions extends Vue {
   async onChangeFile(value: any, oldValue: any) {
     const $this = this
     const reader = new FileReader()
-    let estimate_segment: any = null
+    let estimate_protein: any = null
     try{
-      estimate_segment = value.name.split(".")[0]
-      if (this.segments.indexOf(estimate_segment) > -1){
-        this.segment = estimate_segment
+      estimate_protein = value.name.split(".")[0]
+      if (this.proteins.indexOf(estimate_protein) > -1){
+        this.protein = estimate_protein
       }
     } catch(err){
       console.log(err)
     }
     reader.onload = function(event:any) {
       $this.getData(reader.result, 'string').then((d:any)=>{
-        $this.DataHandler.segment = $this.segment
+        $this.DataHandler.protein = $this.protein
         $this.$emit('sliderUpdate', {value: $this.DataHandler, target: 'DataHandler'})
       })
     }
@@ -184,19 +187,22 @@ export default class VisualizationOptions extends Vue {
     // console.log(event, params,)
     if (params.target == 'depth_threshold'){
       this.DataHandler.depth_threshold = event
-    } else if (params.target == 'segment'){
-      this.DataHandler.segment = event
-      await this.getData(`${this.DataHandler.data_selected.id}/${this.DataHandler.data_selected.subfolder}/${event}.json`, "file")
+    } else if (params.target == 'protein'){
+      this.DataHandler.protein = event
+      await this.getData(`${this.DataHandler.data_selected.path}`, "file")
     } else if (params.target == 'data_selected'){
       this.DataHandler.group = []
-      this.DataHandler.updateSubtype(event.virus)
-      await this.getData(`${this.DataHandler.data_selected.id}/${this.DataHandler.data_selected.subfolder}/${this.DataHandler.segment}.json`, "file")
+      this.DataHandler.updateOrganism(event.virus)
+      await this.getData(`${this.DataHandler.data_selected.path}`, "file")
     } else if (params.target == 'group' ){
       this.DataHandler.group = event
     } else if (params.target == 'position_ranges'){
       this.DataHandler.position_ranges = event
     } else if (params.target == 'selected_consensus'){
       this.DataHandler.selected_consensus = event
+    } else if (params.target == 'discordant'){
+      console.log("changex")
+      this.DataHandler.discordantOnly = event
     } else {
       return
     }
@@ -227,7 +233,8 @@ export default class VisualizationOptions extends Vue {
   }
 
   mounted() {
-    this.getData(`${this.DataHandler.data_selected.id}/${this.DataHandler.data_selected.subfolder}/${this.segment}.json`, "file").then((d:any)=>{
+    console.log(this.DataHandler.data_selected.path,"<<<<<")
+    this.getData(`${this.DataHandler.data_selected.path}`, "file").then((d:any)=>{
       this.DataHandler.fullUpdate()
       this.$emit('sliderUpdate', {value: this.DataHandler, target: 'DataHandler'})
     })
