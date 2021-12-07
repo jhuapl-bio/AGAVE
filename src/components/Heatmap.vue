@@ -2,12 +2,12 @@
   <div style="width: 100%; ">    
     <b-row>
       <b-col class="col-lg-12 pb-1">
-        <div id="heatmapDiv" ref="heatmapDiv">
-          <div v-if="!DataHandler || DataHandler.cells.length < 1">
-            <hr>
-            <strong class="text-danger" >No data available</strong>
-          </div>
-          <div class="tooltip"  id="tooltipHeatmap" style="opacity: 0; font-size: 12px; display:block">
+        <div v-if="!DataHandler || DataHandler.cells.length < 1">
+          <hr>
+          <strong class="text-danger" >No data available</strong>
+        </div>
+        <div  id="heatmapDiv" ref="heatmapDiv">
+          <div class="tooltip"  id="tooltipHeatmap" style="opacity: 0; font-size: 16px; display:block">
             <div  id="tooltipcontent"></div>
             <b-table  striped hover :items="tooltiptable"
             :fields="[
@@ -192,7 +192,6 @@ export default class Heatmap extends Vue {
   }
 
   defineHeatmap() {
-    console.log("define heatmap!!!")
     try {
       this.legendWidth = this.$refs.heatmapLegend.clientWidth;
       this.width = this.$refs.heatmapDiv.clientWidth;
@@ -211,10 +210,10 @@ export default class Heatmap extends Vue {
     const proteins = ["HA", "M1", "NA", "NP"];
     const $this = this;
     this.makeHeatmap(this.DataHandler.cells)
+
   }
   
   makeHeatmap(cells: any) {
-    console.log("make heatmap")
     // Get unique positions in order to calculate positions axis
     const position_max: any = d3.max(cells.map((d:any)=>{
       return d.position 
@@ -254,8 +253,8 @@ export default class Heatmap extends Vue {
       
 
     const innerSvg = body.append("svg")
-      .style("fill", "white")
-      .style("background", "white")
+      // .style("fill", "white")
+      // .style("background", "black")
       .attr("id", "innerheatmapSVG")
       .style("display", "block")
 
@@ -268,7 +267,6 @@ export default class Heatmap extends Vue {
     const g = innerSvg.append("g").attr("class", "svgG")
     this.g = g
     const $this = this;
-    
     
     
     this.xAxisGT = g.append("g")
@@ -387,7 +385,7 @@ export default class Heatmap extends Vue {
         return (i * boxHeight ) ;
       })
     );    
-    let subBars = this.context.selectAll(".subBar").data(this.DataHandler.cells_full)
+    let subBars = this.context.selectAll(".subBar").data(this.DataHandler.cells)
     .join(
       function (enter: any) {
         return enter
@@ -422,7 +420,6 @@ export default class Heatmap extends Vue {
     .on("end", brushended)
     // .on("brush", brushed);
     function brushended(event: any) {
-      console.log("brush end")
       if (event && !event.selection) {
         $this.DataHandler.updatePositions(d3.extent($this.DataHandler.cells_full, (d:any)=>{return d.position}))
         $this.DataHandler.updateCells()
@@ -450,43 +447,60 @@ export default class Heatmap extends Vue {
 
   updateHeatmap() {
     // Add styling to the heatmap blocks
-    console.log("update heatmap")
     let scrollAttr: any  = { x: null, y: null, marginA: null, marginB: null }    
     const g = this.g
+    let protein = this.DataHandler.protein
+    let organism = this.DataHandler.organism
     const $this = this
     let cells: any = this.DataHandler.cells
     this.position_ranges = this.DataHandler.position_ranges
-    if (this.isSwitched){
-      // Get unique positions in order to calculate x axis
-      const positions: any[] = [...new Set(cells.map((d:any)=>{
-        return d.position 
-      }))];
-      const positions_unique = this.DataHandler.selected_consensus.residues
-      this.positions_unique = positions_unique.filter((d:any, i:any)=>{
-        return i+1 >= this.DataHandler.position_ranges[0] && i+1 <= this.DataHandler.position_ranges[1]
-      })
-      this.positions = positions
+    // if (this.isSwitched){
+    //   // Get unique positions in order to calculate x axis
+    //   // const positions: any[] = [...new Set(cells.map((d:any)=>{
+    //   //   return d.position 
+    //   // }))];
+    //   // // const positions_unique = this.DataHandler.selected_consensus.residues
+    //   // // this.positions_unique = positions_unique.filter((d:any, i:any)=>{
+    //   // //   return i+1 >= this.DataHandler.position_ranges[0] && i+1 <= this.DataHandler.position_ranges[1]
+    //   // // })
+    //   // this.positions = positions
+    // } else {
+    //   let positions: any = this.DataHandler.referenceSequence
+    //   // const positions: any[] = this.DataHandler.referenceSequence.positions
+    //   this.positions = positions.filter((d:any)=>{
+    //     return +d.position >= this.DataHandler.position_ranges[0] && +d.position <= this.DataHandler.position_ranges[1]
+    //   })
+    //   // this.positions_unique = this.positions.map((d:any)=>{
+    //   //   return `${d.aa}.${d.position}`
+    //   // })
+    //   this.positions = this.positions.map((d:any)=>{
+    //     return d.position
+    //   })
+    //   cells = cells.filter((d:any)=>{ return this.positions.indexOf(d.position) > -1  })
+    // }
+    this.positions_unique = this.DataHandler.protein_map[organism][protein].split("")
+    // this.positions = [1, this.positions_unique.length]
+    if (!this.DataHandler.discordantOnly){
+      this.positions = d3.range(1, this.positions_unique.length)
     } else {
-      let positions: any = this.DataHandler.referenceSequence
-      // const positions: any[] = this.DataHandler.referenceSequence.positions
-      this.positions = positions.filter((d:any)=>{
-        return +d.position >= this.DataHandler.position_ranges[0] && +d.position <= this.DataHandler.position_ranges[1]
-      })
-      this.positions_unique = this.positions.map((d:any)=>{
-        return `${d.aa}.${d.position}`
-      })
-      this.positions = this.positions.map((d:any)=>{
-        return d.position
-      })
-      cells = cells.filter((d:any)=>{ return this.positions.indexOf(d.position) > -1  })
+      const positions: any[] = [...new Set(cells.map((d:any)=>{
+          return d.position 
+      }))];
+      this.positions = positions
     }
+    const positions_range = d3.extent(this.positions)
+    
+    cells = cells.filter((d:any)=>{ return +d.position >= positions_range[0] && +d.position <= positions_range[1]  })
+
+
+
+
     const min = Math.max(this.DataHandler.position_ranges[0], d3.min($this.positions))
-    console.log(cells,"<cells filtered update")
     const max = Math.min(this.position_max, d3.max($this.positions))
     this.positions = this.positions.filter((d:any)=>{ return d <= max && d >= min})
     if (this.scrollDirection == 'x'){
       scrollAttr['x'] = this.positions
-      scrollAttr.xTicks = this.positions_unique
+      scrollAttr.xTicks = this.positions_unique;
       scrollAttr['y'] = this.preps
       scrollAttr.marginA = this.margin.left
       scrollAttr.marginB = this.margin.right
@@ -499,6 +513,10 @@ export default class Heatmap extends Vue {
       scrollAttr.marginA = this.margin.top
       scrollAttr.marginB = this.margin.bottom
     }
+    let seen_positions: any = {}
+    cells.forEach((cell:any, i:number)=>{
+      seen_positions[i] = `${cell.aa}.${cell.position}`
+    })
     let boxHeight = (this.height - this.margin.top - this.margin.bottom )/ scrollAttr.y.length 
     this.boxHeight = boxHeight;
     this.x.domain([min, max])
@@ -506,17 +524,16 @@ export default class Heatmap extends Vue {
     const minD = this.x(min);
     const maxD = this.x(max);
     let over = this.width
-    if (scrollAttr[this.scrollDirection].length  > 20){
+    if (this.positions.length  > 20){
       over = maxD - minD + scrollAttr.marginA + scrollAttr.marginB;
     }
     this.oversize = over
     const boxWidth = 
-      (over - scrollAttr.marginA - scrollAttr.marginB) / (  scrollAttr[this.scrollDirection].length > 0 ? scrollAttr[this.scrollDirection].length : 1) -
+      (over - scrollAttr.marginA - scrollAttr.marginB) / (  this.positions.length > 0 ? scrollAttr[this.scrollDirection].length : 1) -
       this.border;
     this.boxWidth = boxWidth;
-    console.log(this.boxWidth, this.boxHeight)
     this.scaleX
-      .domain(scrollAttr.x)
+      .domain(this.positions)
       .range([scrollAttr.marginA, over - scrollAttr.marginB]);
     if (! this.sortBy){
       try {
@@ -539,20 +556,20 @@ export default class Heatmap extends Vue {
       })
     );
     this.yAxis = d3.axisLeft(this.scaleY)
-          .ticks(scrollAttr.y.length);
+          .ticks(scrollAttr.y.length+1);
     this.xAxisT = d3
       .axisTop(this.scaleX)
       .tickSizeOuter(0)
       .ticks(max-min)
       .tickFormat((interval:any,i:any) => {
-        return i%2 !== 0 ? " ": scrollAttr.xTicks[i];
+        return i%2 !== 0 ? " ": seen_positions[i];
       });
     this.xAxisB = d3
     .axisBottom(this.scaleX)
     .tickSizeOuter(0)
     .ticks(max-min)
     .tickFormat((interval:any,i:any) => {
-      return i%2 !== 1 ? " ": scrollAttr.xTicks[i];
+      return i%2 !== 1 ? " ": seen_positions[i];
     });
     let scaleYText: any = d3.select("#yAxis")
           .attr("transform", "translate(" + this.margin.left + "," + (this.boxHeight/2)+ ")")
@@ -563,7 +580,7 @@ export default class Heatmap extends Vue {
           .classed("scaleYText", true)
           .style('text-anchor', 'end')
           .attr('transform', 'rotate(0)')
-          .style("font-size", "1em")
+          .style("font-size", "19px")
     
     let scaleXTestT: any = d3.select('#xAxisT')
           .attr("transform", "translate(" + (0) + "," + (this.margin.top) + ")")
@@ -576,7 +593,7 @@ export default class Heatmap extends Vue {
           .attr("dy", ".35em")
           .attr("transform", "rotate(45)")
           .style("text-anchor", "end")
-          .style("font-size", "1em");
+          .style("font-size", "16px");
     let scaleXTestB: any = d3.select('#xAxisB')
           .attr("transform", "translate(" + (0) + "," + (this.chartHeight - this.margin.bottom) + ")")
           .style("fill", null)
@@ -589,7 +606,7 @@ export default class Heatmap extends Vue {
           // .attr("dy", ".35em")
           .attr("transform", "rotate(45)")
           .style("text-anchor", "start")
-          .style("font-size", "1em");
+          .style("font-size", "16px");
     
     
     try {
@@ -597,7 +614,10 @@ export default class Heatmap extends Vue {
           return d.getBBox().height
         })
       )
-      scaleYText.style("font-size", Math.min(maxYTick, boxHeight))
+      let scaleyMax: any = d3.max(scaleYText.nodes().map((d:any)=>{
+          return d.getBBox().height
+      }))
+      scaleYText.style("font-size", Math.min(scaleyMax, boxHeight))
       let maxXTick: any = d3.max(scaleXTestB.nodes().map((d:any)=>{
           return d.getBBox().width
         })
@@ -605,7 +625,8 @@ export default class Heatmap extends Vue {
       if (maxXTick > boxWidth){
         scaleXTestB.style("font-size", Math.min(maxXTick, boxWidth))
         scaleXTestT.style("font-size", Math.min(maxXTick, boxWidth))
-      }      
+      }  
+      
     } catch(err: any){
       console.error(err)
     }
@@ -685,7 +706,7 @@ export default class Heatmap extends Vue {
         "_"+u.experiment.replaceAll(" ", "_").replaceAll("-", "_") + u.position 
     )
     .style("fill", "yellow");
-    const ratio: number = (u.max / u.depth)
+    const ratio: number = 1- ( u.aa_count / u.depth)
     $this.focusColumn(u.position, false)
 
     d3.select("#tooltipHeatmap")
@@ -708,12 +729,13 @@ export default class Heatmap extends Vue {
       Experiment: ${u.experiment}<br>
       Depth: ${u.depth}<br>
       Total: ${u.total}<br>
-      Consensus Residue: ${u.aa}<br>
+      Reference Residue: ${u.aa}<br>
+      Consensus Residue: ${u.consensus_aa}<br>
       Consensus / Total: ${ratio.toFixed(3)} ${( !$this.isSwitched ? `<br>Ref. Residue: ${$this.positions_unique[$this.positions.indexOf(u.position)]}`: '')} `)
       $this.tooltiptable = u.unique.map((d:any)=>{
         if (d.aa == u.aa){
           d._rowVariant = 'info'
-        } else if (ratio <= d.proportion){
+        } else if (u.aa !== d.aa && d.aa == u.consensus_aa){
           d._rowVariant = 'danger'
         }
         return d
@@ -772,20 +794,25 @@ export default class Heatmap extends Vue {
 
   getFrac(d:any){
     const log_scale = 4
-    const max = d.max
-    return(log_scale+Math.log10(1-max/d.total))/log_scale;
+    // const max = d.max
+    const max =  d.max
+    if (d.total !== max){
+      return(log_scale+Math.log10(1-max/d.total))/log_scale;
+    } else {
+      return 0.9999999
+    }
   }
   // pretty close to exactly Tom's color code
   calculateColor(d: any) {
 
    	const depth_thresh = this.DataHandler.depth_threshold
     const freq_thresh = this.DataHandler.frequency_threshold
-    const max = d.max
+    const max = d.aa_count
     let color = '';
     let colors: string[] = [
       'rgb(' + Math.round(235) + ',' + Math.round(235) + ',' + Math.round(235) + ')',
       'rgb(' + Math.round(185) + ',' + Math.round(185) + ',' + Math.round(185) + ')',
-      'rgb(' + Math.round(165) + ',' + Math.round(165) + ',' + Math.round(165) + ')',
+      'rgb(' + Math.round(245) + ',' + Math.round(242) + ',' + Math.round(242) + ')',
       'rgb(' + Math.round(65) + ',' + Math.round(65) + ',' + Math.round(65) + ')',
       'rgb(253,64,160)'
     ] 

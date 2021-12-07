@@ -4,13 +4,18 @@
 
     <b-tab title="Data Settings" active>
       <div class="columns is-variable is-4">
-        <b-field label="Default Data" class="column is-narrow">
+        <b-field label="Data Type" class="column is-narrow">
+          <b-switch v-model="isDataSwitched" 
+            @change="emitChange($event, { full: true, target: 'data_type_selected' })"
+          >
+            {{ ( isDataSwitched ? 'Sample' : 'Custom' ) }}
+          </b-switch>
           <b-select 
-          placeholder="Data" 
-          v-model="DataHandler.data_selected" 
-          @change="emitChange($event, { full: true, target: 'data_selected' })">
+            placeholder="Data" 
+            v-model="DataHandler.experiment"
+            @change="emitChange($event, { full: true, target: 'data_selected' })">
             <option
-            v-for="option in DataHandler.defaultDataList"
+            v-for="option in DataHandler.experiments"
             :value="option"
             :key="option.id">
                 {{ option.label }}
@@ -20,26 +25,29 @@
         <b-field label="Protein" class="column is-narrow">
           <b-select placeholder="protein" v-model="DataHandler.protein" @change="emitChange($event, { full: true, target: 'protein' })" :options="DataHandler.proteins"></b-select>
         </b-field>
-        <!-- <b-field label="Show Discordants Only" class="column is-narrow"> -->
+        <b-field label="Show Discordants Only" class="column is-narrow">
           <b-checkbox 
             @change="emitChange($event, { full: true, target: 'discordant' })" 
-            v-model="showDiscordantOnly" >Show Discordants Only</b-checkbox>
-        <!-- </b-field> -->
+            v-model="showDiscordantOnly" ></b-checkbox>
+        </b-field>
+        <b-field label="Sample" class="column is-narrow">
+          <b-select placeholder="Sample" v-if="DataHandler.sample" v-model="DataHandler.sample" @change="emitChange($event, { full: true, target: 'sample' })" multiple :options="DataHandler.samples"></b-select>
+        </b-field>
         <b-field label="Group" class="column is-narrow">
           <b-select placeholder="Group" v-if="DataHandler.group" v-model="DataHandler.group" @change="emitChange($event, { full: true, target: 'group' })" multiple :options="DataHandler.groups"></b-select>
         </b-field>
-        <b-field label="Axis Experiment Consensus"  class="column is-narrow" >
+        <!-- <b-field label="Axis Experiment Consensus"  class="column is-narrow" >
           <b-select :disabled="!isSwitched" placeholder="Mapped Experiment" 
             :options="DataHandler.experiments"
             v-model="DataHandler.experiment"
             @change="emitChange($event, { full: false, target: 'selected_consensus' })">
           </b-select> 
-        </b-field> 
+        </b-field>  -->
         <b-field label="Organism" class="column is-narrow">
           <b-select 
           placeholder="Organism" 
           v-model="DataHandler.organism" 
-          @change="emitChange($event, { full: false, target: 'organism' })">
+          @change="emitChange($event, { full: true, target: 'organism' })">
             <option
             v-for="option in DataHandler.organisms"
             :value="option"
@@ -118,6 +126,7 @@ export default class VisualizationOptions extends Vue {
   public group: any[] = []
   public groups: Array<any> = []
   public isSwitched: boolean = true
+  public isDataSwitched: boolean = true
   public sortBy: boolean = true
   minrange: number = 1
   maxrange: number = 1
@@ -146,6 +155,7 @@ export default class VisualizationOptions extends Vue {
   async onChangeFile(value: any, oldValue: any) {
     const $this = this
     const reader = new FileReader()
+    this.isDataSwitched = false
     let estimate_protein: any = null
     try{
       estimate_protein = value.name.split(".")[0]
@@ -184,24 +194,33 @@ export default class VisualizationOptions extends Vue {
   }
 
   async emitChange(event: any, params: { full: boolean, target: string} ){
-    // console.log(event, params,)
     if (params.target == 'depth_threshold'){
       this.DataHandler.depth_threshold = event
     } else if (params.target == 'protein'){
-      this.DataHandler.protein = event
-      await this.getData(`${this.DataHandler.data_selected.path}`, "file")
-    } else if (params.target == 'data_selected'){
-      this.DataHandler.group = []
-      this.DataHandler.updateOrganism(event.virus)
-      await this.getData(`${this.DataHandler.data_selected.path}`, "file")
+      this.DataHandler.updateProtein(event)
+      // await this.getData(`${this.DataHandler.data_selected.path}`, "file")
+    } else if (params.target == 'organism'){
+      // this.DataHandler.group = []
+      // this.DataHandler.organism = event
+      this.DataHandler.updateOrganism(event)
+      // await this.getData(`${this.DataHandler.data_selected.path}`, "file")
+    } else if (params.target == 'data_type_selected'){
+      if (event){
+        this.DataHandler.updateData('sample')
+      } else {
+        this.DataHandler.updateData('custom')
+      }
+    } else if (params.target == 'data_selected' ){
+      this.DataHandler.changeExperiment(event)
     } else if (params.target == 'group' ){
       this.DataHandler.group = event
     } else if (params.target == 'position_ranges'){
       this.DataHandler.position_ranges = event
+    } else if (params.target == 'sample' ){
+      this.DataHandler.sample = event
     } else if (params.target == 'selected_consensus'){
       this.DataHandler.selected_consensus = event
     } else if (params.target == 'discordant'){
-      console.log("changex")
       this.DataHandler.discordantOnly = event
     } else {
       return
@@ -233,8 +252,7 @@ export default class VisualizationOptions extends Vue {
   }
 
   mounted() {
-    console.log(this.DataHandler.data_selected.path,"<<<<<")
-    this.getData(`${this.DataHandler.data_selected.path}`, "file").then((d:any)=>{
+    this.getData(`${this.DataHandler.data_selected}`, "file").then((d:any)=>{
       this.DataHandler.fullUpdate()
       this.$emit('sliderUpdate', {value: this.DataHandler, target: 'DataHandler'})
     })

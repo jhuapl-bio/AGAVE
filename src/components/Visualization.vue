@@ -26,16 +26,16 @@
         >
         </Heatmap>
       </div>
-       <!-- <b-col class="col-lg-4 pb-1 big-top-margin">
+       <b-col v-if="pdb" class="col-lg-4 pb-1 big-top-margin">
         <MoleculeViewer 
-          :protein=protein 
+          :pdb=pdb
           :position=position
           :DataHandler=DataHandler
           @siteHover="siteHover"  
           @changeReferenceSequence="changeReferenceSequence"
           >
         </MoleculeViewer>
-      </b-col> -->
+      </b-col>
       <div class="col-lg-12">
         <hr class="solid">
       </div>
@@ -74,7 +74,7 @@ export default class Visualization extends Vue {
   public depth_threshold = 0
   public frequency_threshold = 0.2
   public column_width = 9
-  public protein = 'HA'
+  public pdb = null
   public position = 54
   public cells:any = null
   public group: any[] = []
@@ -92,10 +92,9 @@ export default class Visualization extends Vue {
   sliderUpdate(gh: {target: string, value: any}) {
     const target = gh.target
     const value = gh.value
-    console.log(gh)
     this.$set(this, target, value)
     if (target == 'DataHandler'){
-      this.protein = value.protein
+      this.pdb = value.pdb
       if (this.$refs.heatmap){
         this.$refs.heatmap.changeDataHandler()
         this.$refs.barplot.changeDataHandler()

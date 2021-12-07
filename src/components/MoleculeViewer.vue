@@ -5,11 +5,11 @@
         <b-field :label="this.title"></b-field>
         <div >
           <b-input-group prepend="PDB ID" class="mt-3">
-            <b-form-input type="text" v-model="protein" ></b-form-input>
+            <b-form-input type="text" v-model="pdb" ></b-form-input>
             <b-input-group-append>
               <b-button
                 elevation="2"
-                @click="proteinChange(protein.toLowerCase())"
+                @click="proteinChange(pdb.toLowerCase())"
               >Change Protein</b-button>
             </b-input-group-append>
           </b-input-group>
@@ -73,35 +73,35 @@ export default class MoleculeViewer extends Vue {
   public assemblyId = "1"
   public positions: any[] = [];
   public chains: any = {id: null,  entities: [] };
-  public protein_per_protein: any = {
-    "H3N2": {
-      "HA": '4o5n',
-      "NP": '1hoc',
-      "NA": '2hty',
-      'M1': '5v6g',
-      'M': '5v6g',
-      'PB1': '6qx3',
-      'PB2': '6euv',
-      'NS': '6qxe',
-      'PA': '2w69'
-    },
-    "H1N1": {
-      "HA": '3al4',
-      "NP": '5b7b',
-      "NA": '3nss',
-      'M1': '3md2',
-      'M': '3md2',
-      'PB1': '2ztt',
-      'PB2': '2ztt',
-      'NS': '6dgk',
-      'PA': '5des'
-    }
-  }
+  // public protein_per_protein: any = {
+  //   "H3N2": {
+  //     "HA": '4o5n',
+  //     "NP": '1hoc',
+  //     "NA": '2hty',
+  //     'M1': '5v6g',
+  //     'M': '5v6g',
+  //     'PB1': '6qx3',
+  //     'PB2': '6euv',
+  //     'NS': '6qxe',
+  //     'PA': '2w69'
+  //   },
+  //   "H1N1": {
+  //     "HA": '3al4',
+  //     "NP": '5b7b',
+  //     "NA": '3nss',
+  //     'M1': '3md2',
+  //     'M': '3md2',
+  //     'PB1': '2ztt',
+  //     'PB2': '2ztt',
+  //     'NS': '6dgk',
+  //     'PA': '5des'
+  //   }
+  // }
   
   @Prop({ required: true, default: 55 })
   public position!: string;
-  @Prop({ required: true, default: 'HA' })
-  public protein!: string;
+  @Prop({ required: true, default: "5r7y" })
+  public pdb!: string;
 
   @Prop({ required: true, default: null })
   public DataHandler!: DataHandler
@@ -122,16 +122,15 @@ export default class MoleculeViewer extends Vue {
     }
   }
 
-  @Watch('protein')
-  onproteinChanged(value: number, oldValue: number) {
-    console.log("new protein", value)
-    this.proteinChange(this.protein_per_protein[this.DataHandler.organism][this.protein])
+  @Watch('pdb')
+  onproteinChanged(value: string, oldValue: number) {
+    this.proteinChange(value)
   }
 
-  @Watch('DataHandler.organism')
-  onDataChanged(value: any, oldValue: any){
-    this.proteinChange(this.protein_per_protein[value][this.protein])
-  }
+  // @Watch('DataHandler.organism')
+  // onDataChanged(value: any, oldValue: any){
+  //   this.proteinChange(this.protein_per_protein[value][this.protein])
+  // }
 
   @Watch('isSwitched')
   onSwitchToggled(value: any, oldValue: any) {
@@ -140,8 +139,10 @@ export default class MoleculeViewer extends Vue {
     } else {
       this.assemblyId = "preffered"
     }
-    this.proteinChange(this.protein_per_protein[this.DataHandler.organism][this.protein])
+    this.proteinChange(this.pdb)
   }
+
+
   siteHover(item: any){
     this.localPosition = item.endIndex + this.map_positions[item.entity].positions[1]
     this.focus()
@@ -193,7 +194,7 @@ export default class MoleculeViewer extends Vue {
       // https://www.ebi.ac.uk/pdbe/graph-api/pdbe_pages/uniprot_mapping/4o5n/1
       this.queryingResidueMapping = true;
       // throw new Error("new err")
-      let response: any = await this.getdata(`https://www.ebi.ac.uk/pdbe/graph-api/mappings/uniprot_proteins/${options.moleculeId}`)
+      let response: any = await this.getdata(`https://www.ebi.ac.uk/pdbe/graph-api/mappings/uniprot_segments/${options.moleculeId}`)
       this.title = "Fetching..."
       // console.log("Querying API call finished", response)
       this.map_positions = {}
@@ -204,8 +205,7 @@ export default class MoleculeViewer extends Vue {
         let data: any = response.data[options.moleculeId].UniProt;
         const uniprots = Object.keys(response.data[options.moleculeId].UniProt)
         let sum = 1;
-        
-
+        console.log(response.data)
         uniprots.forEach((accession: any)=>{
           if (data[accession].mappings){
             const mappings: any = data[accession].mappings
@@ -233,11 +233,11 @@ export default class MoleculeViewer extends Vue {
           position =  this.map_positions[key].positions[3] + this.map_positions[key].positions[0] 
             
         })
-        this.protein = options.moleculeId
-        // console.log(this.map_positions, "map postiions")
+        this.pdb = options.moleculeId
+        console.log("mappositions", this.map_positions)
       }
     } catch(err){
-      this.reportError(err, "Error in fetching Query Info")
+      this.reportError(err, "Error in fetching Query for uniprot mappings from pdbID Info")
     } finally {
       this.queryingResidueMapping = false;
       try {
@@ -249,6 +249,7 @@ export default class MoleculeViewer extends Vue {
           response.data.response && 
           response.data.response.docs){
           const chains: any = response.data.response.docs
+          console.log(response)
           let ref_seq: any[] = []
           chains.forEach((chain: any)=>{
             if (chain.entity_id in this.map_positions){
@@ -301,8 +302,9 @@ export default class MoleculeViewer extends Vue {
   async mounted() {
     // Available options here: https://github.com/PDBeurope/pdbe-molstar/wiki/1.-PDBe-Molstar-as-JS-plugin
     // Our H3N2 HA protein is 4o5n and our H1N1 HA protein is 3lzg
+    // console.log(this.DataHandler.pdb)
     const options: any= {
-      moleculeId: this.protein_per_protein[this.DataHandler.organism][this.protein],
+      moleculeId: this.pdb,
       assemblyId: this.assemblyId,
       hideControls: true,
       bgColor: {r:255, g:255, b:255}
@@ -319,13 +321,7 @@ export default class MoleculeViewer extends Vue {
   focus() {
     this.viewer.visual.clearSelection();
     let residue: Residue =  { chain: '', entity: '', position: 0 };
-    // if ( this.localPosition >= 25 && this.localPosition <= 341 ) {
-    //   residue = { chain: 'A', position: this.localPosition - 22 }
-    // } else if ( this.localPosition >= 346 && this.localPosition <= 518 ) {
-    //   residue = { chain: 'B', position: this.localPosition - 345 }
-    // } else {
-    //   residue = { chain: '', position: 0 }
-    // }
+
     let found: boolean = false
     for(let d of Object.keys(this.map_positions).sort().filter((e:any)=>{return e != 'total'})) {
       if (this.localPosition  >= this.map_positions[d].positions[1] 

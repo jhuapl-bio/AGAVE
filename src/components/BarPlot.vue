@@ -103,7 +103,6 @@ export default class BindingSites extends Vue {
   }
 
   makeBarPlot(){
-    console.log("make bar plot")
     const $this = this
     d3.select("#barPlotDiv").selectAll("*").remove()
     d3.select('#barPlotLegend').selectAll("*").remove()
