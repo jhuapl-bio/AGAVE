@@ -24,5 +24,5 @@ pnpm-debug.log*
 public/data
 src/assets/data
 controllers/tmp
-controllers/data/old_jsons
+controllers/data
 controllers/output

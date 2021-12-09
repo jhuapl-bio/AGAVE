@@ -1,0 +1,81 @@
+LOCUS       JF915191                 838 bp    cRNA    linear   VRL 01-NOV-2011
+DEFINITION  Influenza A virus (A/California/04/2009(H1N1)) segment 8 nuclear
+            export protein (NEP) and nonstructural protein 1 (NS1) genes,
+            complete cds.
+ACCESSION   JF915191
+VERSION     JF915191.1
+DBLINK      BioProject: PRJNA37813
+KEYWORDS    .
+SOURCE      Influenza A virus (A/California/04/2009(H1N1))
+  ORGANISM  Influenza A virus (A/California/04/2009(H1N1))
+            Viruses; Riboviria; Orthornavirae; Negarnaviricota;
+            Polyploviricotina; Insthoviricetes; Articulavirales;
+            Orthomyxoviridae; Alphainfluenzavirus.
+REFERENCE   1  (bases 1 to 838)
+  AUTHORS   Ma,W., Belisle,S.E., Mosier,D., Li,X., Stigger-Rosser,E., Liu,Q.,
+            Qiao,C., Elder,J., Webby,R., Katze,M.G. and Richt,J.A.
+  TITLE     2009 Pandemic H1N1 Influenza Virus Causes Disease and Upregulation
+            of Genes Related to Inflammatory and Immune Responses, Cell Death,
+            and Lipid Metabolism in Pigs
+  JOURNAL   J. Virol. 85 (22), 11626-11637 (2011)
+   PUBMED   21900171
+REFERENCE   2  (bases 1 to 838)
+  AUTHORS   Ma,W., Richt,J.A., Liu,Q. and Qiao,C.
+  TITLE     Direct Submission
+  JOURNAL   Submitted (04-MAY-2011) Department of Diagnostic
+            Medicine/Pathobiology, Kansas State University, K224B Mosier Hall,
+            Manhattan, KS 66506, USA
+COMMENT     GenBank Accession Numbers JF915184-JF915191 represent sequences
+            from the 8 segments of Influenza A virus
+            (A/California/04/2009(H1N1)).
+FEATURES             Location/Qualifiers
+     source          1..838
+                     /organism="Influenza A virus (A/California/04/2009(H1N1))"
+                     /mol_type="viral cRNA"
+                     /strain="A/California/04/2009(H1N1)"
+                     /serotype="H1N1"
+                     /db_xref="taxon:641501"
+                     /segment="8"
+                     /note="P1 passage in swine"
+     gene            1..838
+                     /gene="NEP"
+                     /gene_synonym="NS2"
+     CDS             join(1..30,503..838)
+                     /gene="NEP"
+                     /gene_synonym="NS2"
+                     /note="nonstructural protein 2"
+                     /codon_start=1
+                     /product="nuclear export protein"
+                     /protein_id="AEE69018.1"
+                     /translation="MDSNTMSSFQDILMRMSKMQLGSSSEDLNGMVTRFESLKIYRDS
+                     LGETVMRMGDLHYLQSRNEKWREQLGQKFEEIRWLIEEMRHRLKATENSFEQITFMQA
+                     LQLLLEVEQEIRAFSFQLI"
+     gene            1..660
+                     /gene="NS1"
+     CDS             1..660
+                     /gene="NS1"
+                     /codon_start=1
+                     /product="nonstructural protein 1"
+                     /protein_id="AEE69017.1"
+                     /translation="MDSNTMSSFQVDCFLWHIRKRFADNGLGDAPFLDRLRRDQKSLK
+                     GRGNTLGLDIETATLVGKQIVEWILKEESSETLRMTIASVPTSRYLSDMTLEEMSRDW
+                     FMLMPRQKIIGPLCVRLDQAIMEKNIVLKANFSVIFNRLETLILLRAFTEEGAIVGEI
+                     SPLPSLPGHTYEDVKNAVGVLIGGLEWNGNTVRVSENIQRFAWRNCDENGRPSLPPEQ
+                     K"
+ORIGIN      
+        1 atggactcca acaccatgtc aagctttcag gtagactgtt tcctttggca tatccgcaag
+       61 cgatttgcag acaatggatt gggtgatgcc ccattccttg atcggctccg ccgagatcaa
+      121 aagtccttaa aaggaagagg caacaccctt ggcctcgata tcgaaacagc cactcttgtt
+      181 gggaaacaaa tcgtggaatg gatcttgaaa gaggaatcca gcgagacact tagaatgaca
+      241 attgcatctg tacctacttc gcgctacctt tctgacatga ccctcgagga aatgtcacga
+      301 gactggttca tgctcatgcc taggcaaaag ataataggcc ctctttgcgt gcgattggac
+      361 caggcgatca tggaaaagaa catagtactg aaagcgaact tcagtgtaat ctttaaccga
+      421 ttagagacct tgatactact aagggctttc actgaggagg gagcaatagt tggagaaatt
+      481 tcaccattac cttctcttcc aggacatact tatgaggatg tcaaaaatgc agttggggtc
+      541 ctcatcggag gacttgaatg gaatggtaac acggttcgag tctctgaaaa tatacagaga
+      601 ttcgcttgga gaaactgtga tgagaatggg agaccttcac tacctccaga gcagaaatga
+      661 aaagtggcga gagcaattgg gacagaaatt tgaggaaata aggtggttaa ttgaagaaat
+      721 gcggcacaga ttgaaagcga cagagaatag tttcgaacaa ataacattta tgcaagcctt
+      781 acaactactg cttgaagtag aacaagagat aagagctttc tcgtttcagc ttatttaa
+//
+

@@ -1,0 +1,90 @@
+LOCUS       CY044263                1420 bp    cRNA    linear   VRL 24-JUL-2016
+DEFINITION  Influenza A virus (A/Hong Kong/1/1968(H3N2)) segment 6, complete
+            sequence.
+ACCESSION   CY044263
+VERSION     CY044263.1
+KEYWORDS    .
+SOURCE      Influenza A virus (A/Hong Kong/1/1968(H3N2))
+  ORGANISM  Influenza A virus (A/Hong Kong/1/1968(H3N2))
+            Viruses; Riboviria; Orthornavirae; Negarnaviricota;
+            Polyploviricotina; Insthoviricetes; Articulavirales;
+            Orthomyxoviridae; Alphainfluenzavirus.
+REFERENCE   1  (bases 1 to 1420)
+  AUTHORS   Ping,J., Keleta,L., Forbes,N.E., Dankar,S., Stecho,W., Tyler,S.,
+            Zhou,Y., Babiuk,L., Weingartl,H., Halpin,R.A., Boyne,A., Bera,J.,
+            Hostetler,J., Fedorova,N.B., Proudfoot,K., Katzel,D.A.,
+            Stockwell,T.B., Ghedin,E., Spiro,D.J. and Brown,E.G.
+  TITLE     Genomic and protein structural maps of adaptive evolution of human
+            influenza a virus to increased virulence in the mouse
+  JOURNAL   PLoS ONE 6 (6), E21740 (2011)
+   PUBMED   21738783
+  REMARK    Publication Status: Online-Only
+REFERENCE   2  (bases 1 to 1420)
+  AUTHORS   Spiro,D., Halpin,R., Boyne,A., Bera,J., Ghedin,E., Hostetler,J.,
+            Fedorova,N., Kim,M., Zaborsky,J., Overton,L., Djuric,K.,
+            Sarmiento,M., Sitz,J., Katzel,D., Brown,E.G., Keleta,L., Bao,Y.,
+            Sanders,R., Dernovoy,D., Kiryutin,B., Lipman,D.J. and Tatusova,T.
+  TITLE     The NIAID Influenza Genome Sequencing Project
+  JOURNAL   Unpublished
+REFERENCE   3  (bases 1 to 1420)
+  CONSRTM   The NIAID Influenza Genome Sequencing Consortium
+  TITLE     Direct Submission
+  JOURNAL   Submitted (21-AUG-2009) on behalf of JCVI/University of
+            Ottawa/NCBI, National Center for Biotechnology Information, NIH,
+            Bethesda, MD 20894, USA
+FEATURES             Location/Qualifiers
+     source          1..1420
+                     /organism="Influenza A virus (A/Hong Kong/1/1968(H3N2))"
+                     /mol_type="viral cRNA"
+                     /strain="A/Hong Kong/1/1968"
+                     /serotype="H3N2"
+                     /host="Homo sapiens"
+                     /db_xref="taxon:506350"
+                     /segment="6"
+                     /lab_host="monkey kidney 2, egg 2; Egg 1+2 plaque
+                     pufication MDCK+egg 2 passage(s)"
+                     /country="Hong Kong"
+                     /collection_date="1968"
+     gene            <1..1404
+                     /gene="NA"
+     CDS             <1..1404
+                     /gene="NA"
+                     /codon_start=1
+                     /product="neuraminidase"
+                     /protein_id="ACU79874.1"
+                     /translation="SNQKIITIGSVSLTIATVCFLMQIAILVTTVTLHFKQYECDSPA
+                     SNQVMPCEPIIIERNITEIVYLNNTTIEKEICPKVVEYRNWSKPQCQITGFAPFSKDN
+                     SIRLSAGGDIWVTREPYVSCDHGKCYQFALGQGTTLDNKHSNDTIHDRIPHRTLLMNE
+                     LGVPFHLGTRQVCIAWSSSSCHDGKAWLHVCITGDDKNATASFIYDGRLVDSIGSWSQ
+                     NILRTQESECVCINGTCTVVMTDGSASGRADTRILFIEEGKIVHISPLSGSAQHVEEC
+                     SCYPRYPGVRCICRDNWKGSNRPVVDINMEDYSIDSSYVCSGLVGDTPRNDDRSSNSN
+                     CRNPNNERGNQGVKGWAFDNGDDVWMGRTISKDLRSGYETFKVIGGWSTPNSKSQINR
+                     QVIVDSDNRSGYSGIFSVEGKSCINRCFYVELIRGRKQETRVWWTSNSIVVFCGTSGT
+                     YGTGSWPDGANINFMPI"
+ORIGIN      
+        1 tccaatcaaa agataataac aattggctct gtctctctca ccattgcaac agtatgcttc
+       61 ctcatgcaga ttgccatcct ggtaactact gtaacattgc attttaagca atatgagtgc
+      121 gactcccccg cgagcaacca agtaatgccg tgtgaaccaa taataataga aaggaacata
+      181 acagagatag tgtatttgaa taacaccacc atagagaaag agatatgccc caaagtagtg
+      241 gaatacagaa attggtcaaa gccgcaatgt caaattacag gatttgcacc tttttctaag
+      301 gacaattcaa tccggctttc tgctggtggg gacatttggg tgacgagaga accttatgtg
+      361 tcatgcgatc atggcaagtg ttatcaattt gcactcgggc aggggaccac actagacaac
+      421 aaacattcaa atgacacaat acatgataga atccctcatc gaaccctatt aatgaatgag
+      481 ttgggtgttc catttcattt aggaaccagg caagtgtgta tagcatggtc cagctcaagt
+      541 tgtcacgatg gaaaagcatg gctgcatgtt tgtatcactg gggatgacaa aaatgcaact
+      601 gctagcttca tttatgacgg gaggcttgtg gacagtattg gttcatggtc tcaaaatatc
+      661 ctcagaaccc aggagtcgga atgcgtttgt atcaatggga cttgcacagt agtaatgact
+      721 gatggaagtg cttcaggaag agccgatact agaatactat tcattgaaga ggggaaaatt
+      781 gtccatatta gcccattgtc aggaagtgct cagcatgtag aagagtgttc ctgttatcct
+      841 agatatcctg gcgtcagatg tatctgcaga gacaactgga aaggctctaa taggcccgtc
+      901 gtagacataa atatggaaga ttatagcatt gattccagtt atgtgtgctc agggcttgtt
+      961 ggcgacacac ctagaaacga cgacagatct agcaatagca attgcaggaa tcctaacaat
+     1021 gagagaggga atcaaggagt gaaaggctgg gcctttgaca atggagatga cgtgtggatg
+     1081 ggaagaacga tcagcaagga tttacgctca ggttatgaaa ctttcaaagt cattggtggt
+     1141 tggtccacac ctaattccaa atcgcagatc aatagacaag tcatagttga cagcgataat
+     1201 cggtcaggtt actctggtat tttctctgtt gagggcaaaa gctgcatcaa taggtgcttt
+     1261 tatgtggagt tgataagggg aaggaaacag gagactagag tgtggtggac ctcaaacagt
+     1321 attgttgtgt tttgtggcac ttcaggtacc tatggaacag gctcatggcc tgatggggcg
+     1381 aacatcaatt tcatgcctat ataagctttc gcaatttaga
+//
+

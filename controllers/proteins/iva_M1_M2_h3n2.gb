@@ -1,0 +1,77 @@
+LOCUS       KC142131                1024 bp    cRNA    linear   VRL 02-OCT-2014
+DEFINITION  Influenza A virus (A/Victoria/3/1975(H3N2)) segment 7 matrix
+            protein 2 (M2) and matrix protein 1 (M1) genes, complete cds.
+ACCESSION   KC142131
+VERSION     KC142131.1
+KEYWORDS    .
+SOURCE      Influenza A virus (A/Victoria/3/1975(H3N2))
+  ORGANISM  Influenza A virus (A/Victoria/3/1975(H3N2))
+            Viruses; Riboviria; Orthornavirae; Negarnaviricota;
+            Polyploviricotina; Insthoviricetes; Articulavirales;
+            Orthomyxoviridae; Alphainfluenzavirus.
+REFERENCE   1  (bases 1 to 1024)
+  AUTHORS   Qiu,Y., van der Meulen,K. and Van Reeth,K.
+  TITLE     Prior infection of pigs with a recent human H3N2 influenza virus
+            confers minimal cross-protection against a European swine H3N2
+            virus
+  JOURNAL   Influenza Other Respir Viruses 7 (6), 1260-1268 (2013)
+   PUBMED   23551882
+REFERENCE   2  (bases 1 to 1024)
+  AUTHORS   Qiu,Y., van der Meulen,K. and Van Reeth,K.
+  TITLE     Direct Submission
+  JOURNAL   Submitted (08-NOV-2012) Lab of Virology, Faculty of Veterinary
+            Medicine, Ghent University, Salisburylaan 133, Merelbeke, East
+            Flanders 9820, Belgium
+FEATURES             Location/Qualifiers
+     source          1..1024
+                     /organism="Influenza A virus (A/Victoria/3/1975(H3N2))"
+                     /mol_type="viral cRNA"
+                     /strain="A/Victoria/3/1975"
+                     /serotype="H3N2"
+                     /host="Homo sapiens"
+                     /db_xref="taxon:392809"
+                     /segment="7"
+                     /country="Australia"
+                     /collection_date="Apr-1975"
+     gene            24..1005
+                     /gene="M2"
+     CDS             join(24..49,738..1005)
+                     /gene="M2"
+                     /codon_start=1
+                     /product="matrix protein 2"
+                     /protein_id="AFY08277.1"
+                     /translation="MSLLTEVETPIRSEWGCRCNDSSDPLVVAASIIGILHLILWILD
+                     RLFFKCIYRFFEHGLKRGPSTEGVPESMREEYRKEQQSAVDADDSHFVSIELE"
+     gene            24..782
+                     /gene="M1"
+     CDS             24..782
+                     /gene="M1"
+                     /codon_start=1
+                     /product="matrix protein 1"
+                     /protein_id="AFY08276.1"
+                     /translation="MSLLTEVETYVLSIVPSGPLKAEIAQRLEDVFAGKNTDLEALME
+                     WLKTRPILSPLTKGILGFVFTLTVPSERGLQRRRFVQNALNGNGDPNNMDRAVKLYRK
+                     LKREITFHGAKEIALSYSAGALASCMGLIYNRMGAVTTEVAFGLVCATCEQIADSQHR
+                     SHRQMVATTNPLIRHENRMVLASTTAKAMEQMAGSSEQAAEAMEVASQARQMVQAMRA
+                     IGTHPSSSAGLKDDLLENLQAYQKRMGVQMQRFK"
+ORIGIN      
+        1 caaaagcagg tagatattga aagatgagcc ttctaaccga ggtcgaaacg tatgttctct
+       61 ctatcgttcc gtcaggcccc ctcaaagccg aaatcgcgca gagacttgaa gatgtctttg
+      121 ctggaaagaa cacagatctt gaggctctca tggaatggct aaagacaaga ccaattctgt
+      181 cacctctgac taaggggatt ttgggatttg tattcacgct caccgtgccc agtgagcgag
+      241 gactgcagcg tagacgcttt gtccaaaatg ccctcaatgg gaatggggat ccaaataaca
+      301 tggacagagc agttaaactg tacagaaaac ttaagaggga gataacattc catggggcca
+      361 aagaaatagc actcagttat tctgctggtg cacttgccag ttgcatgggc ctcatataca
+      421 acaggatggg ggctgtgacc actgaagtgg cctttggcct ggtatgtgca acctgtgaac
+      481 agattgctga ctcccagcac aggtctcata ggcaaatggt ggcaacaacc aatccactaa
+      541 taagacatga gaacagaatg gttctggcca gcactacagc taaggctatg gagcaaatgg
+      601 ctggatcaag tgagcaggca gcagaggcca tggaggttgc tagtcaggcc aggcaaatgg
+      661 tgcaggcaat gagagccatt gggactcatc ctagctccag tgctggtcta aaagatgatc
+      721 ttcttgaaaa tttgcaggcc tatcagaagc gaatgggggt gcagatgcaa cgattcaagt
+      781 gaccctcttg ttgttgctgc gagtatcatt gggatcttgc acttgatatt gtggattctt
+      841 gatcgtcttt ttttcaaatg catctatcga ttctttgaac acggtctgaa aagagggcct
+      901 tctacggaag gagtacctga gtctatgagg gaagaatatc gaaaggaaca gcagagtgct
+      961 gtggatgctg acgacagtca ttttgtcagc atagagctgg agtaaaaaac taccttgttt
+     1021 ctac
+//
+

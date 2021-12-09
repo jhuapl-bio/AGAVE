@@ -1,0 +1,116 @@
+LOCUS       CY251100                2309 bp    cRNA    linear   VRL 01-DEC-2017
+DEFINITION  Influenza A virus (A/Victoria/92/2012(mixed)) polymerase PB1 (PB1)
+            and PB1-F2 protein (PB1-F2) genes, complete cds.
+ACCESSION   CY251100
+VERSION     CY251100.1
+DBLINK      BioProject: PRJNA183620
+KEYWORDS    .
+SOURCE      Influenza A virus (A/Victoria/92/2012(mixed))
+  ORGANISM  Influenza A virus (A/Victoria/92/2012(mixed))
+            Viruses; Riboviria; Orthornavirae; Negarnaviricota;
+            Polyploviricotina; Insthoviricetes; Articulavirales;
+            Orthomyxoviridae; Alphainfluenzavirus.
+REFERENCE   1  (bases 1 to 2309)
+  AUTHORS   Tan,G., Pickett,B., Fedorova,N., Puri,V., Shrivastava,S.,
+            Amedeo,P., Isom,R., Hu,L., Christensen,J., Novotny,M., Durbin,A.,
+            Rocchi,I., Williams,T., Bao,Y., Sanders,R., Zhdanov,S.,
+            Kiryutin,B., Lipman,D.J., Tatusova,T., Hatcher,E. and Barr,I.
+  TITLE     The NIAID Influenza Genome Sequencing Project
+  JOURNAL   Unpublished
+REFERENCE   2  (bases 1 to 2309)
+  CONSRTM   The NIAID Influenza Genome Sequencing Consortium
+  TITLE     Direct Submission
+  JOURNAL   Submitted (01-DEC-2017) on behalf of JCVI/The Peter Doherty
+            Institute for Infection and Immunity/NCBI, National Center for
+            Biotechnology Information, NIH, Bethesda, MD 20894, USA
+COMMENT     This work was supported by the National Institute of Allergy and
+            Infectious Diseases (NIAID), Genome Sequencing Centers for
+            Infectious Diseases (GSCID) program.
+FEATURES             Location/Qualifiers
+     source          1..2309
+                     /organism="Influenza A virus (A/Victoria/92/2012(mixed))"
+                     /mol_type="viral cRNA"
+                     /strain="A/Victoria/92/2012"
+                     /serotype="mixed"
+                     /host="human; gender Female; age 64 years"
+                     /db_xref="taxon:2044258"
+                     /segment="2"
+                     /country="Australia: Victoria"
+                     /collection_date="12-Jul-2012"
+                     /note="passage details: MDCK2; Sequence data indicate that
+                     the sample was mix-infected, and the genotype is
+                     H1,3N1,2."
+     misc_feature    1..2309
+                     /db_xref="IRD:NIGSP_IBA_00034.PB1"
+     gene            8..2281
+                     /gene="PB1"
+     CDS             8..2281
+                     /gene="PB1"
+                     /codon_start=1
+                     /product="polymerase PB1"
+                     /protein_id="ATV83593.1"
+                     /translation="MDVNPTLLFLKVPAQNAISTTFPYTGDPPYSHGTGTGYTMDTVN
+                     RTHQYSERGKWTTNTETGAPQLNPIDGPLPEDNEPSGYAQTDCVLEAMAFLEESHPGI
+                     FENSCLETMEAVQQTRVDKLTQGRQTYDWTLNRNQPAATALANTIEVFRSNGLTANES
+                     GRLIDFLKDVMESMDKEEIEITTHFQRKRRVRDNMTKKMVTQRTIGKKKQRVNKRGYL
+                     IRALTLNTMTKDAERGKLKRRAIATPGMQIRGFVYFVETLARSICEKLEQSGLPVGGN
+                     EKKAKLANVVRKMMTNSQDTELSFTITGDNTKWNENQNPRMFLAMITYITKNQPEWFR
+                     NILSIAPIMFSNKMARLGKGYMFESKRMKLRTQIPAEMLASIDLKYFNESTRKKIEKI
+                     RPLLIDGTASLSPGMMMGMFNMLSTVLGVSILNLGQKKYTKTTYWWDGLQSSDDFALI
+                     VNAPNHEGIQAGVDRFYRTCKLVGINMSKKKSYINKTGTFEFTSFFYRYGFVANFSME
+                     LPSFGVSGINESADMSIGVTVIKNNMINNDLGPATAQMALQLFIKDYRYTYRCHRGDT
+                     QIQTRRSFEIKKLWDQTQSRTGLLVSDGGPNLYNIRNLHIPEVCLKWELMDENYRGRL
+                     CNPLNPFVSHKEIESVNNAVVMPAHGPAKSMEYDAVATTHSWIPKRNRSILNTSQRGI
+                     LEDEQMYQKCCNLFEKFFPSSSYRRPIGISSMVEAMVSRARIDARIDFESGRIKKEEF
+                     SEIMKICSTIEELKRQK"
+     gene            102..374
+                     /gene="PB1-F2"
+     CDS             102..374
+                     /gene="PB1-F2"
+                     /codon_start=1
+                     /product="PB1-F2 protein"
+                     /protein_id="ATV83594.1"
+                     /translation="MEQEQGTLWTQSTEHTNIQRGGSGRQIQKLGRPSSTQLMDHYLR
+                     IMNQVDMHKQTVSWRLWPSLKNPTQVSLRTHALKQWKPFNRQGWTN"
+ORIGIN      
+        1 catttgaatg gatgtcaatc cgactctact gttcttaaaa gttccagcgc aaaatgccat
+       61 aagcacaaca ttcccttata ctggagatcc tccatacagc catggaacag gaacagggta
+      121 cactatggac acagtcaaca gaacacacca atattcagag agggggaagt ggacgacaaa
+      181 tacagaaact ggggcgcccc agctcaaccc aattgatgga ccactacctg aggataatga
+      241 accaagtgga tatgcacaaa cagactgtgt cctggaggct atggccttcc ttgaagaatc
+      301 ccacccaggt atctttgaga actcatgcct tgaaacaatg gaagccgttc aacagacaag
+      361 ggtggacaaa ctaacccaag gtcgccagac ttatgattgg acattaaaca ggaatcaacc
+      421 ggcagcaact gcattagcca acaccataga agtctttaga tcgaacggat taacagctaa
+      481 tgaatcagga aggctaatag atttcctcaa ggatgtgatg gaatcaatgg ataaagagga
+      541 aatagagata acaacacact ttcaaagaaa aagaagagta agggacaaca tgaccaagaa
+      601 aatggtcaca caaagaacaa tagggaagaa aaagcaaaga gtgaataaga gaggctacct
+      661 aataagagct ttgacattga acacgatgac caaagatgca gagagaggca aattaaaaag
+      721 aagggctatt gcaacacccg ggatgcaaat tagagggttc gtgtacttcg ttgaaacttt
+      781 agctagaagc atttgcgaaa agcttgaaca atctggactt ccggttgggg gtaatgaaaa
+      841 gaaggccaaa ctggcaaatg ttgtgagaaa aatgatgact aattcacaag acacagagct
+      901 ttctttcaca atcactgggg acaacactaa gtggaatgaa aatcaaaacc cccgaatgtt
+      961 tttggcgatg attacataca tcacaaagaa tcaacctgag tggttcagaa acatcctgag
+     1021 catcgcacca ataatgttct caaacaaaat ggcaagactg ggaaaaggat acatgttcga
+     1081 gagtaagaga atgaagctcc ggacacaaat acctgcagaa atgctagcaa gcattgacct
+     1141 gaagtatttc aatgaatcaa caaggaagaa aattgagaaa ataaggcctc ttctaataga
+     1201 tggcacagca tcattgagcc ctggaatgat gatgggcatg ttcaacatgc taagtacagt
+     1261 tttaggagtc tcgatactga atcttggaca aaagaaatac accaagacaa catactggtg
+     1321 ggatgggctc caatcctcag atgattttgc cctcatagtg aatgcaccaa atcatgaggg
+     1381 aatacaagca ggagtggata gattctacag gacctgcaag ttagtgggaa tcaacatgag
+     1441 caaaaagaag tcctatataa ataaaacagg gacatttgaa ttcactagct ttttttatcg
+     1501 atatggattt gtggctaatt ttagcatgga gctgccaagt tttggagtgt ctggaataaa
+     1561 cgagtcagct gacatgagca ttggagtaac agtgataaag aacaacatga taaacaatga
+     1621 ccttggacca gcaacagccc aaatggctct ccaattgttc atcaaagatt acagatacac
+     1681 atatcggtgc catagaggag acacacaaat ccaaacgaga agatcattcg agataaagaa
+     1741 gctgtgggat caaacccaat caaggacagg actattggta tcagatgggg gaccaaactt
+     1801 atacaatatc cggaatcttc acatccctga agtctgctta aagtgggagc tgatggatga
+     1861 gaattatcgg ggaagacttt gtaatcccct gaatcccttt gtcagccata aagaaattga
+     1921 gtctgtaaac aatgctgtag taatgccagc ccatggtccg gccaaaagta tggaatatga
+     1981 tgccgttgca actacacact cctggattcc caaaaggaac cgctctattc taaacacaag
+     2041 ccaaagggga attcttgagg atgaacagat gtaccagaag tgctgcaact tgttcgagaa
+     2101 atttttccct agtagttcat ataggagacc gattggaatt tctagcatgg tggaggccat
+     2161 ggtgtctagg gcccggattg atgccagaat tgacttcgag tctggaagga ttaagaagga
+     2221 agagttctct gagatcatga agatctgttc caccattgaa gaactcaaac ggcaaaaata
+     2281 atgaatttag cttgtccttc atgaaaaaa
+//
+
