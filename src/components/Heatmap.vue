@@ -610,12 +610,14 @@ export default class Heatmap extends Vue {
       }))
       scaleYText.style("font-size", Math.min(scaleyMax, boxHeight))
       let maxXTick: any = d3.max(scaleXTestB.nodes().map((d:any)=>{
+        
           return d.getBBox().width
         })
       )
+      console.log(boxWidth, maxXTick)
       if (maxXTick > boxWidth){
-        scaleXTestB.style("font-size", Math.min(maxXTick, boxWidth))
-        scaleXTestT.style("font-size", Math.min(maxXTick, boxWidth))
+        scaleXTestB.style("font-size", Math.min(14, maxXTick, boxWidth))
+        scaleXTestT.style("font-size", Math.min(14, maxXTick, boxWidth))
       }  
       
     } catch(err: any){

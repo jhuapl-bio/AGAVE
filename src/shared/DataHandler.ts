@@ -38,6 +38,7 @@ export default class DataHandler {
     consensus_map: any  = null
     pdb_map: any  = {}
     selected_consensus: any = null
+    public changing: boolean = false
     public defaultDataListFile: any = path.join("data", "default.json")
     public defaultDataListFiles: any[] = [path.join("data", "default.json"), path.join("data", "BARDA_New.json"), path.join("data", "Gaydos.json")];
     data_selected: any  = null
@@ -103,6 +104,7 @@ export default class DataHandler {
     public updateData(){
         // Format data into cells
         const $this = this
+        this.changing = true
         let genes = this.filter()
         let cells: any = []
         let seen_positions:any  = {}
@@ -195,6 +197,7 @@ export default class DataHandler {
         this.position_ranges = [1, this.protein_map[this.organism][this.protein].length]
         this.pdb = this.pdb_map[this.organism][this.protein]
         this.cells_full = cells
+        this.changing = false
         
     }
     private parseGroups(group: any, groups: any){
@@ -234,41 +237,43 @@ export default class DataHandler {
                 
         
         let data_filtered = [].concat.apply([], data.entries.map((d:any)=>{
-            return d.organisms.map((organism: any)=>{
-                organism.experiment = d.experiment;
-                organism.group = d.group;
-                organism.sample = d.sample 
-                return organism
+            return d.items.map((item: any)=>{
+                item.experiment = d.experiment;
+                item.group = d.group;
+                item.sample = d.sample 
+                return item
             })
         }))
-        $this.organisms = [ ... new Set(data_filtered.map((d:any)=>{return d.organism}))]
-        
-        if (!$this.organism || $this.organisms.indexOf($this.organism) == -1 ) { $this.organism = $this.organisms[0] } 
+        console.log(data_filtered)
+        $this.proteins = [ ... new Set(data_filtered.map((d:any)=>{return d.gene}))]
+        if (!$this.protein || $this.proteins.indexOf($this.protein) == -1){ $this.protein = $this.proteins[0] }
         data_filtered  = [].concat.apply([], data_filtered.filter((d:any)=>{
-            return d.organism == $this.organism
-        }).map((d:any)=>{
-            return d.genes.map((gene:any)=>{
-                gene.experiment = d.experiment;
-                gene.group = d.group;
-                gene.sample = d.sample;
-                gene.organism = d.organism
-                return gene
-            })
+            return d.gene== $this.protein
         })
+            // .map((d:any)=>{
+            //     return d.genes.map((gene:any)=>{
+            //         gene.experiment = d.experiment;
+            //         gene.group = d.group;
+            //         gene.sample = d.sample;
+            //         gene.organism = d.organism
+            //         return gene
+            //     })
+            // })
         )
+        $this.organisms = [ ... new Set(data_filtered.map((d:any)=>{return d.organism}))]
+        if (!$this.organism || $this.organisms.indexOf($this.organism) == -1 ) { $this.organism = $this.organisms[0] } 
         $this.samples = [ ...new Set(data_filtered.map((d: any) => {return d.sample}))];
         let sample: any  = $this.samples
         $this.groups = [...new Set(data_filtered.map((d: any) => {return  d.group}))];
         let group: any  = $this.parseGroups($this.group, $this.groups)
-        $this.proteins = [ ... new Set(data_filtered.map((d:any)=>{return d.gene}))]
-        
-        if (!$this.protein || $this.proteins.indexOf($this.protein) == -1){ $this.protein = $this.proteins[0] }
+       
         if (!this.sample || this.sample.length == 0) { this.sample = this.samples }
         if (!this.organism  ) { this.organism = this.organisms[0] }
         if (!this.group|| this.group.length == 0 ) { this.group= this.groups}
         data_filtered = data_filtered.filter((d:any)=>{
             return $this.group.indexOf(d.group) > - 1  && $this.organism == d.organism && $this.sample.indexOf(d.sample) > -1
         })
+        console.log(this.protein_map, this.organism, this.protein, this.organisms)
         if (! ($this.protein in $this.protein_map[$this.organism])){
             $this.organisms.forEach((organism)=>{
                 console.log(organism)

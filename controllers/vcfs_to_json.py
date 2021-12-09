@@ -464,12 +464,18 @@ def main():
                     if protein is not None and len(protein) >=1:
                         protein_list = protein[1].split("\t")
                         first_protein = protein_list[1]
-                        print("Querying the uniprot id: %s" % (first_protein))
-                        pdb=query_uniprot_to_pdb(first_protein)
-                        print("Received the pdb id from the above uniprot mapping: %s" % (pdb[first_protein]['data'][0]['accession']))
-                        uniprot_pdbs_proteins.append([
-                            proteinValue['id'], first_protein, pdb[first_protein]['data'][0]['accession']
-                        ])
+                        pdb = ""
+                        if args['get_gb']:
+                            print("Querying the uniprot id: %s" % (first_protein))
+                            pdb=query_uniprot_to_pdb(first_protein)
+                            print("Received the pdb id from the above uniprot mapping: %s" % (pdb[first_protein]['data'][0]['accession']))
+                            uniprot_pdbs_proteins.append([
+                                proteinValue['id'], first_protein, pdb[first_protein]['data'][0]['accession']
+                            ])
+                        else:
+                            uniprot_pdbs_proteins.append([
+                                proteinValue['id'], first_protein, ""
+                            ])
                         map_pdb[organism][protein_id] = pdb[first_protein]['data'][0]['accession']
                         proteinValue['pdb'] = map_pdb[organism][protein_id]
                         i+=1
@@ -525,13 +531,13 @@ def main():
     for experiment, value in positions.items():
         for group, value2 in value.items():
             for sample, v in value2.items():
-                entry = dict(sample=sample, group=group, experiment=experiment, organisms=[] )
+                entry = dict(sample=sample, group=group, experiment=experiment, items=[] )
                 uniq_organisms = list(set(value2.keys()))
                 for organismName, value3 in v.items():
-                    organism = dict(
-                        genes=[],
-                        organism=organismName
-                    )
+                    # organism = dict(
+                    #     genes=[],
+                    #     organism=organismName
+                    # )
                     if organismName in protein_references:
                         seen = dict()
                         
@@ -545,6 +551,7 @@ def main():
                                     residues=[],
                                     depths=[],
                                     gene=geneName,
+                                    organism=organismName,
                                     pdb = proteinValue['pdb']
                                 )
                                 for posi in range(1, 1+len(proteinValue['protein'])):
@@ -622,7 +629,7 @@ def main():
                                         residues.append(ent)
                                 if protein_found:
                                     gene['residues'] = residues
-                                    organism['genes'].append(gene)
+                                    entry['items'].append(gene)
                         else:
                             proteinValue = protein_references[organismName][value3['protein']]
                             if "pdb" not in proteinValue:
@@ -632,6 +639,7 @@ def main():
                                     residues=[],
                                     depths=[],
                                     gene=value3['protein'],
+                                    organism=organismName,
                                     pdb = proteinValue['pdb']
                             )
                             if geneName not in output['proteins'][organismName]:
@@ -650,8 +658,9 @@ def main():
                                         counts=resid['counts']
                                     )
                                     gene['residues'].append(ent)
-                            organism['genes'].append(gene)
-                    entry['organisms'].append(organism)
+                            # organism['genes'].append(gene)
+                            entry['items'].append(gene)
+                    # entry['organisms'].append(organism)
                 output['entries'].append(entry)
     write_output(args['o'], output_list)
     
