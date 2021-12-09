@@ -447,6 +447,7 @@ export default class Heatmap extends Vue {
 
   updateHeatmap() {
     // Add styling to the heatmap blocks
+    console.log("this heatmap")
     let scrollAttr: any  = { x: null, y: null, marginA: null, marginB: null }    
     const g = this.g
     let protein = this.DataHandler.protein
@@ -454,30 +455,7 @@ export default class Heatmap extends Vue {
     const $this = this
     let cells: any = this.DataHandler.cells
     this.position_ranges = this.DataHandler.position_ranges
-    // if (this.isSwitched){
-    //   // Get unique positions in order to calculate x axis
-    //   // const positions: any[] = [...new Set(cells.map((d:any)=>{
-    //   //   return d.position 
-    //   // }))];
-    //   // // const positions_unique = this.DataHandler.selected_consensus.residues
-    //   // // this.positions_unique = positions_unique.filter((d:any, i:any)=>{
-    //   // //   return i+1 >= this.DataHandler.position_ranges[0] && i+1 <= this.DataHandler.position_ranges[1]
-    //   // // })
-    //   // this.positions = positions
-    // } else {
-    //   let positions: any = this.DataHandler.referenceSequence
-    //   // const positions: any[] = this.DataHandler.referenceSequence.positions
-    //   this.positions = positions.filter((d:any)=>{
-    //     return +d.position >= this.DataHandler.position_ranges[0] && +d.position <= this.DataHandler.position_ranges[1]
-    //   })
-    //   // this.positions_unique = this.positions.map((d:any)=>{
-    //   //   return `${d.aa}.${d.position}`
-    //   // })
-    //   this.positions = this.positions.map((d:any)=>{
-    //     return d.position
-    //   })
-    //   cells = cells.filter((d:any)=>{ return this.positions.indexOf(d.position) > -1  })
-    // }
+ 
     this.positions_unique = this.DataHandler.protein_map[organism][protein].split("")
     // this.positions = [1, this.positions_unique.length]
     if (!this.DataHandler.discordantOnly){
@@ -492,12 +470,14 @@ export default class Heatmap extends Vue {
     
     cells = cells.filter((d:any)=>{ return +d.position >= positions_range[0] && +d.position <= positions_range[1]  })
 
-
+    let reference_seq = this.DataHandler.referenceSequence
 
 
     const min = Math.max(this.DataHandler.position_ranges[0], d3.min($this.positions))
     const max = Math.min(this.position_max, d3.max($this.positions))
-    this.positions = this.positions.filter((d:any)=>{ return d <= max && d >= min})
+    this.positions = this.positions.filter((d:any)=>{ return d <= max && d >= min}).sort(function(a, b) {
+      return a - b;
+    });
     if (this.scrollDirection == 'x'){
       scrollAttr['x'] = this.positions
       scrollAttr.xTicks = this.positions_unique;
@@ -515,8 +495,19 @@ export default class Heatmap extends Vue {
     }
     let seen_positions: any = {}
     cells.forEach((cell:any, i:number)=>{
-      seen_positions[i] = `${cell.aa}.${cell.position}`
+      if (!this.isSwitched){
+        seen_positions[cell.position] = `${cell.consensus_aa}.${cell.position}`
+      } else {
+        if (reference_seq && cell.position in reference_seq){
+          seen_positions[cell.position] = `${reference_seq[cell.position]}.${cell.position}`
+          cell.pdb_aa =`${reference_seq[cell.position]}`
+        } else {
+          seen_positions[cell.position] = `Unmapped.${cell.position}`
+          cell.pdb_aa =`Unmapped`
+        }
+      }
     })
+    
     let boxHeight = (this.height - this.margin.top - this.margin.bottom )/ scrollAttr.y.length 
     this.boxHeight = boxHeight;
     this.x.domain([min, max])
@@ -562,14 +553,14 @@ export default class Heatmap extends Vue {
       .tickSizeOuter(0)
       .ticks(max-min)
       .tickFormat((interval:any,i:any) => {
-        return i%2 !== 0 ? " ": seen_positions[i];
+        return i%2 !== 0 ? " ": seen_positions[interval];
       });
     this.xAxisB = d3
     .axisBottom(this.scaleX)
     .tickSizeOuter(0)
     .ticks(max-min)
     .tickFormat((interval:any,i:any) => {
-      return i%2 !== 1 ? " ": seen_positions[i];
+      return i%2 !== 1 ? " ": seen_positions[interval];
     });
     let scaleYText: any = d3.select("#yAxis")
           .attr("transform", "translate(" + this.margin.left + "," + (this.boxHeight/2)+ ")")
@@ -580,7 +571,7 @@ export default class Heatmap extends Vue {
           .classed("scaleYText", true)
           .style('text-anchor', 'end')
           .attr('transform', 'rotate(0)')
-          .style("font-size", "19px")
+          .style("font-size", "14px")
     
     let scaleXTestT: any = d3.select('#xAxisT')
           .attr("transform", "translate(" + (0) + "," + (this.margin.top) + ")")
@@ -593,7 +584,7 @@ export default class Heatmap extends Vue {
           .attr("dy", ".35em")
           .attr("transform", "rotate(45)")
           .style("text-anchor", "end")
-          .style("font-size", "16px");
+          .style("font-size", "14px");
     let scaleXTestB: any = d3.select('#xAxisB')
           .attr("transform", "translate(" + (0) + "," + (this.chartHeight - this.margin.bottom) + ")")
           .style("fill", null)
@@ -635,7 +626,7 @@ export default class Heatmap extends Vue {
     .style("fill", "white")
     const blocks = g.selectAll(".block")
     .data(cells, (d:any, i:any)=>{
-        "_"+d.experiment.replaceAll(" ", "_").replaceAll("-", "_") + d.position +d.prep_id+ $this.DataHandler.protein
+        "_"+d.experiment.replaceAll(" ", "_").replaceAll("-", "_") + d.position +d.prep_id+ $this.DataHandler.protein + d.pdb_aa
     })
     .join(
       function (enter: any) {
@@ -730,6 +721,8 @@ export default class Heatmap extends Vue {
       Depth: ${u.depth}<br>
       Total: ${u.total}<br>
       Reference Residue: ${u.aa}<br>
+      Protein: ${u.protein}<br>
+      PDB Residue: ${u.pdb_aa}<br>
       Consensus Residue: ${u.consensus_aa}<br>
       Consensus / Total: ${ratio.toFixed(3)} ${( !$this.isSwitched ? `<br>Ref. Residue: ${$this.positions_unique[$this.positions.indexOf(u.position)]}`: '')} `)
       $this.tooltiptable = u.unique.map((d:any)=>{

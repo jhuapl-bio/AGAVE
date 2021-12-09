@@ -68,7 +68,7 @@ export default class MoleculeViewer extends Vue {
   public queryingResidueMapping: boolean = false;
   public queryingReferenceSequence: boolean = false;
   public localPosition: number =  55;
-  public referenceSequence: any[] = []
+  public referenceSequence: any = {}
   public isSwitched = true
   public assemblyId = "1"
   public positions: any[] = [];
@@ -112,12 +112,13 @@ export default class MoleculeViewer extends Vue {
   onPositionChanged(value: number, oldValue: number) {
     this.localPosition = value
     // this.chain_focus = null
+    console.log(this.localPosition)
     this.focus()
   }
   
   @Watch('referenceSequence', { immediate: true, deep: true })
   onRefSeqChange(value: any, oldValue: any) {
-    if (value.length > 0){
+    if (value && Object.keys(value).length > 0){
       this.$emit("changeReferenceSequence", value)
     }
   }
@@ -194,7 +195,7 @@ export default class MoleculeViewer extends Vue {
       // https://www.ebi.ac.uk/pdbe/graph-api/pdbe_pages/uniprot_mapping/4o5n/1
       this.queryingResidueMapping = true;
       // throw new Error("new err")
-      let response: any = await this.getdata(`https://www.ebi.ac.uk/pdbe/graph-api/mappings/uniprot_segments/${options.moleculeId}`)
+      let response: any = await this.getdata(`https://www.ebi.ac.uk/pdbe/graph-api/mappings/uniprot_segments/${options.moleculeId.toLowerCase()}`)
       this.title = "Fetching..."
       // console.log("Querying API call finished", response)
       this.map_positions = {}
@@ -205,7 +206,6 @@ export default class MoleculeViewer extends Vue {
         let data: any = response.data[options.moleculeId].UniProt;
         const uniprots = Object.keys(response.data[options.moleculeId].UniProt)
         let sum = 1;
-        console.log(response.data)
         uniprots.forEach((accession: any)=>{
           if (data[accession].mappings){
             const mappings: any = data[accession].mappings
@@ -234,23 +234,24 @@ export default class MoleculeViewer extends Vue {
             
         })
         this.pdb = options.moleculeId
-        console.log("mappositions", this.map_positions)
+      } else {
+        console.log("no response ", response, options)
       }
     } catch(err){
-      this.reportError(err, "Error in fetching Query for uniprot mappings from pdbID Info")
+      console.error(err)
+      this.reportError(err, "Error in fetching Query for uniprot mappings from pdbID")
     } finally {
       this.queryingResidueMapping = false;
       try {
         this.queryingReferenceSequence = true;
-        this.referenceSequence = []
+        this.referenceSequence = {}
         let response: any =  await this.getdata(`https://www.ebi.ac.uk/pdbe/search/pdb/select?q=pdb_id:${options.moleculeId}&wt=json`)
         if (
           response.data && 
           response.data.response && 
           response.data.response.docs){
           const chains: any = response.data.response.docs
-          console.log(response)
-          let ref_seq: any[] = []
+          let ref_seq: any = {}
           chains.forEach((chain: any)=>{
             if (chain.entity_id in this.map_positions){
               if (chain.title) {
@@ -265,10 +266,11 @@ export default class MoleculeViewer extends Vue {
                 if (i >= 0){
                   const position = this.determinePosition(i, this.map_positions[chain.entity_id].positions[1])
                   let chain_id = chain.molecule_sequence.substring(position,position+1)
-                  ref_seq.push( {
-                    position: i+1,
-                    aa: chain_id
-                  } )
+                  // ref_seq.push( {
+                  //   position: i+1,
+                  //   aa: chain_id
+                  // } )
+                  ref_seq[i+1] = chain_id
                   
                 }
               }
@@ -302,7 +304,6 @@ export default class MoleculeViewer extends Vue {
   async mounted() {
     // Available options here: https://github.com/PDBeurope/pdbe-molstar/wiki/1.-PDBe-Molstar-as-JS-plugin
     // Our H3N2 HA protein is 4o5n and our H1N1 HA protein is 3lzg
-    // console.log(this.DataHandler.pdb)
     const options: any= {
       moleculeId: this.pdb,
       assemblyId: this.assemblyId,
@@ -321,7 +322,6 @@ export default class MoleculeViewer extends Vue {
   focus() {
     this.viewer.visual.clearSelection();
     let residue: Residue =  { chain: '', entity: '', position: 0 };
-
     let found: boolean = false
     for(let d of Object.keys(this.map_positions).sort().filter((e:any)=>{return e != 'total'})) {
       if (this.localPosition  >= this.map_positions[d].positions[1] 

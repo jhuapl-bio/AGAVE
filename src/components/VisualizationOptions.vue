@@ -4,6 +4,9 @@
 
     <b-tab title="Data Settings" active>
       <div class="columns is-variable is-4">
+        <b-field label="File" class="column is-narrow">
+          <b-select placeholder="File" v-if="DataHandler.defaultDataListFiles"  v-model="DataHandler.defaultDataListFile" @change="emitChange($event, { full: true, target: 'file' })"  :options="DataHandler.defaultDataListFiles"></b-select>
+        </b-field>
         <b-field label="Data Type" class="column is-narrow">
           <b-switch v-model="isDataSwitched" 
             @change="emitChange($event, { full: true, target: 'data_type_selected' })"
@@ -80,7 +83,7 @@
         </b-field>
         <b-field label="Axis labels" class="column is-narrow">
           <b-switch v-model="isSwitched" >
-            {{ ( isSwitched ? 'Consensus' : 'Reference' ) }}
+            {{ ( isSwitched ? 'Consensus' : 'PDB Reference' ) }}
           </b-switch>
         </b-field>
       </div>
@@ -194,6 +197,8 @@ export default class VisualizationOptions extends Vue {
   }
 
   async emitChange(event: any, params: { full: boolean, target: string} ){
+    let changedData = true
+
     if (params.target == 'depth_threshold'){
       this.DataHandler.depth_threshold = event
     } else if (params.target == 'protein'){
@@ -218,6 +223,9 @@ export default class VisualizationOptions extends Vue {
       this.DataHandler.position_ranges = event
     } else if (params.target == 'sample' ){
       this.DataHandler.sample = event
+    } else if (params.target == 'file' ){
+      changedData = false
+      await this.getData(event, "file")
     } else if (params.target == 'selected_consensus'){
       this.DataHandler.selected_consensus = event
     } else if (params.target == 'discordant'){
@@ -230,7 +238,9 @@ export default class VisualizationOptions extends Vue {
     } else {
       this.DataHandler.updateCells()
     }
-    this.$emit('sliderUpdate', {value: this.DataHandler, target: 'DataHandler'})
+    if (changedData){
+      this.$emit('sliderUpdate', {value: this.DataHandler, target: 'DataHandler'})
+    }
   }
 
   async getData(value: any, type: string){

@@ -7,7 +7,7 @@ interface StringMap { [key: string]: string; }
 
 export default class DataHandler {
     sort: boolean = true
-    referenceSequence: number[] = []
+    referenceSequence: any = {}
     position_ranges: number[] = []
     xvalues: any[] = []
     pdb: any = null
@@ -27,6 +27,7 @@ export default class DataHandler {
     organism: any = null
     organisms: any[] = []
     experiments: any[] = []
+    isSwitched: boolean = true
     experiment: any = null
     discordantOnly: boolean = true
     frequency_threshold: number = 0
@@ -37,14 +38,15 @@ export default class DataHandler {
     consensus_map: any  = null
     pdb_map: any  = {}
     selected_consensus: any = null
-    defaultDataListFile: any = path.join("data", "default.json")
+    public defaultDataListFile: any = path.join("data", "default.json")
+    public defaultDataListFiles: any[] = [path.join("data", "default.json"), path.join("data", "BARDA_New.json"), path.join("data", "Gaydos.json")];
     data_selected: any  = null
     public  constructor() {
         this.data_selected = this.defaultDataListFile
     }
     public updateReference(referenceSequence: any){
         this.referenceSequence = referenceSequence
-        // this.updatePositions(d3.extent(referenceSequence.map((d: any)=>{return d.position })))
+        
     }
     public updatePositions(positions: any[])
     {
@@ -58,7 +60,7 @@ export default class DataHandler {
     public updateProtein(protein: any)
     {
         this.protein = protein
-        // this.pdb = this.pdb_map[this.organism][protein]
+        this.pdb = this.pdb_map[this.organism][protein]
     }
     public changeExperiment(experiment: any )
     {
@@ -74,11 +76,21 @@ export default class DataHandler {
         let cells_filtered= this.cells_full.filter((d:any)=>{
             return d.position >= this.position_ranges[0] && 
                 d.position <= this.position_ranges[1] && 
-                d.organism == this.organism 
+                d.organism == this.organism && this.protein == d.protein
         })
         if (this.discordantOnly){
-            cells_filtered = cells_filtered.filter((d:any)=>{
-                return d.aa !== d.consensus_aa || (d.count > 1 || d.count ==1 &&  d.depth > 0)
+            cells_filtered = cells_filtered.filter((cell:any)=>{
+                if (this.referenceSequence && cell.position in this.referenceSequence ){
+                    cell.pdb_aa= `${this.referenceSequence[cell.position]}`
+                } else {
+                    cell.pdb_aa=`Unmapped`
+                }
+                if (!this.isSwitched){
+                    return cell.aa !== cell.consensus_aa || (cell.count > 1 || cell.count ==1 &&  cell.depth > 0)
+                } else {
+                    return cell.aa !== cell.pdb_aa || (cell.count > 1 || cell.count ==1 &&  cell.depth > 0)
+
+                }
             })
         }
         this.cells = cells_filtered
@@ -95,11 +107,11 @@ export default class DataHandler {
         let cells: any = []
         let seen_positions:any  = {}
         genes.forEach((gene:any)=>{
+            seen_positions[gene.gene] = {}
             gene.residues.forEach((residue:any)=>{
-                seen_positions[+residue.position]=1
+                seen_positions[gene.gene][+residue.position]=1
             }) 
         })
-        
         genes.forEach((gene: any)=>{
             let position_map: any = {}; 
             let current_position = 0     
@@ -107,6 +119,7 @@ export default class DataHandler {
             let depths = gene.depths
             let organism = gene.organism
             // let protein = this.protein_map[organism][gene.gene]
+            // this.pdb = this.pdb_map[this.organism][this.protein]
             if (!$this.pdb_map[organism]){
                 $this.pdb_map[organism] = {}
             }
@@ -116,7 +129,9 @@ export default class DataHandler {
                 position_map[residue.position] = 0
                 seen_residue[residue.position]= 1
                 let i: number = current_position;
-                $this.pdb_map[organism][gene.gene] = gene.pdb
+                if (gene.pdb  ){
+                    $this.pdb_map[organism][gene.gene] = gene.pdb
+                }
                 cells.push({ 
                     unique: residue.counts.map((d:any)=>{
                         if (residue.reference_aa == d.aa){
@@ -149,7 +164,6 @@ export default class DataHandler {
                 if (!seen_residue[position]){
                     let i = position-1
                     let protein = $this.protein_map[organism][gene.gene]
-
                     let depth = depths[i]
                     if (depth > 0){
                         let aa = protein[i]
@@ -170,7 +184,7 @@ export default class DataHandler {
                             consensus_count: depth
                         })
                     }
-                }
+                } 
             })
         })
                   
@@ -181,9 +195,6 @@ export default class DataHandler {
         this.position_ranges = [1, this.protein_map[this.organism][this.protein].length]
         this.pdb = this.pdb_map[this.organism][this.protein]
         this.cells_full = cells
-       
-                    
-          
         
     }
     private parseGroups(group: any, groups: any){
@@ -220,7 +231,7 @@ export default class DataHandler {
                 $this.protein_map[organismId][prot] = protValue
             }
         }
-      
+                
         
         let data_filtered = [].concat.apply([], data.entries.map((d:any)=>{
             return d.organisms.map((organism: any)=>{
@@ -250,6 +261,7 @@ export default class DataHandler {
         $this.groups = [...new Set(data_filtered.map((d: any) => {return  d.group}))];
         let group: any  = $this.parseGroups($this.group, $this.groups)
         $this.proteins = [ ... new Set(data_filtered.map((d:any)=>{return d.gene}))]
+        
         if (!$this.protein || $this.proteins.indexOf($this.protein) == -1){ $this.protein = $this.proteins[0] }
         if (!this.sample || this.sample.length == 0) { this.sample = this.samples }
         if (!this.organism  ) { this.organism = this.organisms[0] }
@@ -257,6 +269,18 @@ export default class DataHandler {
         data_filtered = data_filtered.filter((d:any)=>{
             return $this.group.indexOf(d.group) > - 1  && $this.organism == d.organism && $this.sample.indexOf(d.sample) > -1
         })
+        if (! ($this.protein in $this.protein_map[$this.organism])){
+            $this.organisms.forEach((organism)=>{
+                console.log(organism)
+                if ($this.protein in $this.protein_map[organism]){
+                    $this.organism = organism
+                }
+            })
+        }else {
+            console.log($this.protein_map)
+        }
+
+            
 
         return data_filtered
 

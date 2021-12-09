@@ -114,6 +114,7 @@ export default class Visualization extends Vue {
   }
   changeReferenceSequence(value: any){
     this.DataHandler.updateReference(value)
+    this.DataHandler.updateCells()
     this.sliderUpdate({target: "DataHandler", value: this.DataHandler})
   }  
   
