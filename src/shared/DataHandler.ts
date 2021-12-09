@@ -11,7 +11,9 @@ export default class DataHandler {
     position_ranges: number[] = []
     xvalues: any[] = []
     pdb: any = null
+    isDefault: boolean = true
     selected_data: any  = null
+    custom_data_last: any = null
     selectedPosition: number = 1
     yvalues: any[] = []
     cells: any = null
@@ -66,6 +68,15 @@ export default class DataHandler {
     public changeExperiment(experiment: any )
     {
         this.experiment = experiment
+        
+    }
+    public changeDataType(isDefault: any )
+    {
+        console.log("isDefault")
+        this.isDefault = isDefault
+        if (!isDefault){
+            this.selected_data = this.custom_data_last[0]
+        }
         
     }
     public updateOrganism(organism: any )
@@ -325,6 +336,9 @@ export default class DataHandler {
             })
             if (!$this.experiment || $this.experiments.indexOf($this.experiment) == -1) { $this.experiment = $this.experiments[0] }
             $this.raw_data = data
+            if (!$this.isDefault){
+                $this.custom_data_last = data
+            }
             $this.selected_data = data[0] // Auto select the first experiment/entry in the first level 
             
         }

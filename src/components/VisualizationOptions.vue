@@ -203,7 +203,8 @@ export default class VisualizationOptions extends Vue {
       this.DataHandler.updateOrganism(event)
       // await this.getData(`${this.DataHandler.data_selected.path}`, "file")
     } else if (params.target == 'data_type_selected'){
-      this.DataHandler.changeDataType(event)
+      // this.DataHandler.changeDataType(event)
+      console.log("change data type", event)
     } else if (params.target == 'data_selected' ){
       this.DataHandler.changeExperiment(event)
     } else if (params.target == 'group' ){
