@@ -7,12 +7,11 @@
         <b-field label="File" class="column is-narrow">
           <b-select placeholder="File" v-if="DataHandler.defaultDataListFiles"  v-model="DataHandler.defaultDataListFile" @change="emitChange($event, { full: true, target: 'file' })"  :options="DataHandler.defaultDataListFiles"></b-select>
         </b-field>
-        <b-field label="Data Type" class="column is-narrow">
-          <b-switch v-model="isDataSwitched" 
-            @change="emitChange($event, { full: true, target: 'data_type_selected' })"
+        <b-field :label="(isDataSwitched ? 'Default Data' : 'Custom')" class="column is-narrow">
+          <!-- <b-switch :disabled="true" v-model="isDataSwitched" 
           >
             {{ ( isDataSwitched ? 'Sample' : 'Custom' ) }}
-          </b-switch>
+          </b-switch> -->
           <b-select 
             placeholder="Data" 
             v-model="DataHandler.experiment"
@@ -148,7 +147,10 @@ export default class VisualizationOptions extends Vue {
   onSwitchedChange(value: boolean, oldValue: boolean) {
     this.$emit('sliderUpdate', {value: value, target: 'isSwitched'})
   }
-
+  @Watch("isDataSwitched")
+  onSwitchedChangeDataType(value: boolean, oldValue: boolean) {
+    this.emitChange(value, { full: true, target: 'data_type_selected' })
+  }
   @Watch("sortBy")
   onSortByChange(value: boolean, oldValue: boolean) {
     this.$emit('sliderUpdate', {value: value, target: 'sortBy'})
@@ -160,17 +162,8 @@ export default class VisualizationOptions extends Vue {
     const reader = new FileReader()
     this.isDataSwitched = false
     let estimate_protein: any = null
-    try{
-      estimate_protein = value.name.split(".")[0]
-      if (this.proteins.indexOf(estimate_protein) > -1){
-        this.protein = estimate_protein
-      }
-    } catch(err){
-      console.log(err)
-    }
     reader.onload = function(event:any) {
       $this.getData(reader.result, 'string').then((d:any)=>{
-        $this.DataHandler.protein = $this.protein
         $this.$emit('sliderUpdate', {value: $this.DataHandler, target: 'DataHandler'})
       })
     }
@@ -198,7 +191,7 @@ export default class VisualizationOptions extends Vue {
 
   async emitChange(event: any, params: { full: boolean, target: string} ){
     let changedData = true
-
+    console.log(event,params)
     if (params.target == 'depth_threshold'){
       this.DataHandler.depth_threshold = event
     } else if (params.target == 'protein'){
@@ -210,11 +203,7 @@ export default class VisualizationOptions extends Vue {
       this.DataHandler.updateOrganism(event)
       // await this.getData(`${this.DataHandler.data_selected.path}`, "file")
     } else if (params.target == 'data_type_selected'){
-      if (event){
-        this.DataHandler.updateData()
-      } else {
-        this.DataHandler.updateData()
-      }
+      this.DataHandler.changeDataType(event)
     } else if (params.target == 'data_selected' ){
       this.DataHandler.changeExperiment(event)
     } else if (params.target == 'group' ){
