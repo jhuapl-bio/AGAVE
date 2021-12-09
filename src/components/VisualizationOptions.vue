@@ -211,9 +211,9 @@ export default class VisualizationOptions extends Vue {
       // await this.getData(`${this.DataHandler.data_selected.path}`, "file")
     } else if (params.target == 'data_type_selected'){
       if (event){
-        this.DataHandler.updateData('sample')
+        this.DataHandler.updateData()
       } else {
-        this.DataHandler.updateData('custom')
+        this.DataHandler.updateData()
       }
     } else if (params.target == 'data_selected' ){
       this.DataHandler.changeExperiment(event)
