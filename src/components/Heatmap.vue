@@ -79,7 +79,6 @@ export default class Heatmap extends Vue {
   }
   @Watch("isSwitched")
   onSwitchChanged(value: boolean, oldValue: boolean) {
-    console.log("switched")
     this.updateHeatmap()
   }
  
@@ -88,7 +87,6 @@ export default class Heatmap extends Vue {
   }
   @Watch("column_width")
   onColWidthChanged(value: number, oldValue: number) {
-    console.log("col width changed")
     this.updateHeatmap()
   }
 
@@ -447,7 +445,7 @@ export default class Heatmap extends Vue {
 
   updateHeatmap() {
     // Add styling to the heatmap blocks
-    console.log("this heatmap")
+    console.log("updating heatmap")
     let scrollAttr: any  = { x: null, y: null, marginA: null, marginB: null }    
     const g = this.g
     let protein = this.DataHandler.protein
@@ -614,7 +612,6 @@ export default class Heatmap extends Vue {
           return d.getBBox().width
         })
       )
-      console.log(boxWidth, maxXTick)
       if (maxXTick > boxWidth){
         scaleXTestB.style("font-size", Math.min(14, maxXTick, boxWidth))
         scaleXTestT.style("font-size", Math.min(14, maxXTick, boxWidth))

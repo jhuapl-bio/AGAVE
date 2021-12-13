@@ -97,6 +97,7 @@ export default class Visualization extends Vue {
       this.pdb = value.pdb
       if (this.$refs.heatmap){
         this.$refs.heatmap.changeDataHandler()
+        // this.$refs.heatmap.proteinChange(this.)
         this.$refs.barplot.changeDataHandler()
       }
     }

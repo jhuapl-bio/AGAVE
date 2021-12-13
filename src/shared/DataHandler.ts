@@ -72,7 +72,6 @@ export default class DataHandler {
     }
     public changeDataType(isDefault: any )
     {
-        console.log("isDefault")
         this.isDefault = isDefault
         if (!isDefault){
             this.selected_data = this.custom_data_last[0]
@@ -255,7 +254,6 @@ export default class DataHandler {
                 return item
             })
         }))
-        console.log(data_filtered)
         $this.proteins = [ ... new Set(data_filtered.map((d:any)=>{return d.gene}))]
         if (!$this.protein || $this.proteins.indexOf($this.protein) == -1){ $this.protein = $this.proteins[0] }
         data_filtered  = [].concat.apply([], data_filtered.filter((d:any)=>{
@@ -284,16 +282,13 @@ export default class DataHandler {
         data_filtered = data_filtered.filter((d:any)=>{
             return $this.group.indexOf(d.group) > - 1  && $this.organism == d.organism && $this.sample.indexOf(d.sample) > -1
         })
-        console.log(this.protein_map, this.organism, this.protein, this.organisms)
         if (! ($this.protein in $this.protein_map[$this.organism])){
             $this.organisms.forEach((organism)=>{
-                console.log(organism)
                 if ($this.protein in $this.protein_map[organism]){
                     $this.organism = organism
                 }
             })
         }else {
-            console.log($this.protein_map)
         }
 
             

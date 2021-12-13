@@ -82,7 +82,7 @@
         </b-field>
         <b-field label="Axis labels" class="column is-narrow">
           <b-switch v-model="isSwitched" >
-            {{ ( isSwitched ? 'Consensus' : 'PDB Reference' ) }}
+            {{ ( !isSwitched ? 'Consensus' : 'PDB Reference' ) }}
           </b-switch>
         </b-field>
       </div>
@@ -191,7 +191,6 @@ export default class VisualizationOptions extends Vue {
 
   async emitChange(event: any, params: { full: boolean, target: string} ){
     let changedData = true
-    console.log(event,params)
     if (params.target == 'depth_threshold'){
       this.DataHandler.depth_threshold = event
     } else if (params.target == 'protein'){
@@ -204,7 +203,6 @@ export default class VisualizationOptions extends Vue {
       // await this.getData(`${this.DataHandler.data_selected.path}`, "file")
     } else if (params.target == 'data_type_selected'){
       // this.DataHandler.changeDataType(event)
-      console.log("change data type", event)
     } else if (params.target == 'data_selected' ){
       this.DataHandler.changeExperiment(event)
     } else if (params.target == 'group' ){

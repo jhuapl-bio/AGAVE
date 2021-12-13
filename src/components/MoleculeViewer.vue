@@ -5,11 +5,11 @@
         <b-field :label="this.title"></b-field>
         <div >
           <b-input-group prepend="PDB ID" class="mt-3">
-            <b-form-input type="text" v-model="pdb" ></b-form-input>
+            <b-form-input type="text" v-model="pdb_local" ></b-form-input>
             <b-input-group-append>
               <b-button
                 elevation="2"
-                @click="proteinChange(pdb.toLowerCase())"
+                @click="proteinChange(pdb_local.toLowerCase())"
               >Change Protein</b-button>
             </b-input-group-append>
           </b-input-group>
@@ -64,6 +64,7 @@ export default class MoleculeViewer extends Vue {
   
   public available_focus_chains: any[] = []
   // public protein: string = "";
+  public pdb_local:string = ""
   public map_positions:any = {}
   public queryingResidueMapping: boolean = false;
   public queryingReferenceSequence: boolean = false;
@@ -111,8 +112,7 @@ export default class MoleculeViewer extends Vue {
   @Watch('position')
   onPositionChanged(value: number, oldValue: number) {
     this.localPosition = value
-    // this.chain_focus = null
-    console.log(this.localPosition)
+
     this.focus()
   }
   
@@ -123,15 +123,12 @@ export default class MoleculeViewer extends Vue {
     }
   }
 
-  @Watch('pdb')
-  onproteinChanged(value: string, oldValue: number) {
+
+  @Watch('DataHandler.pdb')
+  onDataChanged(value: any, oldValue: any){
+    this.pdb_local = value
     this.proteinChange(value)
   }
-
-  // @Watch('DataHandler.organism')
-  // onDataChanged(value: any, oldValue: any){
-  //   this.proteinChange(this.protein_per_protein[value][this.protein])
-  // }
 
   @Watch('isSwitched')
   onSwitchToggled(value: any, oldValue: any) {
@@ -234,9 +231,7 @@ export default class MoleculeViewer extends Vue {
             
         })
         this.pdb = options.moleculeId
-      } else {
-        console.log("no response ", response, options)
-      }
+      } 
     } catch(err){
       console.error(err)
       this.reportError(err, "Error in fetching Query for uniprot mappings from pdbID")
