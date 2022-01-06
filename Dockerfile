@@ -39,14 +39,14 @@ SHELL ["conda", "run", "-n", "AGAVE", "/bin/bash", "-c"]
 
 WORKDIR /opt/app
 
-RUN  echo "cloning AGAVE" && git clone https://github.com/jhuapl-bio/AGAVE.git
+RUN  echo "cloning AGAVE image" && git clone https://github.com/jhuapl-bio/AGAVE.git
 WORKDIR /opt/app/AGAVE
 RUN git checkout ui-updates
 RUN npm install 
 COPY ./vue.config.js /opt/app/AGAVE/vue.config.js
 RUN npm run build
 RUN cp -r dist /AGAVE && useradd nginx && /etc/init.d/nginx restart && mkdir -p /AGAVE/data && mkdir -p /opt/app/AGAVE/output
-
+COPY ./controllers/src /opt/app/AGAVE/controllers/src
 #To copy data into the appropriate location, run: cp output.json /opt/app/AGAVE/dist/data/default.json
 
 

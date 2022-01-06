@@ -290,6 +290,10 @@ def main():
             record.POS = int(record.POS)
             organism = record.CHROM
             present = None
+            if sample not in depth_map:
+                depth_map[sample] = dict()
+            if record.CHROM not in depth_map[sample]:
+                depth_map[sample][record.CHROM] = dict()
             if record.POS in depth_map[sample][record.CHROM]:
                 ref_depth  = depth_map[sample][record.CHROM][record.POS]
             else:
