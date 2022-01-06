@@ -26,3 +26,4 @@ src/assets/data
 controllers/tmp
 controllers/data
 controllers/output
+controllers/readme.md
