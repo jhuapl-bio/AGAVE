@@ -45,7 +45,7 @@ RUN git checkout ui-updates
 RUN npm install 
 COPY ./vue.config.js /opt/app/AGAVE/vue.config.js
 RUN npm run build
-RUN cp -r dist /AGAVE && useradd nginx && /etc/init.d/nginx restart
+RUN cp -r dist /AGAVE && useradd nginx && /etc/init.d/nginx restart && mkdir -p /AGAVE/data && mkdir -p /opt/app/AGAVE/output
 
 #To copy data into the appropriate location, run: cp output.json /opt/app/AGAVE/dist/data/default.json
 
