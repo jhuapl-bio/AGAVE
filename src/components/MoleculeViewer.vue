@@ -5,11 +5,11 @@
         <b-field :label="this.title"></b-field>
         <div >
           <b-input-group prepend="PDB ID" class="mt-3">
-            <b-form-input type="text" v-model="protein" ></b-form-input>
+            <b-form-input type="text" v-model="pdb_local" ></b-form-input>
             <b-input-group-append>
               <b-button
                 elevation="2"
-                @click="proteinChange(protein.toLowerCase())"
+                @click="proteinChange(pdb_local.toLowerCase())"
               >Change Protein</b-button>
             </b-input-group-append>
           </b-input-group>
@@ -63,45 +63,46 @@ export default class MoleculeViewer extends Vue {
   public entity_focus:any = null;
   
   public available_focus_chains: any[] = []
-  public protein: string = "";
+  // public protein: string = "";
+  public pdb_local:string = ""
   public map_positions:any = {}
   public queryingResidueMapping: boolean = false;
   public queryingReferenceSequence: boolean = false;
   public localPosition: number =  55;
-  public referenceSequence: any[] = []
+  public referenceSequence: any = {}
   public isSwitched = true
   public assemblyId = "1"
   public positions: any[] = [];
   public chains: any = {id: null,  entities: [] };
-  public protein_per_segment: any = {
-    "H3N2": {
-      "HA": '4o5n',
-      "NP": '1hoc',
-      "NA": '2hty',
-      'M1': '5v6g',
-      'M': '5v6g',
-      'PB1': '6qx3',
-      'PB2': '6euv',
-      'NS': '6qxe',
-      'PA': '2w69'
-    },
-    "H1N1": {
-      "HA": '3al4',
-      "NP": '5b7b',
-      "NA": '3nss',
-      'M1': '3md2',
-      'M': '3md2',
-      'PB1': '2ztt',
-      'PB2': '2ztt',
-      'NS': '6dgk',
-      'PA': '5des'
-    }
-  }
+  // public protein_per_protein: any = {
+  //   "H3N2": {
+  //     "HA": '4o5n',
+  //     "NP": '1hoc',
+  //     "NA": '2hty',
+  //     'M1': '5v6g',
+  //     'M': '5v6g',
+  //     'PB1': '6qx3',
+  //     'PB2': '6euv',
+  //     'NS': '6qxe',
+  //     'PA': '2w69'
+  //   },
+  //   "H1N1": {
+  //     "HA": '3al4',
+  //     "NP": '5b7b',
+  //     "NA": '3nss',
+  //     'M1': '3md2',
+  //     'M': '3md2',
+  //     'PB1': '2ztt',
+  //     'PB2': '2ztt',
+  //     'NS': '6dgk',
+  //     'PA': '5des'
+  //   }
+  // }
   
   @Prop({ required: true, default: 55 })
   public position!: string;
-  @Prop({ required: true, default: 'HA' })
-  public segment!: string;
+  @Prop({ required: true, default: "5r7y" })
+  public pdb!: string;
 
   @Prop({ required: true, default: null })
   public DataHandler!: DataHandler
@@ -111,26 +112,22 @@ export default class MoleculeViewer extends Vue {
   @Watch('position')
   onPositionChanged(value: number, oldValue: number) {
     this.localPosition = value
-    // this.chain_focus = null
+
     this.focus()
   }
   
   @Watch('referenceSequence', { immediate: true, deep: true })
   onRefSeqChange(value: any, oldValue: any) {
-    if (value.length > 0){
+    if (value && Object.keys(value).length > 0){
       this.$emit("changeReferenceSequence", value)
     }
   }
 
-  @Watch('segment')
-  onSegmentChanged(value: number, oldValue: number) {
-    console.log("new segment", value)
-    this.proteinChange(this.protein_per_segment[this.DataHandler.subtype][this.segment])
-  }
 
-  @Watch('DataHandler.subtype')
+  @Watch('DataHandler.pdb')
   onDataChanged(value: any, oldValue: any){
-    this.proteinChange(this.protein_per_segment[value][this.segment])
+    this.pdb_local = value
+    this.proteinChange(value)
   }
 
   @Watch('isSwitched')
@@ -140,8 +137,10 @@ export default class MoleculeViewer extends Vue {
     } else {
       this.assemblyId = "preffered"
     }
-    this.proteinChange(this.protein_per_segment[this.DataHandler.subtype][this.segment])
+    this.proteinChange(this.pdb)
   }
+
+
   siteHover(item: any){
     this.localPosition = item.endIndex + this.map_positions[item.entity].positions[1]
     this.focus()
@@ -193,7 +192,7 @@ export default class MoleculeViewer extends Vue {
       // https://www.ebi.ac.uk/pdbe/graph-api/pdbe_pages/uniprot_mapping/4o5n/1
       this.queryingResidueMapping = true;
       // throw new Error("new err")
-      let response: any = await this.getdata(`https://www.ebi.ac.uk/pdbe/graph-api/mappings/uniprot_segments/${options.moleculeId}`)
+      let response: any = await this.getdata(`https://www.ebi.ac.uk/pdbe/graph-api/mappings/uniprot_segments/${options.moleculeId.toLowerCase()}`)
       this.title = "Fetching..."
       // console.log("Querying API call finished", response)
       this.map_positions = {}
@@ -204,8 +203,6 @@ export default class MoleculeViewer extends Vue {
         let data: any = response.data[options.moleculeId].UniProt;
         const uniprots = Object.keys(response.data[options.moleculeId].UniProt)
         let sum = 1;
-        
-
         uniprots.forEach((accession: any)=>{
           if (data[accession].mappings){
             const mappings: any = data[accession].mappings
@@ -233,23 +230,23 @@ export default class MoleculeViewer extends Vue {
           position =  this.map_positions[key].positions[3] + this.map_positions[key].positions[0] 
             
         })
-        this.protein = options.moleculeId
-        // console.log(this.map_positions, "map postiions")
-      }
+        this.pdb = options.moleculeId
+      } 
     } catch(err){
-      this.reportError(err, "Error in fetching Query Info")
+      console.error(err)
+      this.reportError(err, "Error in fetching Query for uniprot mappings from pdbID")
     } finally {
       this.queryingResidueMapping = false;
       try {
         this.queryingReferenceSequence = true;
-        this.referenceSequence = []
+        this.referenceSequence = {}
         let response: any =  await this.getdata(`https://www.ebi.ac.uk/pdbe/search/pdb/select?q=pdb_id:${options.moleculeId}&wt=json`)
         if (
           response.data && 
           response.data.response && 
           response.data.response.docs){
           const chains: any = response.data.response.docs
-          let ref_seq: any[] = []
+          let ref_seq: any = {}
           chains.forEach((chain: any)=>{
             if (chain.entity_id in this.map_positions){
               if (chain.title) {
@@ -264,10 +261,11 @@ export default class MoleculeViewer extends Vue {
                 if (i >= 0){
                   const position = this.determinePosition(i, this.map_positions[chain.entity_id].positions[1])
                   let chain_id = chain.molecule_sequence.substring(position,position+1)
-                  ref_seq.push( {
-                    position: i+1,
-                    aa: chain_id
-                  } )
+                  // ref_seq.push( {
+                  //   position: i+1,
+                  //   aa: chain_id
+                  // } )
+                  ref_seq[i+1] = chain_id
                   
                 }
               }
@@ -302,7 +300,7 @@ export default class MoleculeViewer extends Vue {
     // Available options here: https://github.com/PDBeurope/pdbe-molstar/wiki/1.-PDBe-Molstar-as-JS-plugin
     // Our H3N2 HA protein is 4o5n and our H1N1 HA protein is 3lzg
     const options: any= {
-      moleculeId: this.protein_per_segment[this.DataHandler.subtype][this.segment],
+      moleculeId: this.pdb,
       assemblyId: this.assemblyId,
       hideControls: true,
       bgColor: {r:255, g:255, b:255}
@@ -319,13 +317,6 @@ export default class MoleculeViewer extends Vue {
   focus() {
     this.viewer.visual.clearSelection();
     let residue: Residue =  { chain: '', entity: '', position: 0 };
-    // if ( this.localPosition >= 25 && this.localPosition <= 341 ) {
-    //   residue = { chain: 'A', position: this.localPosition - 22 }
-    // } else if ( this.localPosition >= 346 && this.localPosition <= 518 ) {
-    //   residue = { chain: 'B', position: this.localPosition - 345 }
-    // } else {
-    //   residue = { chain: '', position: 0 }
-    // }
     let found: boolean = false
     for(let d of Object.keys(this.map_positions).sort().filter((e:any)=>{return e != 'total'})) {
       if (this.localPosition  >= this.map_positions[d].positions[1] 

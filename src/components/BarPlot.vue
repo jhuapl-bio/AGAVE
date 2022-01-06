@@ -22,7 +22,7 @@
         <p style="text-align: center;">Position: {{localPosition}}</p>
       </b-field>
       <b-field>
-        <p style="text-align: center;">Segment: {{DataHandler.segment}}</p>
+        <p style="text-align: center;">protein: {{DataHandler.protein}}</p>
       </b-field>
     </b-col>
   </b-row>
@@ -89,7 +89,7 @@ export default class BindingSites extends Vue {
       ctx.drawImage(img, 0, 0, w, h);
       ctx.font = "16px Arial";
       // let localPosition: number = this.localPosition
-      ctx.fillText(`Segment: ${$this.DataHandler.segment}, Position: ${$this.localPosition}`, w / 2 , h - 25 )
+      ctx.fillText(`protein: ${$this.DataHandler.protein}, Position: ${$this.localPosition}`, w / 2 , h - 25 )
       window.URL.revokeObjectURL(url);
       var canvasdata = canvas.toDataURL('image/jpeg');
       var a: any = document.getElementById('imgId');
@@ -103,7 +103,6 @@ export default class BindingSites extends Vue {
   }
 
   makeBarPlot(){
-    console.log("make bar plot")
     const $this = this
     d3.select("#barPlotDiv").selectAll("*").remove()
     d3.select('#barPlotLegend').selectAll("*").remove()

@@ -7,14 +7,14 @@
            @sliderUpdate="sliderUpdate"/>
          
       </div>
-      <div class="col-lg-12">
+     <div class="col-lg-12">
         <hr class="solid">
       </div>
       <div class="col-lg-12">
         <h3 class="title">Heatmap Viewer</h3>
         <h5 class="subtitle">Click a column in the heatmap to zoom in on its molecular position</h5>
       </div>
-      <div class="col-lg-8 pr-5" v-if="DataHandler.cells && DataHandler.cells.length > 0">      
+      <div class="col-lg-8 pr-5" v-if="DataHandler.cells && DataHandler.cells.length >= 0">      
         <Heatmap 
           ref="heatmap"
           :column_width=column_width 
@@ -26,9 +26,9 @@
         >
         </Heatmap>
       </div>
-      <b-col class="col-lg-4 pb-1 big-top-margin">
+       <b-col v-if="pdb" class="col-lg-4 pb-1 big-top-margin">
         <MoleculeViewer 
-          :segment=segment 
+          :pdb=pdb
           :position=position
           :DataHandler=DataHandler
           @siteHover="siteHover"  
@@ -74,7 +74,7 @@ export default class Visualization extends Vue {
   public depth_threshold = 0
   public frequency_threshold = 0.2
   public column_width = 9
-  public segment = 'HA'
+  public pdb = null
   public position = 54
   public cells:any = null
   public group: any[] = []
@@ -94,9 +94,10 @@ export default class Visualization extends Vue {
     const value = gh.value
     this.$set(this, target, value)
     if (target == 'DataHandler'){
-      this.segment = value.segment
+      this.pdb = value.pdb
       if (this.$refs.heatmap){
         this.$refs.heatmap.changeDataHandler()
+        // this.$refs.heatmap.proteinChange(this.)
         this.$refs.barplot.changeDataHandler()
       }
     }
@@ -114,6 +115,7 @@ export default class Visualization extends Vue {
   }
   changeReferenceSequence(value: any){
     this.DataHandler.updateReference(value)
+    this.DataHandler.updateCells()
     this.sliderUpdate({target: "DataHandler", value: this.DataHandler})
   }  
   

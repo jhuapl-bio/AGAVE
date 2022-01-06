@@ -1,0 +1,82 @@
+LOCUS       JF915187                1497 bp    cRNA    linear   VRL 01-NOV-2011
+DEFINITION  Influenza A virus (A/California/04/2009(H1N1)) segment 5
+            nucleocapsid protein (NP) gene, complete cds.
+ACCESSION   JF915187
+VERSION     JF915187.1
+DBLINK      BioProject: PRJNA37813
+KEYWORDS    .
+SOURCE      Influenza A virus (A/California/04/2009(H1N1))
+  ORGANISM  Influenza A virus (A/California/04/2009(H1N1))
+            Viruses; Riboviria; Orthornavirae; Negarnaviricota;
+            Polyploviricotina; Insthoviricetes; Articulavirales;
+            Orthomyxoviridae; Alphainfluenzavirus.
+REFERENCE   1  (bases 1 to 1497)
+  AUTHORS   Ma,W., Belisle,S.E., Mosier,D., Li,X., Stigger-Rosser,E., Liu,Q.,
+            Qiao,C., Elder,J., Webby,R., Katze,M.G. and Richt,J.A.
+  TITLE     2009 Pandemic H1N1 Influenza Virus Causes Disease and Upregulation
+            of Genes Related to Inflammatory and Immune Responses, Cell Death,
+            and Lipid Metabolism in Pigs
+  JOURNAL   J. Virol. 85 (22), 11626-11637 (2011)
+   PUBMED   21900171
+REFERENCE   2  (bases 1 to 1497)
+  AUTHORS   Ma,W., Richt,J.A., Liu,Q. and Qiao,C.
+  TITLE     Direct Submission
+  JOURNAL   Submitted (04-MAY-2011) Department of Diagnostic
+            Medicine/Pathobiology, Kansas State University, K224B Mosier Hall,
+            Manhattan, KS 66506, USA
+COMMENT     GenBank Accession Numbers JF915184-JF915191 represent sequences
+            from the 8 segments of Influenza A virus
+            (A/California/04/2009(H1N1)).
+FEATURES             Location/Qualifiers
+     source          1..1497
+                     /organism="Influenza A virus (A/California/04/2009(H1N1))"
+                     /mol_type="viral cRNA"
+                     /strain="A/California/04/2009(H1N1)"
+                     /serotype="H1N1"
+                     /db_xref="taxon:641501"
+                     /segment="5"
+                     /note="P1 passage in swine"
+     gene            1..1497
+                     /gene="NP"
+     CDS             1..1497
+                     /gene="NP"
+                     /codon_start=1
+                     /product="nucleocapsid protein"
+                     /protein_id="AEE69013.1"
+                     /translation="MASQGTKRSYEQMETGGERQDATEIRASVGRMIGGIGRFYIQMC
+                     TELKLSDYDGRLIQNSITIERMVLSAFDERRNKYLEEHPSAGKDPKKTGGPIYRRVDG
+                     KWMRELILYDKEEIRRVWRQANNGEDATAGLTHIMIWHSNLNDATYQRTRALVRTGMD
+                     PRMCSLMQGSTLPRRSGAAGAAVKGVGTIAMELIRMIKRGINDRNFWRGENGRRTRVA
+                     YERMCNILKGKFQTAAQRAMMDQVRESRNPGNAEIEDLIFLARSALILRGSVAHKSCL
+                     PACVYGLAVASGHDFEREGYSLVGIDPFKLLQNSQVVSLMRPNENPAHKSQLVWMACH
+                     SAAFEDLRVSSFIRGKKVIPRGKLSTRGVQIASNENVETMDSNTLELRSRYWAIRTRS
+                     GGNTNQQKASAGQISVQPTFSVQRNLPFERATVMAAFSGNNEGRTSDMRTEVIRMMES
+                     AKPEDLSFQGRGVFELSDEKATNPIVPSFDMSNEGSYFFGDNAEEYDS"
+ORIGIN      
+        1 atggcgtctc aaggcaccaa acgatcatat gaacaaatgg agactggtgg ggagcgccag
+       61 gatgccacag aaatcagagc atctgtcgga agaatgattg gtggaatcgg gagattctac
+      121 atccaaatgt gcactgaact caaactcagt gattatgatg gacgactaat ccagaatagc
+      181 ataacaatag agaggatggt gctttctgct tttgatgaga gaagaaataa atacctagaa
+      241 gagcatccca gtgctgggaa ggaccctaag aaaacaggag gacccatata tagaagagta
+      301 gacggaaagt ggatgagaga actcatcctt tatgacaaag aagaaataag gagagtttgg
+      361 cgccaagcaa acaatggcga agatgcaaca gcaggtctta ctcatatcat gatttggcat
+      421 tccaacctga atgatgccac atatcagaga acaagagcgc ttgttcgcac cggaatggat
+      481 cccagaatgt gctctctaat gcaaggttca acacttccca gaaggtctgg tgccgcaggt
+      541 gctgcggtga aaggagttgg aacaatagca atggagttaa tcagaatgat caaacgtgga
+      601 atcaatgacc gaaatttctg gaggggtgaa aatggacgaa ggacaagggt tgcttatgaa
+      661 agaatgtgca atatcctcaa aggaaaattt caaacagctg cccagagggc aatgatggat
+      721 caagtaagag aaagtcgaaa cccaggaaac gctgagattg aagacctcat tttcctggca
+      781 cggtcagcac tcattctgag gggatcagtt gcacataaat cctgcctgcc tgcttgtgtg
+      841 tatgggcttg cagtagcaag tgggcatgac tttgaaaggg aagggtactc actggtcggg
+      901 atagacccat tcaaattact ccaaaacagc caagtggtca gcctgatgag accaaatgaa
+      961 aacccagctc acaagagtca attggtgtgg atggcatgcc actctgctgc atttgaagat
+     1021 ttaagagtat caagtttcat aagaggaaag aaagtgattc caagaggaaa gctttccaca
+     1081 agaggggtcc agattgcttc aaatgagaat gtggaaacca tggactccaa taccctggaa
+     1141 ctgagaagca gatactgggc cataaggacc aggagtggag gaaataccaa tcaacaaaag
+     1201 gcatccgcag gccagatcag tgtgcagcct acattctcag tgcagcggaa tctccctttt
+     1261 gaaagagcaa ccgttatggc agcattcagc gggaacaatg aaggacggac atccgacatg
+     1321 cgaacagaag ttataagaat gatggaaagt gcaaagccag aagatttgtc cttccagggg
+     1381 cggggagtct tcgagctctc ggacgaaaag gcaacgaacc cgatcgtgcc ttcctttgac
+     1441 atgagtaatg aagggtctta tttcttcgga gacaatgcag aggagtatga cagttga
+//
+

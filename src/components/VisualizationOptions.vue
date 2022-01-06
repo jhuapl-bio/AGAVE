@@ -4,42 +4,54 @@
 
     <b-tab title="Data Settings" active>
       <div class="columns is-variable is-4">
-        <b-field label="Default Data" class="column is-narrow">
+        <b-field label="File" class="column is-narrow">
+          <b-select placeholder="File" v-if="DataHandler.defaultDataListFiles"  v-model="DataHandler.defaultDataListFile" @change="emitChange($event, { full: true, target: 'file' })"  :options="DataHandler.defaultDataListFiles"></b-select>
+        </b-field>
+        <b-field :label="(isDataSwitched ? 'Default Data' : 'Custom')" class="column is-narrow">
+          <!-- <b-switch :disabled="true" v-model="isDataSwitched" 
+          >
+            {{ ( isDataSwitched ? 'Sample' : 'Custom' ) }}
+          </b-switch> -->
           <b-select 
-          placeholder="Data" 
-          v-model="DataHandler.data_selected" 
-          @change="emitChange($event, { full: true, target: 'data_selected' })">
+            placeholder="Data" 
+            v-model="DataHandler.experiment"
+            @change="emitChange($event, { full: true, target: 'data_selected' })">
             <option
-            v-for="option in DataHandler.defaultDataList"
+            v-for="option in DataHandler.experiments"
             :value="option"
             :key="option.id">
                 {{ option.label }}
             </option>
           </b-select>
         </b-field>
-        <b-field label="Segment" class="column is-narrow">
-          <b-select placeholder="Segment" v-model="DataHandler.segment" @change="emitChange($event, { full: true, target: 'segment' })" :options="segments"></b-select>
+        <b-field label="Protein"  class="column is-narrow">
+          <b-select placeholder="protein" v-model="DataHandler.protein" @change="emitChange($event, { full: true, target: 'protein' })" :options="DataHandler.proteins"></b-select>
         </b-field>
-        <b-field label="Group" class="column is-narrow">
-          <b-select placeholder="Group" v-if="DataHandler.group" v-model="DataHandler.group" @change="emitChange($event, { full: true, target: 'group' })" multiple :options="DataHandler.groups"></b-select>
+        <b-field label="Show Discordants Only" class="column is-narrow">
+          <b-checkbox 
+            @change="emitChange($event, { full: true, target: 'discordant' })" 
+            v-model="showDiscordantOnly" ></b-checkbox>
         </b-field>
-        <b-field label="Axis Experiment Consensus"  class="column is-narrow" v-if="DataHandler && DataHandler.consensus_map">
-          <b-select :disabled="!isSwitched" placeholder="Mapped Experiment" v-model="DataHandler.selected_consensus" @change="emitChange($event, { full: false, target: 'selected_consensus' })">
-            <option
-            v-for="option in DataHandler.consensus_map"
-            :value="option"
-            :key="option.experiment">
-                {{ option.experiment }}
-            </option>
-          </b-select>
-        </b-field> 
-        <b-field label="Subtype" class="column is-narrow">
+        <b-field label="Sample"  class="column is-narrow">
+          <b-select placeholder="Sample"  :disabled="DataHandler.changing" v-if="DataHandler.sample" v-model="DataHandler.sample" @change="emitChange($event, { full: true, target: 'sample' })" multiple :options="DataHandler.samples"></b-select>
+        </b-field>
+        <b-field label="Group"  class="column is-narrow">
+          <b-select placeholder="Group"  :disabled="DataHandler.changing" v-if="DataHandler.group" v-model="DataHandler.group" @change="emitChange($event, { full: true, target: 'group' })" multiple :options="DataHandler.groups"></b-select>
+        </b-field>
+        <!-- <b-field label="Axis Experiment Consensus"  class="column is-narrow" >
+          <b-select :disabled="!isSwitched" placeholder="Mapped Experiment" 
+            :options="DataHandler.experiments"
+            v-model="DataHandler.experiment"
+            @change="emitChange($event, { full: false, target: 'selected_consensus' })">
+          </b-select> 
+        </b-field>  -->
+        <b-field label="Organism" class="column is-narrow">
           <b-select 
-          placeholder="Subtype" 
-          v-model="DataHandler.subtype" 
-          @change="emitChange($event, { full: false, target: 'subtype' })">
+          placeholder="Organism"   :disabled="DataHandler.changing"
+          v-model="DataHandler.organism" 
+          @change="emitChange($event, { full: true, target: 'organism' })">
             <option
-            v-for="option in ['H1N1', 'H3N2']"
+            v-for="option in DataHandler.organisms"
             :value="option"
             :key="option">
               {{ option }}
@@ -70,7 +82,7 @@
         </b-field>
         <b-field label="Axis labels" class="column is-narrow">
           <b-switch v-model="isSwitched" >
-            {{ ( isSwitched ? 'Consensus' : 'Reference' ) }}
+            {{ ( !isSwitched ? 'Consensus' : 'PDB Reference' ) }}
           </b-switch>
         </b-field>
       </div>
@@ -110,11 +122,13 @@ export default class VisualizationOptions extends Vue {
   public data:any = null
   public cells: any = null
   public customfile: any = null
-  public segment: string = 'HA'
-  public segments: Array<string> = ['HA', 'NP', 'NA', 'M', 'PB1', 'PB2', 'NS', 'PA']
+  public protein: string = ""
+  public showDiscordantOnly: boolean = true
+  public proteins: Array<string> = []
   public group: any[] = []
   public groups: Array<any> = []
   public isSwitched: boolean = true
+  public isDataSwitched: boolean = true
   public sortBy: boolean = true
   minrange: number = 1
   maxrange: number = 1
@@ -133,7 +147,10 @@ export default class VisualizationOptions extends Vue {
   onSwitchedChange(value: boolean, oldValue: boolean) {
     this.$emit('sliderUpdate', {value: value, target: 'isSwitched'})
   }
-
+  @Watch("isDataSwitched")
+  onSwitchedChangeDataType(value: boolean, oldValue: boolean) {
+    this.emitChange(value, { full: true, target: 'data_type_selected' })
+  }
   @Watch("sortBy")
   onSortByChange(value: boolean, oldValue: boolean) {
     this.$emit('sliderUpdate', {value: value, target: 'sortBy'})
@@ -143,18 +160,10 @@ export default class VisualizationOptions extends Vue {
   async onChangeFile(value: any, oldValue: any) {
     const $this = this
     const reader = new FileReader()
-    let estimate_segment: any = null
-    try{
-      estimate_segment = value.name.split(".")[0]
-      if (this.segments.indexOf(estimate_segment) > -1){
-        this.segment = estimate_segment
-      }
-    } catch(err){
-      console.log(err)
-    }
+    this.isDataSwitched = false
+    let estimate_protein: any = null
     reader.onload = function(event:any) {
       $this.getData(reader.result, 'string').then((d:any)=>{
-        $this.DataHandler.segment = $this.segment
         $this.$emit('sliderUpdate', {value: $this.DataHandler, target: 'DataHandler'})
       })
     }
@@ -181,22 +190,34 @@ export default class VisualizationOptions extends Vue {
   }
 
   async emitChange(event: any, params: { full: boolean, target: string} ){
-    // console.log(event, params,)
+    let changedData = true
     if (params.target == 'depth_threshold'){
       this.DataHandler.depth_threshold = event
-    } else if (params.target == 'segment'){
-      this.DataHandler.segment = event
-      await this.getData(`${this.DataHandler.data_selected.id}/${this.DataHandler.data_selected.subfolder}/${event}.json`, "file")
-    } else if (params.target == 'data_selected'){
-      this.DataHandler.group = []
-      this.DataHandler.updateSubtype(event.virus)
-      await this.getData(`${this.DataHandler.data_selected.id}/${this.DataHandler.data_selected.subfolder}/${this.DataHandler.segment}.json`, "file")
+    } else if (params.target == 'protein'){
+      this.DataHandler.updateProtein(event)
+      // await this.getData(`${this.DataHandler.data_selected.path}`, "file")
+    } else if (params.target == 'organism'){
+      // this.DataHandler.group = []
+      // this.DataHandler.organism = event
+      this.DataHandler.updateOrganism(event)
+      // await this.getData(`${this.DataHandler.data_selected.path}`, "file")
+    } else if (params.target == 'data_type_selected'){
+      // this.DataHandler.changeDataType(event)
+    } else if (params.target == 'data_selected' ){
+      this.DataHandler.changeExperiment(event)
     } else if (params.target == 'group' ){
       this.DataHandler.group = event
     } else if (params.target == 'position_ranges'){
       this.DataHandler.position_ranges = event
+    } else if (params.target == 'sample' ){
+      this.DataHandler.sample = event
+    } else if (params.target == 'file' ){
+      changedData = false
+      await this.getData(event, "file")
     } else if (params.target == 'selected_consensus'){
       this.DataHandler.selected_consensus = event
+    } else if (params.target == 'discordant'){
+      this.DataHandler.discordantOnly = event
     } else {
       return
     }
@@ -205,7 +226,9 @@ export default class VisualizationOptions extends Vue {
     } else {
       this.DataHandler.updateCells()
     }
-    this.$emit('sliderUpdate', {value: this.DataHandler, target: 'DataHandler'})
+    if (changedData){
+      this.$emit('sliderUpdate', {value: this.DataHandler, target: 'DataHandler'})
+    }
   }
 
   async getData(value: any, type: string){
@@ -227,7 +250,7 @@ export default class VisualizationOptions extends Vue {
   }
 
   mounted() {
-    this.getData(`${this.DataHandler.data_selected.id}/${this.DataHandler.data_selected.subfolder}/${this.segment}.json`, "file").then((d:any)=>{
+    this.getData(`${this.DataHandler.data_selected}`, "file").then((d:any)=>{
       this.DataHandler.fullUpdate()
       this.$emit('sliderUpdate', {value: this.DataHandler, target: 'DataHandler'})
     })
