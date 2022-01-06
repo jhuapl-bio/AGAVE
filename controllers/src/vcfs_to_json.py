@@ -43,6 +43,7 @@ parser.add_argument('-map_old_organism', required = False, type = str, help = 'M
 parser.add_argument('--name', required = False, type = str, default="Unlisted", help = 'Name to portray for the experiment')
 
 arg_parsed = parser.parse_args()
+import glob
 
 from Bio import SeqIO, Entrez
 from Bio.Seq import Seq
@@ -124,7 +125,7 @@ def main():
     ####### Define MAIN variables for use later   ########################################################################################
     ######################################################################################################################################  
     if args['gb'] is not None and len(args['gb']) > 0:
-        for gb_file in args['gb']:
+        def iterate_file_gb(gb_file):
             with open(gb_file) as input_handle:
                 for record in SeqIO.parse(input_handle, "genbank"):
                     parsed_gb = parse_gb(record, pathlib.Path(gb_file).suffix)
@@ -132,6 +133,13 @@ def main():
                         protein_references[record.id] = dict()
                     for gene, geneValue in parsed_gb.items():
                         protein_references[record.id][gene] = geneValue
+        for gb_file in args['gb']:
+            if os.path.isdir(gb_file):
+                files = [f for f in os.listdir(gb_file) if f.endswith('.gb')]
+                for f in files:
+                    iterate_file_gb(os.path.join(gb_file, f))
+            else:
+                    iterate_file_gb(gb_file)
     ######################################################################################################################################
     #################################################### END #############################################################################
     ######################################################################################################################################
