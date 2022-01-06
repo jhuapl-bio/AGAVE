@@ -1,6 +1,5 @@
 FROM continuumio/miniconda3:4.9.2
 
-WORKDIR /opt/software
 
 # Make RUN commands use `bash --login` (always source ~/.bashrc on each RUN)
 SHELL ["/bin/bash", "--login", "-c"]
@@ -25,12 +24,23 @@ SHELL ["conda", "run", "-n", "AGAVE", "/bin/bash", "-c"]
 
 
 
-COPY ./controllers/proteins /opt/proteins
-COPY ./controllers/mappings /opt/mappings
-COPY ./controllers/src /opt/app/controllers
-COPY ./src /opt/app/src
+# COPY ./controllers/proteins /opt/proteins
+# COPY ./controllers/mappings /opt/mappings
+# COPY ./controllers/src /opt/app/controllers
+# COPY ./src /opt/app/src
+# COPY ./*json /opt/app/
+# COPY ./*.js /opt/app/vue.config.js
 
 
+
+
+WORKDIR /opt/app
+RUN git clone https://github.com/jhuapl-bio/AGAVE.git
+WORKDIR /opt/app/AGAVE
+RUN npm install 
+RUN npm build
+
+#To copy data into the appropriate location, run: cp output.json /opt/app/AGAVE/dist/data/default.json
 
 
 

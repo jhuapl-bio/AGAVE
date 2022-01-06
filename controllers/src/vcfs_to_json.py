@@ -437,7 +437,7 @@ def main():
                 parse_old_json(data_json, file )
             else:
                 if data is None:
-                    data = pd.DataFrame(file, columns=names)
+                    data = pd.read_csv(file, sep="\t")
                     data['sample'] = sample
                 else:
                     data_partial = pd.DataFrame(file, columns=names)
