@@ -191,8 +191,8 @@ export default class Heatmap extends Vue {
 
   defineHeatmap() {
     try {
-      this.legendWidth = this.$refs.heatmapLegend.clientWidth;
-      this.width = this.$refs.heatmapDiv.clientWidth;
+      this.legendWidth = Math.max(this.$refs.heatmapLegend.clientWidth, this.width);
+      this.width =  Math.max(this.$refs.heatmapDiv.clientWidth, this.width);
     }catch (err){
       console.log(err)
     }

@@ -3,62 +3,74 @@
   <b-tabs>
 
     <b-tab title="Data Settings" active>
-      <div class="columns is-variable is-4">
-        <b-field label="File" class="column is-narrow">
-          <b-select placeholder="File" v-if="DataHandler.defaultDataListFiles"  v-model="DataHandler.defaultDataListFile" @change="emitChange($event, { full: true, target: 'file' })"  :options="DataHandler.defaultDataListFiles"></b-select>
-        </b-field>
-        <b-field :label="(isDataSwitched ? 'Default Data' : 'Custom')" class="column is-narrow">
-          <!-- <b-switch :disabled="true" v-model="isDataSwitched" 
-          >
-            {{ ( isDataSwitched ? 'Sample' : 'Custom' ) }}
-          </b-switch> -->
-          <b-select 
-            placeholder="Data" 
-            v-model="DataHandler.experiment"
-            @change="emitChange($event, { full: true, target: 'data_selected' })">
-            <option
-            v-for="option in DataHandler.experiments"
-            :value="option"
-            :key="option.id">
-                {{ option.label }}
-            </option>
-          </b-select>
-        </b-field>
-        <b-field label="Protein"  class="column is-narrow">
-          <b-select placeholder="protein" v-model="DataHandler.protein" @change="emitChange($event, { full: true, target: 'protein' })" :options="DataHandler.proteins"></b-select>
-        </b-field>
-        <b-field label="Show Discordants Only" class="column is-narrow">
-          <b-checkbox 
-            @change="emitChange($event, { full: true, target: 'discordant' })" 
-            v-model="showDiscordantOnly" ></b-checkbox>
-        </b-field>
-        <b-field label="Sample"  class="column is-narrow">
-          <b-select placeholder="Sample"  :disabled="DataHandler.changing" v-if="DataHandler.sample" v-model="DataHandler.sample" @change="emitChange($event, { full: true, target: 'sample' })" multiple :options="DataHandler.samples"></b-select>
-        </b-field>
-        <b-field label="Group"  class="column is-narrow">
-          <b-select placeholder="Group"  :disabled="DataHandler.changing" v-if="DataHandler.group" v-model="DataHandler.group" @change="emitChange($event, { full: true, target: 'group' })" multiple :options="DataHandler.groups"></b-select>
-        </b-field>
-        <!-- <b-field label="Axis Experiment Consensus"  class="column is-narrow" >
-          <b-select :disabled="!isSwitched" placeholder="Mapped Experiment" 
-            :options="DataHandler.experiments"
-            v-model="DataHandler.experiment"
-            @change="emitChange($event, { full: false, target: 'selected_consensus' })">
-          </b-select> 
-        </b-field>  -->
-        <b-field label="Organism" class="column is-narrow">
-          <b-select 
-          placeholder="Organism"   :disabled="DataHandler.changing"
-          v-model="DataHandler.organism" 
-          @change="emitChange($event, { full: true, target: 'organism' })">
-            <option
-            v-for="option in DataHandler.organisms"
-            :value="option"
-            :key="option">
-              {{ option }}
-            </option>
-          </b-select>
-        </b-field>
-      </div>
+      <b-row >
+      <b-col sm="2">
+          <b-field label="File" class="column is-narrow">
+            <b-select placeholder="File" v-if="DataHandler.defaultDataListFiles"  v-model="DataHandler.defaultDataListFile" @change="emitChange($event, { full: true, target: 'file' })"  :options="DataHandler.defaultDataListFiles"></b-select>
+          </b-field>
+          <b-field style="display: flex" label="Show Discordants Only" class="column is-narrow ">
+            <b-checkbox  class=" ml-5"
+              @change="emitChange($event, { full: true, target: 'discordant' })" 
+              v-model="showDiscordantOnly" ></b-checkbox>
+          </b-field>
+      </b-col>
+      <b-col sm="2">
+          <b-field :label="(isDataSwitched ? 'Default Data' : 'Custom')" class="column is-narrow">
+            <!-- <b-switch :disabled="true" v-model="isDataSwitched" 
+            >
+              {{ ( isDataSwitched ? 'Sample' : 'Custom' ) }}
+            </b-switch> -->
+            <b-select 
+              placeholder="Data" 
+              v-model="DataHandler.experiment"
+              @change="emitChange($event, { full: true, target: 'data_selected' })">
+              <option
+              v-for="option in DataHandler.experiments"
+              :value="option"
+              :key="option.id">
+                  {{ option.label }}
+              </option>
+            </b-select>
+          </b-field>
+        </b-col>
+        <b-col sm="2">
+          <b-field label="Protein"  class="column is-narrow">
+            <b-select placeholder="protein" v-model="DataHandler.protein" @change="emitChange($event, { full: true, target: 'protein' })" :options="DataHandler.proteins"></b-select>
+          </b-field>
+        </b-col>
+        <b-col sm="2">
+          <b-field label="Sample"  class="column is-narrow">
+            <b-select placeholder="Sample"  :disabled="DataHandler.changing" v-if="DataHandler.sample" v-model="DataHandler.sample" @change="emitChange($event, { full: true, target: 'sample' })" multiple :options="DataHandler.samples"></b-select>
+          </b-field>
+        </b-col>
+        <b-col sm="2">
+          <b-field label="Group"  class="column is-narrow">
+            <b-select placeholder="Group"  :disabled="DataHandler.changing" v-if="DataHandler.group" v-model="DataHandler.group" @change="emitChange($event, { full: true, target: 'group' })" multiple :options="DataHandler.groups"></b-select>
+          </b-field>
+          <!-- <b-field label="Axis Experiment Consensus"  class="column is-narrow" >
+            <b-select :disabled="!isSwitched" placeholder="Mapped Experiment" 
+              :options="DataHandler.experiments"
+              v-model="DataHandler.experiment"
+              @change="emitChange($event, { full: false, target: 'selected_consensus' })">
+            </b-select> 
+          </b-field>  -->
+        </b-col>
+        <b-col sm="2">
+          <b-field label="Organism" class="column is-narrow">
+            <b-select 
+            placeholder="Organism"   :disabled="DataHandler.changing"
+            v-model="DataHandler.organism" 
+            @change="emitChange($event, { full: true, target: 'organism' })">
+              <option
+              v-for="option in DataHandler.organisms"
+              :value="option"
+              :key="option">
+                {{ option }}
+              </option>
+            </b-select>
+          </b-field>
+        </b-col>
+      </b-row>
     </b-tab>
 
     <b-tab title="Heatmap Settings">

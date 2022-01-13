@@ -1,7 +1,7 @@
 <template>
   <div>
     <NavigationBar/>
-    <div class="router-outer container" >
+    <div class="router-outer " >
       <div class="router-inner columns pt-4" style="padding: 0px; margin: 0px">
         <div class="column is-offset-1-mobile add-padding">
           <!-- <router-view/> -->

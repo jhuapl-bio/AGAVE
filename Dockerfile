@@ -25,18 +25,6 @@ COPY nginx.conf /etc/nginx/nginx.conf
 
 SHELL ["conda", "run", "-n", "AGAVE", "/bin/bash", "-c"]
 
-
-
-# COPY ./controllers/proteins /opt/proteins
-# COPY ./controllers/mappings /opt/mappings
-# COPY ./controllers/src /opt/app/controllers
-# COPY ./src /opt/app/src
-# COPY ./*json /opt/app/
-# COPY ./*.js /opt/app/vue.config.js
-
-
-
-
 WORKDIR /opt/app
 
 RUN  echo "cloning AGAVE image" && git clone https://github.com/jhuapl-bio/AGAVE.git
@@ -46,7 +34,8 @@ RUN npm install
 COPY ./vue.config.js /opt/app/AGAVE/vue.config.js
 RUN npm run build
 RUN cp -r dist /AGAVE && useradd nginx && /etc/init.d/nginx restart && mkdir -p /AGAVE/data && mkdir -p /opt/app/AGAVE/output
-COPY ./controllers/src /opt/app/AGAVE/controllers/src
+
+# COPY ./controllers/src /opt/app/AGAVE/controllers/src
 #To copy data into the appropriate location, run: cp output.json /opt/app/AGAVE/dist/data/default.json
 
 

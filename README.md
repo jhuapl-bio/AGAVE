@@ -33,7 +33,7 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 #### SINGLE FILE Use Variant or consensus called depth at positions from vcf file(s), use tsv
 
 python3 controllers/src/vcfs_to_json.py \
-    -i $tsv_containig_variant_from_ivar \
+    -i $tsv_iva_file \
     -o output/out.json \
     --filetype tsv \
     -cad ALT_DP \

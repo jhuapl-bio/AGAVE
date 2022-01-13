@@ -1,12 +1,11 @@
 <template>
-  <div class="container-fluid">
-    <div class="row" style="padding: 0px; margin: 0">
-      <div class="col-lg-12">
+    <b-row style="overflow:auto">
+      <b-col lg="12">
         <h3 class="title">Settings</h3>
         <VisualizationOptions 
            @sliderUpdate="sliderUpdate"/>
          
-      </div>
+      </b-col>
      <div class="col-lg-12">
         <hr class="solid">
       </div>
@@ -49,8 +48,7 @@
         </BarPlot>
       </b-col>
       <canvas id="mycanvas"></canvas>
-    </div>
-  </div>
+    </b-row>
 </template>
 
 <script lang="ts">
