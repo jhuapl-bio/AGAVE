@@ -423,7 +423,7 @@ def main():
                         parse_old_json(data_json, fullfile)
                     else:
                         if data is None:
-                            data = pd.read_csv(fullfile, sep="\t", header=0)
+                            data = pd.read_csv(fullfile, sep="\t", header=0,encoding= 'unicode_escape')
                             data['sample'] = sample
                         else:
                             data_partial=pd.read_csv(fullfile, sep="\t", header=0)
@@ -433,6 +433,7 @@ def main():
                         get_new_gb(uniq_organisms)
     else:
         for file in args['i']:
+            print(file)
             sample = os.path.basename(file.split(".")[0])
             if args['filetype'] == 'vcf':
                 records = read_vcf(file, sample)
@@ -449,7 +450,7 @@ def main():
                 parse_old_json(data_json, file )
             else:
                 if data is None:
-                    data = pd.read_csv(file, sep="\t")
+                    data = pd.read_csv(file, sep="\t",encoding= 'unicode_escape')
                     data['sample'] = sample
                 else:
                     data_partial = pd.DataFrame(file, columns=names)
