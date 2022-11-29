@@ -15,6 +15,14 @@
           </b-input-group>
         </div>
         <div ref="viewer" class="viewer"></div>
+        <!-- <b-form-file
+          type="file"
+          v-model="custompdb"
+          id="cusotmpdb"
+          ref="custompdb"
+          placeholder="Choose a pdb file and/or drop it here..."
+          drop-placeholder="Drop pdb file here...">
+        </b-form-file> -->
         <b-field label="Molecule Structure" class="column is-narrow pl-0">
           <b-switch v-model="isSwitched">
             {{ ( isSwitched ? 'Biological Assembly' : 'Asymmetric Unit' ) }}
@@ -73,6 +81,7 @@ export default class MoleculeViewer extends Vue {
   public isSwitched = true
   public assemblyId = "1"
   public positions: any[] = [];
+  public custompdb: any = null
   public chains: any = {id: null,  entities: [] };
   // public protein_per_protein: any = {
   //   "H3N2": {
@@ -114,6 +123,10 @@ export default class MoleculeViewer extends Vue {
     this.localPosition = value
 
     this.focus()
+  }
+  @Watch('custompdb')
+  CustomPDBFile(value: any, oldValue: any) {
+    console.log(value)
   }
   
   @Watch('referenceSequence', { immediate: true, deep: true })
@@ -285,6 +298,11 @@ export default class MoleculeViewer extends Vue {
     // this object is being imported in index.html so ignore the syntax error it throws
     // @ts-ignore
     this.viewer = new PDBeMolstarPlugin();
+    // console.log(options)
+    // options.customData = {
+    //   url: "/data/test.pdb",
+    //   format: "pdb"
+    // }
     this.viewer.render(this.$refs.viewer, options);
     // Remove some buttons that break everything
     this.removeButtons();

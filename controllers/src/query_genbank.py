@@ -7,7 +7,7 @@ import urllib.request
 import json
 
 def query_uniprot_to_pdb(id):
-    url = 'https://www.ebi.ac.uk/pdbe/graph-api/uniprot/unipdb/' + id
+    url = 'http://www.ebi.ac.uk/pdbe/graph-api/uniprot/unipdb/' + id
 
     # data = urllib.parse.urlencode(params)
     # data = data.encode('utf-8')
@@ -17,13 +17,11 @@ def query_uniprot_to_pdb(id):
     return JSON_object
 
 def query_genbank_to_uniprot(id):
-    url = 'https://www.uniprot.org/uploadlists/'
-
+    url = 'https://rest.uniprot.org/idmapping/run'
     params = {
-        'from': 'EMBL',
-        'to': 'ACC',
-        'format': 'tab',
-        'query': id
+        'from': 'EMBL-GenBank-DDBJ_CDS',
+        'to': 'UniProtKB',
+        'ids': id
     }
 
     data = urllib.parse.urlencode(params)

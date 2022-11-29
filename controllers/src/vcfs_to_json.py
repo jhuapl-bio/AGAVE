@@ -473,6 +473,7 @@ def main():
                     else:
                         proteinValue['pdb'] = "0"
                 else:
+                    print(proteinValue['id'])
                     protein = query_genbank_to_uniprot(proteinValue['id'])
                     if protein is not None and len(protein) >=1:
                         protein_list = protein[1].split("\t")
