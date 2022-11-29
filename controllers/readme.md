@@ -78,13 +78,13 @@ python3 vcfs_to_json.py \
 
 ### SINGLE FILE User depth defined in variant call file or consensus output, use vcf files
 
-python3 vcfs_to_json.py -i data/ivar_variants/02-11-Pro-1122.ivar_variants.vcf -o output/out.json --filetype vcf --get_gb --email brian.merritt@jhuapl.edu -map_sample data/ivar_variants_groups.csv --depth data/samtools_depth_trimmed/02-11-Pro-1122.depth.txt --depth_type variant  --gb proteins/nCoV2.gb -map_pdb mappings/mapped_pdb.tsv
+python3 vcfs_to_json.py -i data/ivar_variants/02-11-Pro-1122.ivar_variants.vcf -o output/out.json --filetype vcf --get_gb --email <your.email> -map_sample data/ivar_variants_groups.csv --depth data/samtools_depth_trimmed/02-11-Pro-1122.depth.txt --depth_type variant  --gb proteins/nCoV2.gb -map_pdb mappings/mapped_pdb.tsv
 
 
 ### SINGLE FILE Use Base Depth rather than variant or consensus called depth at positions, use vcf files
 
 python3 vcfs_to_json.py \
-    -i data/subset_ivar_variants/02-11-Pro-1122.ivar_variants.vcf -o output/out.json --filetype vcf -c ALT_DP  --get_gb --email brian.merritt@jhuapl.edu -map_sample data/ivar_variants_groups.csv --depth data/samtools_depth_trimmed/02-11-Pro-1122.depth.txt --depth_type full --gb proteins/nCoV2.gb -map_pdb mappings/mapped_pdb.tsv
+    -i data/subset_ivar_variants/02-11-Pro-1122.ivar_variants.vcf -o output/out.json --filetype vcf -c ALT_DP  --get_gb --email <your.email> -map_sample data/ivar_variants_groups.csv --depth data/samtools_depth_trimmed/02-11-Pro-1122.depth.txt --depth_type full --gb proteins/nCoV2.gb -map_pdb mappings/mapped_pdb.tsv
 
 
 
@@ -92,7 +92,7 @@ python3 vcfs_to_json.py \
 
 python3 vcfs_to_json.py \
     -i data/subset_ivar_variants/02-11-Pro-1122.ivar_variants.vcf -o output/out.json --filetype vcf -cad ALT_DP \
-    -crd REF_DP \ --get_gb --email brian.merritt@jhuapl.edu -map_sample data/ivar_variants_groups.csv --depth data/samtools_depth_trimmed/02-11-Pro-1122.depth.txt --depth_type full -map_pdb mappings/mapped_pdb.tsv
+    -crd REF_DP \ --get_gb --email <your.email> -map_sample data/ivar_variants_groups.csv --depth data/samtools_depth_trimmed/02-11-Pro-1122.depth.txt --depth_type full -map_pdb mappings/mapped_pdb.tsv
 
 
 
