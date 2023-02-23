@@ -312,7 +312,6 @@ def main():
                 alt_depth  = info[args['cad']][0]
             if organism not in protein_references and args['get_gb']:
                 get_new_gb([organism])
-            # if args['vcf_type'] != "aa":
             present  = None
             if organism in protein_references:
                 for gene, geneValue in protein_references[organism].items(): 
@@ -458,7 +457,7 @@ def main():
                     data = data.append(data_partial)
     if args['filetype'] == 'vcf' or args['filetype'] == 'tsv':
         uniq_organisms = data[args['ch']].unique()
-
+    
     uniq_proteins = []
     uniprot_pdbs_proteins = []
     i = 0
@@ -473,11 +472,11 @@ def main():
                     else:
                         proteinValue['pdb'] = "0"
                 else:
-                    print(proteinValue['id'])
+                    
                     protein = query_genbank_to_uniprot(proteinValue['id'])
                     if protein is not None and len(protein) >=1:
-                        protein_list = protein[1].split("\t")
-                        first_protein = protein_list[1]
+                        # protein_list = protein[].split("\t")
+                        first_protein = protein[0]
                         pdb = ""
                         if args['get_gb']:
                             print("Querying the uniprot id: %s" % (first_protein))
@@ -676,6 +675,7 @@ def main():
                             entry['items'].append(gene)
                     # entry['organisms'].append(organism)
                 output['entries'].append(entry)
+    print("Writing output to", output_list)
     write_output(args['o'], output_list)
     
 if __name__ == "__main__":

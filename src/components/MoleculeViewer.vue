@@ -15,14 +15,6 @@
           </b-input-group>
         </div>
         <div ref="viewer" class="viewer"></div>
-        <!-- <b-form-file
-          type="file"
-          v-model="custompdb"
-          id="cusotmpdb"
-          ref="custompdb"
-          placeholder="Choose a pdb file and/or drop it here..."
-          drop-placeholder="Drop pdb file here...">
-        </b-form-file> -->
         <b-field label="Molecule Structure" class="column is-narrow pl-0">
           <b-switch v-model="isSwitched">
             {{ ( isSwitched ? 'Biological Assembly' : 'Asymmetric Unit' ) }}

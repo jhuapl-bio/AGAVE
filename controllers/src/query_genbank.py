@@ -3,7 +3,7 @@ from Bio import SeqIO, Entrez
 import re
 import urllib.parse
 import urllib.request
-
+import time 
 import json
 
 def query_uniprot_to_pdb(id):
@@ -16,21 +16,53 @@ def query_uniprot_to_pdb(id):
     JSON_object = json.loads(data.decode('utf-8'))
     return JSON_object
 
+def get_response(url, params):    
+    if (params):
+        data = urllib.parse.urlencode(params)
+        data = data.encode('utf-8')
+        req = urllib.request.Request(url, data)
+    else:
+        req = urllib.request.Request(url)
+    return req 
+
 def query_genbank_to_uniprot(id):
+    cancel = False
+    incMax=5
+    inc=0
+
+
     url = 'https://rest.uniprot.org/idmapping/run'
     params = {
         'from': 'EMBL-GenBank-DDBJ_CDS',
         'to': 'UniProtKB',
         'ids': id
     }
-
-    data = urllib.parse.urlencode(params)
-    data = data.encode('utf-8')
-    req = urllib.request.Request(url, data)
+    
+    req=get_response(url, params)
     with urllib.request.urlopen(req) as f:
-        response = f.read()
-        return response.decode('utf-8').splitlines()
-
+        response = f.read().decode('utf-8')
+        jobid = json.loads(response)["jobId"]
+        intos = []
+        while not cancel or inc > incMax:
+            # Code executed here
+            url = 'https://rest.uniprot.org/idmapping/results/'+jobid
+            try:
+                req=get_response(url, None)
+                with urllib.request.urlopen(req) as w:
+                    response2 = w.read().decode('utf-8')
+                    
+                    datajson = json.loads(response2)["results"]
+                    intos = [ i['to'] for i in datajson ]
+                    w.close()
+                    
+                    return intos
+                    
+            except Exception as ex:
+                print(ex)
+            inc+=1
+            time.sleep(2)
+        return intos
+    f.close()
 
 def query_gb(email, organism):
   Entrez.email = email
