@@ -151,7 +151,7 @@ export default class VisualizationOptions extends Vue {
   @Prop({ required: false, default: null })
   public referenceSequence!: any;
     
-  private DataHandler = new DataHandler()
+  public DataHandler = new DataHandler()
 
   activeTab = 0
 
