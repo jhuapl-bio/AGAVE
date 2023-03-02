@@ -41,8 +41,8 @@ export default class DataHandler {
     pdb_map: any  = {}
     selected_consensus: any = null
     public changing: boolean = false
-    public defaultDataListFile: any = path.join("data", "default.json")
-    public defaultDataListFiles: any[] = [path.join("data", "default.json"), path.join("data", "BARDA_New.json"), path.join("data", "Gaydos.json")];
+    public defaultDataListFile: any = path.join("data", "SecondExampleInputVariantsIVAR.json")
+    public defaultDataListFiles: any[] = [path.join("data", "SecondExampleInputVariantsIVAR.json"), path.join("data", "default.json"), path.join("data", "BARDA_New.json"), path.join("data", "Gaydos.json")];
     data_selected: any  = null
     public  constructor() {
         this.data_selected = this.defaultDataListFile
@@ -233,6 +233,7 @@ export default class DataHandler {
         const $this =this;
         let data =  $this.selected_data
         
+        console.log(data)
         let organisms: any = Object.entries(data.proteins)
         for (const [ organismId, organismProts ] of organisms ){
             let proteins:any= Object.entries(organismProts)
