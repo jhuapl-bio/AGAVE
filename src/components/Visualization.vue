@@ -25,7 +25,7 @@
         >
         </Heatmap>
       </div>
-       <b-col v-if="pdb" class="col-lg-4 pb-1 big-top-margin">
+       <b-col class="col-lg-4 pb-1 big-top-margin">
         <MoleculeViewer 
           :pdb=pdb
           :position=position
