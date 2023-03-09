@@ -1,9 +1,10 @@
 <template>
   <b-row> 
     <b-col class="col-lg-12 pb-1">
-      <!-- <div class=""> -->
-        <!-- <div ref="viewerCustom" class="viewer"></div>
-        <b-input-group prepend="" class="mt-3">             
+      <div id='molstar-parentCustom' style='top: 0; left: 0; right: 0; bottom: 0'>
+        <!-- <div ref="viewerCustom" class="viewer"></div> -->
+        <canvas id='molstar-canvasCustom' style='top: 0; left: 0; right: 0; bottom: 0'></canvas>
+        <!-- <b-input-group prepend="" class="mt-3">             
           <b-input-group-append>
             <b-button
               elevation="2"
@@ -11,7 +12,7 @@
             >Clear PDB(s)</b-button>
           </b-input-group-append>
         </b-input-group> -->
-      <!-- </div> -->
+      </div>
       <div id='molstar-parent' style='top: 0; left: 0; right: 0; bottom: 0'>
           <canvas id='molstar-canvas' style='top: 0; left: 0; right: 0; bottom: 0'></canvas>
       </div>
@@ -71,6 +72,9 @@ import { PluginConfig } from 'molstar/lib/mol-plugin/config';
 import { ColorNames } from 'molstar/lib/mol-util/color/names';
 import { PluginCommands } from 'molstar/lib/mol-plugin/commands';
 import { Structure } from 'molstar/lib/mol-model/structure';
+import { Script } from 'molstar/lib/mol-script/script';
+import { StructureSelection } from 'molstar/lib/mol-model/structure/query';
+
 import { createPluginUI } from "molstar/lib/mol-plugin-ui";
 import { Viewer } from 'molstar/build/viewer/molstar.js'
  
@@ -271,31 +275,31 @@ export default class MoleculeViewer extends Vue {
     });
   }
 
-  async queryAPI(options:any){
+  async queryAPI(moleculeId:string){
     let error: any = null
-    if (options.moleculeId === this.defaultMoleculeId || options.moleculeId === undefined) {
+    if (moleculeId === this.defaultMoleculeId || moleculeId === undefined) {
       return;
     }
     try {
       // https://www.ebi.ac.uk/pdbe/graph-api/pdbe_pages/uniprot_mapping/4o5n/1
       this.queryingResidueMapping = true;
       // throw new Error("new err")
-      let response: any = await this.getdata(`https://www.ebi.ac.uk/pdbe/graph-api/mappings/uniprot_segments/${options.moleculeId.toLowerCase()}`)
+      let response: any = await this.getdata(`https://www.ebi.ac.uk/pdbe/graph-api/mappings/uniprot_segments/${moleculeId.toLowerCase()}`)
       this.title = "Fetching..."
       // console.log("Querying API call finished", response)
       this.map_positions = {}
       if (
         response.data && 
-        response.data[options.moleculeId] && 
-        response.data[options.moleculeId].UniProt){
-        let data: any = response.data[options.moleculeId].UniProt;
-        const uniprots = Object.keys(response.data[options.moleculeId].UniProt)
+        response.data[moleculeId] && 
+        response.data[moleculeId].UniProt){
+        let data: any = response.data[moleculeId].UniProt;
+        const uniprots = Object.keys(response.data[moleculeId].UniProt)
         let sum = 1;
         uniprots.forEach((accession: any)=>{
           if (data[accession].mappings){
             const mappings: any = data[accession].mappings
             this.chains = {
-              id: options.moleculeId,
+              id: moleculeId,
               entities: [...new Set(mappings.map((d: any) => d.entity_id))]
             }
             mappings.forEach((mapping:any)=>{
@@ -318,7 +322,7 @@ export default class MoleculeViewer extends Vue {
           position =  this.map_positions[key].positions[3] + this.map_positions[key].positions[0] 
             
         })
-        this.pdb = options.moleculeId
+        this.pdb = moleculeId
       } 
     } catch(err){
       console.error(err)
@@ -328,7 +332,7 @@ export default class MoleculeViewer extends Vue {
       try {
         this.queryingReferenceSequence = true;
         this.referenceSequence = {}
-        let response: any =  await this.getdata(`https://www.ebi.ac.uk/pdbe/search/pdb/select?q=pdb_id:${options.moleculeId}&wt=json`)
+        let response: any =  await this.getdata(`https://www.ebi.ac.uk/pdbe/search/pdb/select?q=pdb_id:${moleculeId}&wt=json`)
         if (
           response.data && 
           response.data.response && 
@@ -390,7 +394,6 @@ export default class MoleculeViewer extends Vue {
     this.viewer.events.loadComplete.subscribe(() => { 
       console.log("LOADED")
       
-      // this.queryAPI(options)
     })
     console.log(this.viewer,"......")
     document.addEventListener('PDB.molstar.mouseover', (e) => { //do something on event 
@@ -406,6 +409,7 @@ export default class MoleculeViewer extends Vue {
   }
 
   async mounted() {
+    const $this = this
     // Available options here: https://github.com/PDBeurope/pdbe-molstar/wiki/1.-PDBe-Molstar-as-JS-plugin
     // Our H3N2 HA protein is 4o5n and our H1N1 HA protein is 3lzg
     // const options: any= {
@@ -425,8 +429,6 @@ export default class MoleculeViewer extends Vue {
     //   bgColor: {r:255, g:255, b:255}
     // })
     // this.queryAPI(options)
-    const canvas = <HTMLCanvasElement> document.getElementById('molstar-canvas');
-    const parent = <HTMLDivElement> document.getElementById('molstar-parent');
     let options = {
         layoutIsExpanded: true,
         layoutShowControls: true,
@@ -469,12 +471,17 @@ export default class MoleculeViewer extends Vue {
     async function initViewer(target: string | HTMLElement, options: any) {
         return new Viewer(target, options)
     }
+    let  canvasMain = <HTMLCanvasElement> document.getElementById('molstar-canvas');
+    let parentMain = <HTMLDivElement> document.getElementById('molstar-parent');
+    let canvasCustom = <HTMLCanvasElement> document.getElementById('molstar-canvasCustom');
+    let  parentCustom = <HTMLDivElement> document.getElementById('molstar-parentCustom');
     // let viewer = await initViewer(canvas, options)
     // console.log(viewer)
     // viewer.loadPdb('7bv2');
     // viewer.loadEmdb('EMD-30210', { detail: 6 });
-    init()
-    async function init() {
+    this.viewer = await init(parentMain, canvasMain, '7bv2')
+    $this.viewerCustom = await init(parentCustom, canvasCustom, '7lxy')
+    async function init(parent: string | HTMLElement, canvas: string | HTMLCanvasElement, pdbid: string) {
         
         // let format = 'pdb'
         
@@ -486,14 +493,16 @@ export default class MoleculeViewer extends Vue {
             return;
         }
 
-        const data = await plugin.builders.data.download({ url: "https://files.rcsb.org/download/3PTB.pdb" }, { state: { isGhost: false } });
+        const data = await plugin.builders.data.download({ url: `https://files.rcsb.org/download/${pdbid}.pdb` }, { state: { isGhost: false } });
         const trajectory = await plugin.builders.structure.parseTrajectory(data, 'pdb');
         await plugin.builders.structure.hierarchy.applyPreset(trajectory, 'default');
-
+        return plugin
 
         // const renderer = plugin.canvas3d!.props.renderer;
         // PluginCommands.Canvas3D.SetSettings(plugin, { settings: { renderer: { ...renderer, backgroundColor: ColorNames.red /* or: 0xff0000 as Color */ } } });
     }
+    this.queryAPI(this.pdb || this.defaultMoleculeId )
+
     
   }
 
@@ -522,24 +531,40 @@ export default class MoleculeViewer extends Vue {
   }
   public highlight(){
     // this.viewer.visual.clearSelection();
-    // let residue = this.getPositionFocus(this.localHoverPosition)
-    let residue = {
-      auth_asym_id:"A",
-      struct_asym_id: 'A',
-      entry_id: "7qur.pdb",
-      position:60,
-      seq_id: 60,
-      entity_id:"1",
-      start_residue_number: 1,
-      end_residue_number: 200,
-      label_asym_id: "A",
-      instance: "ASM_1",
-      model: 1,
-      comp_id: "SER",
-      auth_seq_id: 60
-    }
-
+    let residue = this.getPositionFocus(this.localHoverPosition)
+    // let residue = {
+    //   auth_asym_id:"A",
+    //   struct_asym_id: 'A',
+    //   entry_id: "7qur.pdb",
+    //   position:60,
+    //   seq_id: 60,
+    //   entity_id:"1",
+    //   start_residue_number: 1,
+    //   end_residue_number: 200,
+    //   label_asym_id: "A",
+    //   instance: "ASM_1",
+    //   model: 1,
+    //   comp_id: "SER",
+    //   auth_seq_id: 60
+    // }
     
+    console.log(residue,"<<<<<")
+    function lociFocus(plugin: any){
+      const ligandData = plugin.managers.structure.hierarchy.selection.structures[0]?.components[0]?.cell.obj?.data;
+      const selection = Script.getStructureSelection(Q => Q.struct.generator.atomGroups({
+          'chain-test': Q.core.rel.eq(['B', Q.ammp('label_asym_id')])
+      }), ligandData);
+      const loci = StructureSelection.toLociWithSourceUnits(selection);
+      plugin.managers.camera.focusLoci(loci);
+      plugin.managers.interactivity.lociSelects.select({ loci: loci });
+      console.log(loci,"<<<")
+    }
+    lociFocus(this.viewer)
+    lociFocus(this.viewerCustom)
+    
+    // const ligandLoci = Structure.toStructureElementLoci(ligandData as any);
+    // plugin.managers.camera.focusLoci(ligandLoci);
+    // plugin.managers.interactivity.lociSelects.select({ loci: ligandLoci });
     if (residue.position > 0){
       
       try{
@@ -645,13 +670,13 @@ export default class MoleculeViewer extends Vue {
     float: left;
     position: relative;
   }
-  #molstar-parent{
+  #molstar-parent, #molstar-parentCustom{
     height: 800px;
     width: 100%;
     float: left;
     position: relative;
   }
-  #molstar-canvas{
+  #molstar-canvas, #molstar-canvasCustom{
     height: 300px;
     width: 100%;
     float: left;
