@@ -157,16 +157,19 @@ export default class MoleculeViewer extends Vue {
   onPositionChanged(value: number, oldValue: number) {
     this.localPosition = value
 
-    this.focus()
+    this.focus(value)
   }
   
   @Watch('hoverPosition')
   onHoverPositionChanged(value: number, oldValue: number) {
     this.localHoverPosition = value
+    console.log(value,"<<")
     if (value >= 0){
-      this.highlight()
+      // this.highlight()
     } else {
-      this.viewer.visual.clearHighlight()
+      console.log(this.viewerCustom.managers)
+      // this.viewerCustom.managers.interactivity.lociHighlights.clearHighlights();
+      // this.viewer.managers.interactivity.lociHighlights.clearHighlights();
       // this.viewerCustom.visual.clearHighlight()
     }
   }
@@ -219,7 +222,7 @@ export default class MoleculeViewer extends Vue {
 
   siteHover(item: any){
     this.localPosition = item.endIndex + this.map_positions[item.entity].positions[1]
-    this.focus()
+    this.focus(this.localPosition)
     if (this.localPosition >= this.DataHandler.position_ranges[0]
       && this.localPosition <= this.DataHandler.position_ranges[1]){
       item.position  = this.localPosition
@@ -237,7 +240,6 @@ export default class MoleculeViewer extends Vue {
     } 
   }
   loadCustomPDB(url: string){
-    console.log(url,"<<<<<")
 
   }
   proteinChange(value: any){
@@ -250,7 +252,7 @@ export default class MoleculeViewer extends Vue {
         bgColor: {r:255, g:255, b:255}
       }
       this.queryAPI(options)
-      this.viewer.visual.update(options)
+      // this.viewer.visual.update(options)
       // Remove some buttons that break everything
       // this.removeButtons();
     } else {
@@ -353,10 +355,6 @@ export default class MoleculeViewer extends Vue {
                 if (i >= 0){
                   const position = this.determinePosition(i, this.map_positions[chain.entity_id].positions[1])
                   let chain_id = chain.molecule_sequence.substring(position,position+1)
-                  // ref_seq.push( {
-                  //   position: i+1,
-                  //   aa: chain_id
-                  // } )
                   ref_seq[i+1] = chain_id
                   
                 }
@@ -399,7 +397,7 @@ export default class MoleculeViewer extends Vue {
     document.addEventListener('PDB.molstar.mouseover', (e) => { //do something on event 
       console.log(e)
     });
-    // this.viewer.plugin.behaviors.interaction.hover.subscribe((e:any) => { console.log(e,"plugin") })
+    
   }
 
   async getdata(string:string){
@@ -480,7 +478,10 @@ export default class MoleculeViewer extends Vue {
     // viewer.loadPdb('7bv2');
     // viewer.loadEmdb('EMD-30210', { detail: 6 });
     this.viewer = await init(parentMain, canvasMain, '7bv2')
-    $this.viewerCustom = await init(parentCustom, canvasCustom, '7lxy')
+    // plugin.managers.camera.focusLoci(loci);
+    console.log(this.viewer)
+    this.viewer.events.log.subscribe((e:any) => { console.log(e,"plugin") })
+    $this.viewerCustom = await init(parentCustom, canvasCustom, '7bv2')
     async function init(parent: string | HTMLElement, canvas: string | HTMLCanvasElement, pdbid: string) {
         
         // let format = 'pdb'
@@ -501,7 +502,7 @@ export default class MoleculeViewer extends Vue {
         // const renderer = plugin.canvas3d!.props.renderer;
         // PluginCommands.Canvas3D.SetSettings(plugin, { settings: { renderer: { ...renderer, backgroundColor: ColorNames.red /* or: 0xff0000 as Color */ } } });
     }
-    this.queryAPI(this.pdb || this.defaultMoleculeId )
+    // this.queryAPI(this.pdb || this.defaultMoleculeId )
 
     
   }
@@ -529,9 +530,28 @@ export default class MoleculeViewer extends Vue {
     }
     return residue
   }
+  lociFocus(plugin: any, position: number){
+    const ligandData = plugin.managers.structure.hierarchy.selection.structures[0]?.components[0]?.cell.obj?.data;
+    const selection = Script.getStructureSelection(Q => Q.struct.generator.atomGroups({
+    'residue-test': Q.core.set.has([Q.set(position), Q.ammp('auth_seq_id')]),
+    }), ligandData);
+    const loci = StructureSelection.toLociWithSourceUnits(selection);
+    plugin.managers.camera.focusLoci(loci);
+    plugin.managers.interactivity.lociHighlights.highlightOnly({ loci: loci });
+  }
+  lociHighlight(plugin: any){
+    const ligandData = plugin.managers.structure.hierarchy.selection.structures[0]?.components[0]?.cell.obj?.data;
+    const selection = Script.getStructureSelection(Q => Q.struct.generator.atomGroups({
+        'chain-test': Q.core.rel.eq(['A', Q.ammp('label_asym_id')])
+    }), ligandData);
+    const loci = StructureSelection.toLociWithSourceUnits(selection);
+    // plugin.managers.camera.focusLoci(loci);
+    plugin.managers.interactivity.lociHighlights.highlightOnly({ loci: loci });
+    // console.log(loci,"<<<")
+  }
   public highlight(){
     // this.viewer.visual.clearSelection();
-    let residue = this.getPositionFocus(this.localHoverPosition)
+    
     // let residue = {
     //   auth_asym_id:"A",
     //   struct_asym_id: 'A',
@@ -547,38 +567,31 @@ export default class MoleculeViewer extends Vue {
     //   comp_id: "SER",
     //   auth_seq_id: 60
     // }
+    let residue = this.getPositionFocus(this.localHoverPosition)
     
-    console.log(residue,"<<<<<")
-    function lociFocus(plugin: any){
-      const ligandData = plugin.managers.structure.hierarchy.selection.structures[0]?.components[0]?.cell.obj?.data;
-      const selection = Script.getStructureSelection(Q => Q.struct.generator.atomGroups({
-          'chain-test': Q.core.rel.eq(['B', Q.ammp('label_asym_id')])
-      }), ligandData);
-      const loci = StructureSelection.toLociWithSourceUnits(selection);
-      plugin.managers.camera.focusLoci(loci);
-      plugin.managers.interactivity.lociSelects.select({ loci: loci });
-      console.log(loci,"<<<")
-    }
-    lociFocus(this.viewer)
-    lociFocus(this.viewerCustom)
-    
+    this.lociHighlight(this.viewer)
+    this.lociHighlight(this.viewerCustom)
+    // let plugin = this.viewer 
+    // const ligandData = plugin.managers.structure.hierarchy.selection.structures[0]?.components[0]?.cell.obj?.data;
     // const ligandLoci = Structure.toStructureElementLoci(ligandData as any);
+    
     // plugin.managers.camera.focusLoci(ligandLoci);
+    // console.log(ligandLoci)
     // plugin.managers.interactivity.lociSelects.select({ loci: ligandLoci });
-    if (residue.position > 0){
+    // if (residue.position > 0){
       
-      try{
-        this.viewer.visual.select({
-            data: [{
-              ...residue,
-              focus: true,
-              color: {r:255, g:255, b:0}
-            }
-            ]
-        })
-      } catch (err){
-        console.error(err)
-      }
+    //   try{
+    //     this.viewer.visual.select({
+    //         data: [{
+    //           ...residue,
+    //           focus: true,
+    //           color: {r:255, g:255, b:0}
+    //         }
+    //         ]
+    //     })
+    //   } catch (err){
+    //     console.error(err)
+    //   }
       // try{
       //   console.log(this.viewerCustom)
       //   this.viewerCustom.visual.highlight({
@@ -594,38 +607,40 @@ export default class MoleculeViewer extends Vue {
       // } catch (err){
       //   console.error(err)
       // }
-    }
+    // }
       
   }
   // Example of focus ability. In the future let's rig this to the d3 heatmap so that when an amino acid is clicked, the molecule focuses on it
-  public focus() {
-    this.viewer.visual.clearSelection();
+  public focus(position:number) {
+    // this.viewer.visual.clearSelection();
     // let residue = this.getPositionFocus(this.localPosition)
+    // let position = residue.position
+    // let residue = {
+    //   auth_asym_id:"A",
+    //   entry_id: "7qur.pdb",
+    //   position:60,
+    //   entity_id:"1",
+    //   instance: "ASM_1",
+    //   model: 1
+    // }
+    console.log(position)
+    this.lociFocus(this.viewer, position)
+    this.lociFocus(this.viewerCustom, position)
     
-    let residue = {
-      auth_asym_id:"A",
-      entry_id: "7qur.pdb",
-      position:60,
-      entity_id:"1",
-      instance: "ASM_1",
-      model: 1
-    }
-    
-    console.log(residue, this.viewer,"<<<")
-    if(residue.auth_asym_id !== '') {
-      try{
+    // if(residue.auth_asym_id !== '') {
+    //   try{
         
-        this.viewer.visual.select({
-          data: [{
-            ...residue,
-            focus: true,
-            color: {r:255, g:255, b:0}
-          }
-          ]
-        })      
-      } catch (err){
-        console.error(err)
-      }
+    //     this.viewer.visual.select({
+    //       data: [{
+    //         ...residue,
+    //         focus: true,
+    //         color: {r:255, g:255, b:0}
+    //       }
+    //       ]
+    //     })      
+    //   } catch (err){
+    //     console.error(err)
+    //   }
       // try{
       //   this.viewerCustom.visual.select({
       //     data: [{
@@ -640,12 +655,12 @@ export default class MoleculeViewer extends Vue {
       // } catch (err){
       //   console.error(err)
       // }
-    }
+    // }
   }
 
   reset() {
-    this.viewer.visual.reset({ camera: true})
-    this.viewer.visual.clearSelection();
+    // this.viewer.visual.reset({ camera: true})
+    // this.viewer.visual.clearSelection();
   }
 
   private removeButtons() {
