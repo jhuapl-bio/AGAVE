@@ -177,7 +177,7 @@ export default class Heatmap extends Vue {
   margin = {
     top: 0.13 * this.chartHeight,
     bottom: 0.095 * this.chartHeight,
-    left: 0.2 * this.width,
+    left: 0.16 * this.width,
     right: 0.05 * this.width,
   };
   x: any = d3.scaleLinear()
@@ -658,11 +658,15 @@ export default class Heatmap extends Vue {
                 $this.DataHandler.selectedPosition = u.position
                 $this.$emit("changePosition", u.position)
               })
+              .on("mouseenter", (event: any, u: any, n:any, i:number) => {
+                $this.$emit("hoveredPosition", u.position)
+              })
               .on("mousemove", (event: any, u: any, n:any, i:number) => {
                 $this.highlightCell(event, u)
               })
               .on("mouseleave", (d: any, u: any) => {
                 $this.unHighlight(event, u)
+                $this.$emit("unHoverPosition")
               });
           },
           function (update: any) {

@@ -1,32 +1,55 @@
 <template>
   <b-row> 
     <b-col class="col-lg-12 pb-1">
-      <div class="">
-        <b-field :label="this.title"></b-field>
-        <div >
-          <b-input-group prepend="PDB ID" class="mt-3">
-            <b-form-input type="text" v-model="pdb_local" ></b-form-input>
-            <b-input-group-append>
-              <b-button
-                elevation="2"
-                @click="proteinChange(pdb_local.toLowerCase())"
-              >Change Protein</b-button>
-            </b-input-group-append>
-          </b-input-group>
-        </div>
-        <div ref="viewer" class="viewer"></div>
+      <!-- <div class=""> -->
+        <!-- <div ref="viewerCustom" class="viewer"></div>
+        <b-input-group prepend="" class="mt-3">             
+          <b-input-group-append>
+            <b-button
+              elevation="2"
+              @click="clearCustom()"
+            >Clear PDB(s)</b-button>
+          </b-input-group-append>
+        </b-input-group> -->
+      <!-- </div> -->
+      <div id='molstar-parent' style='top: 0; left: 0; right: 0; bottom: 0'>
+          <canvas id='molstar-canvas' style='top: 0; left: 0; right: 0; bottom: 0'></canvas>
+      </div>
+        <b-field :label="title"></b-field>
+        <b-input-group prepend="PDB ID" class="mt-3">
+          <b-form-input type="text" v-model="pdb_local" ></b-form-input>
+          <b-input-group-append>
+            <b-button
+              elevation="2"
+              @click="proteinChange(pdb_local.toLowerCase())"
+            >Change Protein</b-button>
+          </b-input-group-append>
+          <b-input-group-append>
+            <b-button
+              elevation="2"
+              @click="proteinChange(null)"
+            >Clear PDB(s)</b-button>
+          </b-input-group-append>
+        </b-input-group>
         <b-field label="Molecule Structure" class="column is-narrow pl-0">
           <b-switch v-model="isSwitched">
             {{ ( isSwitched ? 'Biological Assembly' : 'Asymmetric Unit' ) }}
           </b-switch>
+            <b-form-file
+            type="file"
+            v-model="custompdb"
+            id="custompdbfile"
+            ref="custompdbfile"
+            placeholder="Choose a pdb file or drop it here..."
+            drop-placeholder="Drop file here...">
+            </b-form-file>
         </b-field>
         <b-field v-if="queryingReferenceSequence" label="Querying Reference Sequence..."></b-field>
         <b-field v-if="queryingResidueMapping" label="Querying Residue Mapping.."></b-field>
-        <b-field v-if="chain_focus" :label="'Chains at '+this.localPosition" class="column is-narrow">
+        <b-field v-if="chain_focus" :label="'Chains at '+localPosition" class="column is-narrow">
           <b-select placeholder="Chain" @change="focus()"  v-model="chain_focus" :options="available_focus_chains">
           </b-select>
         </b-field>
-      </div>
     </b-col>
     <b-col class="col-lg-12 pb-1">
         <BindingSites 
@@ -42,7 +65,17 @@
 
 import { Component, Vue, Watch, Prop } from 'vue-property-decorator'
 import axios from 'axios'
+import { DefaultPluginSpec, PluginSpec } from 'molstar/lib/mol-plugin/spec';
+import { PluginContext  } from 'molstar/lib/mol-plugin/context';
+import { PluginConfig } from 'molstar/lib/mol-plugin/config';
+import { ColorNames } from 'molstar/lib/mol-util/color/names';
+import { PluginCommands } from 'molstar/lib/mol-plugin/commands';
+import { Structure } from 'molstar/lib/mol-model/structure';
+import { createPluginUI } from "molstar/lib/mol-plugin-ui";
+import { Viewer } from 'molstar/build/viewer/molstar.js'
+ 
 import swal from 'vue-sweetalert2'
+import * as path from 'path';
 import DataHandler from "@/shared/DataHandler";
 import BindingSites from '@/components/BindingSites.vue'
 interface Residue {
@@ -59,6 +92,7 @@ interface Residue {
 export default class MoleculeViewer extends Vue {
 
   public viewer: any;
+  public viewerCustom: any;
   public chain_focus: any = null 
   public entity_focus:any = null;
   
@@ -69,13 +103,14 @@ export default class MoleculeViewer extends Vue {
   public queryingResidueMapping: boolean = false;
   public queryingReferenceSequence: boolean = false;
   public localPosition: number =  55;
+  public localHoverPosition: number =  0;
   public referenceSequence: any = {}
   public isSwitched = true
   public assemblyId = "1"
   public positions: any[] = [];
   public custompdb: any = null
   public chains: any = {id: null,  entities: [] };
-  public defaultMoleculeId = "0000"
+  public defaultMoleculeId = "7xly"
   // public protein_per_protein: any = {
   //   "H3N2": {
   //     "HA": '4o5n',
@@ -103,6 +138,9 @@ export default class MoleculeViewer extends Vue {
   
   @Prop({ required: true, default: 55 })
   public position!: string;
+  @Prop({ required: true, default: 0 })
+  public hoverPosition!: string;
+
   @Prop({ required: true, default: "5r7y" })
   public pdb!: string;
 
@@ -117,9 +155,37 @@ export default class MoleculeViewer extends Vue {
 
     this.focus()
   }
+  
+  @Watch('hoverPosition')
+  onHoverPositionChanged(value: number, oldValue: number) {
+    this.localHoverPosition = value
+    if (value >= 0){
+      this.highlight()
+    } else {
+      this.viewer.visual.clearHighlight()
+      // this.viewerCustom.visual.clearHighlight()
+    }
+  }
+
   @Watch('custompdb')
   CustomPDBFile(value: any, oldValue: any) {
-    console.log(value)
+    const $this  = this
+    let reader = new FileReader();  
+    reader.addEventListener("load", parseFile, false);
+    reader.readAsText(value);
+    // let name  = path.parse(value.name).name
+    async function parseFile(){
+      let format = 'pdb'
+      // await $this.viewer.plugin.loadStructureFromData(reader.result, format)
+      const data = await $this.viewer.plugin.builders.data.rawData({
+          data:  reader.result /* string or number[] */,
+          label: value.name /* optional label */
+      });
+      const trajectory = await $this.viewer.plugin.builders.structure.parseTrajectory(data, format);
+      await $this.viewer.plugin.builders.structure.hierarchy.applyPreset(trajectory, 'default');
+    
+    }
+
   }
   
   @Watch('referenceSequence', { immediate: true, deep: true })
@@ -133,7 +199,7 @@ export default class MoleculeViewer extends Vue {
   @Watch('DataHandler.pdb')
   onDataChanged(value: any, oldValue: any){
     this.pdb_local = value
-    this.proteinChange(value)
+    // this.proteinChange(value)
   }
 
   @Watch('isSwitched')
@@ -166,19 +232,32 @@ export default class MoleculeViewer extends Vue {
       return  err
     } 
   }
+  loadCustomPDB(url: string){
+    console.log(url,"<<<<<")
 
-  proteinChange(value: string){
+  }
+  proteinChange(value: any){
     this.chain_focus = null
-    const options: any= {
-      moleculeId: value,
-      assemblyId: this.assemblyId,
-      hideControls: true,
-      bgColor: {r:255, g:255, b:255}
+    if (value){
+      const options: any= {
+        moleculeId: value,
+        assemblyId: this.assemblyId,
+        hideControls: false,
+        bgColor: {r:255, g:255, b:255}
+      }
+      this.queryAPI(options)
+      this.viewer.visual.update(options)
+      // Remove some buttons that break everything
+      // this.removeButtons();
+    } else {
+      // this.viewer.instance.clear()
     }
-    this.queryAPI(options)
-    this.viewer.visual.update(options)
-    // Remove some buttons that break everything
-    this.removeButtons();
+      
+  }
+  clearCustom(){
+    // this.viewerCustom.plugin.clear()
+    // this.viewerCustom.instance.reset()
+
   }
 
   reportError(err:any, title: string){
@@ -289,19 +368,35 @@ export default class MoleculeViewer extends Vue {
       }
     }
   }
-  
+  async make_custom_pdbemolstar(options: any){
+    // this object is being imported in index.html so ignore the syntax error it throws
+    // @ts-ignore
+    this.viewerCustom = new PDBeMolstarPlugin();
+    this.viewerCustom.render(this.$refs.viewerCustom, options);
+    this.viewerCustom.events.loadComplete.subscribe(() => { 
+      console.log("LOADED CustomPDF")
+      // this.viewerCustom.plugin.clear()
+      
+    })//do something after 3d view is rendered });
+  }
   async make_pdbemolstar(options: any){
     // this object is being imported in index.html so ignore the syntax error it throws
     // @ts-ignore
     this.viewer = new PDBeMolstarPlugin();
-    // console.log(options)
-    // options.customData = {
-    //   url: "/data/test.pdb",
-    //   format: "pdb"
-    // }
+    const $this = this;
     this.viewer.render(this.$refs.viewer, options);
     // Remove some buttons that break everything
     this.removeButtons();
+    this.viewer.events.loadComplete.subscribe(() => { 
+      console.log("LOADED")
+      
+      // this.queryAPI(options)
+    })
+    console.log(this.viewer,"......")
+    document.addEventListener('PDB.molstar.mouseover', (e) => { //do something on event 
+      console.log(e)
+    });
+    // this.viewer.plugin.behaviors.interaction.hover.subscribe((e:any) => { console.log(e,"plugin") })
   }
 
   async getdata(string:string){
@@ -313,29 +408,106 @@ export default class MoleculeViewer extends Vue {
   async mounted() {
     // Available options here: https://github.com/PDBeurope/pdbe-molstar/wiki/1.-PDBe-Molstar-as-JS-plugin
     // Our H3N2 HA protein is 4o5n and our H1N1 HA protein is 3lzg
-    const options: any= {
-      moleculeId: this.pdb || this.defaultMoleculeId,
-      assemblyId: this.assemblyId,
-      hideControls: true,
-      bgColor: {r:255, g:255, b:255}
+    // const options: any= {
+    //   moleculeId: this.pdb || this.defaultMoleculeId,
+    //   assemblyId: this.assemblyId,
+    //   hideControls: false,
+    //   alphafoldView: true,
+    //   subscribeEvents: true,
+    //   bgColor: {r:255, g:255, b:255}
+    // }
+    // this.make_pdbemolstar(options)
+    // this.make_custom_pdbemolstar({
+    //   hideControls: false,
+    //   assemblyId: this.assemblyId,
+    //   alphafoldView: true,
+    //   moleculeId: '7qur',
+    //   bgColor: {r:255, g:255, b:255}
+    // })
+    // this.queryAPI(options)
+    const canvas = <HTMLCanvasElement> document.getElementById('molstar-canvas');
+    const parent = <HTMLDivElement> document.getElementById('molstar-parent');
+    let options = {
+        layoutIsExpanded: true,
+        layoutShowControls: true,
+        layoutShowRemoteState: true,
+        layoutShowSequence: true,
+        layoutShowLog: true,
+        layoutShowLeftPanel: true,
+
+        viewportShowExpand: true,
+        viewportShowSelectionMode: true,
+        viewportShowAnimation: true,
+
+        pdbProvider: 'rcsb',
+        emdbProvider: 'rcsb',
     }
-    this.make_pdbemolstar(options)
-    this.queryAPI(options)
+    let defaultSpecs = DefaultPluginSpec();
+    const MySpec: PluginSpec = {
+      ...defaultSpecs,
+      config: [
+        [PluginConfig.VolumeStreaming.Enabled, true],
+        [PluginConfig.Viewport.ShowControls, true],
+        [PluginConfig.Viewport.ShowExpand, true],
+        [PluginConfig.Viewport.ShowSelectionMode, true],
+        [PluginConfig.Viewport.ShowSettings, true],
+      ],
+      layout: {
+        initial: {
+          isExpanded: true,
+          showControls: true,
+        },
+      }, 
+      
+      canvas3d: {
+          camera: {
+              helper: { axes: { name: 'off', params: {} } }
+          }
+      },
+     
+    }   
+    async function initViewer(target: string | HTMLElement, options: any) {
+        return new Viewer(target, options)
+    }
+    // let viewer = await initViewer(canvas, options)
+    // console.log(viewer)
+    // viewer.loadPdb('7bv2');
+    // viewer.loadEmdb('EMD-30210', { detail: 6 });
+    init()
+    async function init() {
+        
+        // let format = 'pdb'
+        
+        const plugin = new PluginContext(MySpec);
+        await plugin.init();
+        // let plugin = await createPluginUI(parent)
+        if (!plugin.initViewer(canvas, parent)) {
+            console.error('Failed to init Mol*');
+            return;
+        }
+
+        const data = await plugin.builders.data.download({ url: "https://files.rcsb.org/download/3PTB.pdb" }, { state: { isGhost: false } });
+        const trajectory = await plugin.builders.structure.parseTrajectory(data, 'pdb');
+        await plugin.builders.structure.hierarchy.applyPreset(trajectory, 'default');
+
+
+        // const renderer = plugin.canvas3d!.props.renderer;
+        // PluginCommands.Canvas3D.SetSettings(plugin, { settings: { renderer: { ...renderer, backgroundColor: ColorNames.red /* or: 0xff0000 as Color */ } } });
+    }
+    
   }
 
   determinePosition(localPosition: number, mapPosition: number){
     return localPosition - mapPosition
   }
-
-  // Example of focus ability. In the future let's rig this to the d3 heatmap so that when an amino acid is clicked, the molecule focuses on it
-  focus() {
-    this.viewer.visual.clearSelection();
+  getPositionFocus(localPosition: number){
     let residue: Residue =  { chain: '', entity: '', position: 0 };
     let found: boolean = false
+
     for(let d of Object.keys(this.map_positions).sort().filter((e:any)=>{return e != 'total'})) {
-      if (this.localPosition  >= this.map_positions[d].positions[1] 
-      && this.localPosition <= this.map_positions[d].positions[3]  ){
-        const position = this.determinePosition(this.localPosition,this.map_positions[d].positions[1])
+      if (localPosition  >= this.map_positions[d].positions[1] 
+      && localPosition <= this.map_positions[d].positions[3]  ){
+        const position = this.determinePosition(localPosition,this.map_positions[d].positions[1])
         if (! this.chain_focus || this.entity_focus != d){  
           this.chain_focus = this.map_positions[d].chains[0]
           this.available_focus_chains = this.map_positions[d].chains
@@ -346,17 +518,103 @@ export default class MoleculeViewer extends Vue {
         break;
       }   
     }
-    if(residue.chain !== '') {
-      this.viewer.visual.select({
-        data: [{
-          struct_asym_id: residue.chain,
-          entity_id: residue.entity,
-          residue_number: residue.position,
-          focus: true,
-          color: {r:255, g:255, b:0}
-        }
-        ]
-      })      
+    return residue
+  }
+  public highlight(){
+    // this.viewer.visual.clearSelection();
+    // let residue = this.getPositionFocus(this.localHoverPosition)
+    let residue = {
+      auth_asym_id:"A",
+      struct_asym_id: 'A',
+      entry_id: "7qur.pdb",
+      position:60,
+      seq_id: 60,
+      entity_id:"1",
+      start_residue_number: 1,
+      end_residue_number: 200,
+      label_asym_id: "A",
+      instance: "ASM_1",
+      model: 1,
+      comp_id: "SER",
+      auth_seq_id: 60
+    }
+
+    
+    if (residue.position > 0){
+      
+      try{
+        this.viewer.visual.select({
+            data: [{
+              ...residue,
+              focus: true,
+              color: {r:255, g:255, b:0}
+            }
+            ]
+        })
+      } catch (err){
+        console.error(err)
+      }
+      // try{
+      //   console.log(this.viewerCustom)
+      //   this.viewerCustom.visual.highlight({
+      //       data: [{
+      //         struct_asym_id: residue.chain,
+      //         entity_id: residue.entity,
+      //         residue_number: residue.position > 0 ? residue.position : -1,
+      //         focus: false,
+      //         color: {r:255, g:255, b:0}
+      //       }
+      //       ]
+      //   })
+      // } catch (err){
+      //   console.error(err)
+      // }
+    }
+      
+  }
+  // Example of focus ability. In the future let's rig this to the d3 heatmap so that when an amino acid is clicked, the molecule focuses on it
+  public focus() {
+    this.viewer.visual.clearSelection();
+    // let residue = this.getPositionFocus(this.localPosition)
+    
+    let residue = {
+      auth_asym_id:"A",
+      entry_id: "7qur.pdb",
+      position:60,
+      entity_id:"1",
+      instance: "ASM_1",
+      model: 1
+    }
+    
+    console.log(residue, this.viewer,"<<<")
+    if(residue.auth_asym_id !== '') {
+      try{
+        
+        this.viewer.visual.select({
+          data: [{
+            ...residue,
+            focus: true,
+            color: {r:255, g:255, b:0}
+          }
+          ]
+        })      
+      } catch (err){
+        console.error(err)
+      }
+      // try{
+      //   this.viewerCustom.visual.select({
+      //     data: [{
+      //       struct_asym_id: residue.chain,
+      //       entity_id: residue.entity,
+      //       residue_number: residue.position,
+      //       focus: true,
+      //       color: {r:255, g:255, b:0}
+      //     }
+      //     ]
+      //   })  
+      // } catch (err){
+      //   console.error(err)
+      // }
     }
   }
 
@@ -382,10 +640,39 @@ export default class MoleculeViewer extends Vue {
 
 <style scoped lang="scss">
   .viewer {
-    height: 22rem;
+    height: 300px;
     width: 100%;
     float: left;
     position: relative;
   }
+  #molstar-parent{
+    height: 800px;
+    width: 100%;
+    float: left;
+    position: relative;
+  }
+  #molstar-canvas{
+    height: 300px;
+    width: 100%;
+    float: left;
+    position: relative;
+  }
+  .msp-plugin ::-webkit-scrollbar-thumb {
+        background-color: #474748 !important;
+    }
+    .viewerSection {
+      padding-top: 40px;
+    }
+    .controlsSection {
+      width: 200px;
+      float: left;
+      padding: 40px 0 0 0;
+      margin-right: 10px;
+    }
+    .controlBox {
+      border: 1px solid lightgray;
+      padding: 10px;
+      margin-bottom: 20px;
+    }
 
 </style>

@@ -27,3 +27,4 @@ controllers/data
 controllers/output
 controllers/readme.md
 output
+public/data

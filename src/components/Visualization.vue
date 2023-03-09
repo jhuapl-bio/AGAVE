@@ -13,22 +13,24 @@
         <h3 class="title">Heatmap Viewer</h3>
         <h5 class="subtitle">Click a column in the heatmap to zoom in on its molecular position</h5>
       </div>
-      <div class="col-lg-8 pr-5" v-if="DataHandler.cells && DataHandler.cells.length >= 0">      
+      <div class="col-lg-6  pr-5" v-if="DataHandler.cells && DataHandler.cells.length >= 0">      
         <Heatmap 
           ref="heatmap"
           :column_width=column_width 
           :DataHandler=DataHandler
           :isSwitched=isSwitched  
           :sortBy=sortBy      
-          
+          @hoveredPosition="hoveredPosition"
+          @unHoverPosition="unHoverPosition"
           @changePosition="changePosition"
         >
         </Heatmap>
       </div>
-       <b-col class="col-lg-4 pb-1 big-top-margin">
+       <b-col class="col-lg-6 pb-1 big-top-margin">
         <MoleculeViewer 
           :pdb=pdb
           :position=position
+          :hoverPosition="hoverPosition"
           :DataHandler=DataHandler
           @siteHover="siteHover"  
           @changeReferenceSequence="changeReferenceSequence"
@@ -72,6 +74,7 @@ export default class Visualization extends Vue {
   public depth_threshold = 0
   public frequency_threshold = 0.2
   public column_width = 9
+  public hoverPosition:number  = 0
   public pdb = null
   public position = 54
   public cells:any = null
@@ -82,7 +85,7 @@ export default class Visualization extends Vue {
   public referenceSequence: any[] = [];
   private localDataHelper = new LocalDataHelper();
   public switchedViewer = true
-  private DataHandler = new DataHandler()
+  public DataHandler = new DataHandler()
   $refs!: {
     heatmap: any;
     barplot: any;
@@ -110,6 +113,14 @@ export default class Visualization extends Vue {
   }
   changePosition(value: number){
     this.position = value
+  }
+  unHoverPosition() { 
+    // this.DataHandler.updateHoveredPosition([value])
+    this.hoverPosition = -1
+  }
+  hoveredPosition(value: number) { 
+    // this.DataHandler.updateHoveredPosition([value])
+    this.hoverPosition = value
   }
   changeReferenceSequence(value: any){
     this.DataHandler.updateReference(value)

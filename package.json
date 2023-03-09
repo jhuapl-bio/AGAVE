@@ -21,6 +21,7 @@
     "csv-loader": "^3.0.3",
     "d3": "^6.7.0",
     "d3-svg-to-png": "^0.1.6",
+    "molstar": "^3.31.4",
     "vue": "2.6.11",
     "vue-class-component": "7.2.3",
     "vue-property-decorator": "8.4.2",
