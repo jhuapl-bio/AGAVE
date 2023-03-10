@@ -496,8 +496,7 @@ export default class Heatmap extends Vue {
       if (!this.isSwitched){
         seen_positions[cell.position] = `${cell.consensus_aa}.${cell.position}`
       } else {
-        if (reference_seq && cell.position in reference_seq){
-          seen_positions[cell.position] = `${reference_seq[cell.position]}.${cell.position}`
+        if (reference_seq){
           cell.pdb_aa =`${reference_seq[cell.position]}`
         } else {
           seen_positions[cell.position] = `Unmapped.${cell.position}`
@@ -505,6 +504,11 @@ export default class Heatmap extends Vue {
         }
       }
     })
+    if (reference_seq) {
+      Object.keys(reference_seq).forEach((index: any) => {
+        seen_positions[index] = `${reference_seq[index]}.${index}`
+      })
+    }
     
     let boxHeight = (this.height - this.margin.top - this.margin.bottom )/ scrollAttr.y.length 
     this.boxHeight = boxHeight;
@@ -802,9 +806,9 @@ export default class Heatmap extends Vue {
     const max = d.aa_count
     let color = '';
     let colors: string[] = [
-      'rgb(' + Math.round(235) + ',' + Math.round(235) + ',' + Math.round(235) + ')',
-      'rgb(' + Math.round(185) + ',' + Math.round(185) + ',' + Math.round(185) + ')',
       'rgb(' + Math.round(245) + ',' + Math.round(242) + ',' + Math.round(242) + ')',
+      'rgb(' + Math.round(185) + ',' + Math.round(185) + ',' + Math.round(185) + ')',
+      'rgb(' + Math.round(235) + ',' + Math.round(235) + ',' + Math.round(235) + ')',
       'rgb(' + Math.round(65) + ',' + Math.round(65) + ',' + Math.round(65) + ')',
       'rgb(253,64,160)'
     ] 
