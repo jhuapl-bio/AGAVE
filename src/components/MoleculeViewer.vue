@@ -75,7 +75,6 @@ export default class MoleculeViewer extends Vue {
   public positions: any[] = [];
   public custompdb: any = null
   public chains: any = {id: null,  entities: [] };
-  public defaultMoleculeId = "0000"
   // public protein_per_protein: any = {
   //   "H3N2": {
   //     "HA": '4o5n',
@@ -194,7 +193,7 @@ export default class MoleculeViewer extends Vue {
 
   async queryAPI(options:any){
     let error: any = null
-    if (options.moleculeId === this.defaultMoleculeId || options.moleculeId === undefined) {
+    if (options.moleculeId === undefined) {
       return;
     }
     try {
@@ -314,10 +313,14 @@ export default class MoleculeViewer extends Vue {
     // Available options here: https://github.com/PDBeurope/pdbe-molstar/wiki/1.-PDBe-Molstar-as-JS-plugin
     // Our H3N2 HA protein is 4o5n and our H1N1 HA protein is 3lzg
     const options: any= {
-      moleculeId: this.pdb || this.defaultMoleculeId,
       assemblyId: this.assemblyId,
       hideControls: true,
       bgColor: {r:255, g:255, b:255}
+    }
+    if(this.pdb === null) {
+      options.customData = { url: 'empty.pdb', format: 'mmcif'}
+    } else {
+      options.moleculeId = this.pdb
     }
     this.make_pdbemolstar(options)
     this.queryAPI(options)
