@@ -25,7 +25,7 @@
         >
         </Heatmap>
       </div>
-       <b-col class="col-lg-4 pb-1 big-top-margin">
+       <b-col class="col-lg-4 pb-1">
         <MoleculeViewer 
           :pdb=pdb
           :position=position
@@ -82,7 +82,7 @@ export default class Visualization extends Vue {
   public referenceSequence: any[] = [];
   private localDataHelper = new LocalDataHelper();
   public switchedViewer = true
-  private DataHandler = new DataHandler()
+  public DataHandler = new DataHandler()
   $refs!: {
     heatmap: any;
     barplot: any;

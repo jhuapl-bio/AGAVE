@@ -31,7 +31,7 @@
         <div id="heatmapLegend" ref="heatmapLegend"></div>
         <b-button @click="downloadSVG()">Save SVG</b-button>
         <a hidden id='imgId' target="_blank">Save SVG</a>
-        <b-switch v-model="isFlipped" hidden :disabled="!this.DataHandler.cells" >
+        <b-switch v-model="isFlipped" hidden :disabled="!DataHandler.cells" >
                 {{ ( isFlipped ? 'Flip Axis' : 'Flip Axis' ) }}
         </b-switch>
       </b-col>
@@ -43,10 +43,7 @@
 <script lang="ts">
 import { Component, Vue, Prop, Watch } from "vue-property-decorator";
 import LocalDataHelper from "@/shared/LocalDataHelper";
-import Parsing from "@/shared/Parsing";
 import * as d3 from "d3";
-import swal from 'vue-sweetalert2'
-import { BIconArrowReturnRight } from "bootstrap-vue";
 import * as canvas from 'canvas'
 import DataHandler from "@/shared/DataHandler";
 @Component({
@@ -57,9 +54,7 @@ import DataHandler from "@/shared/DataHandler";
 })
 export default class Heatmap extends Vue {
 
-  private localDataHelper = new LocalDataHelper();
-  private parsing = new Parsing();
-  private isFlipped = true
+  public isFlipped = true
   $refs!: {
     heatmapDiv: HTMLElement;
     heatmapLegend: HTMLElement;
@@ -98,7 +93,7 @@ export default class Heatmap extends Vue {
       return  err
     } 
   }
-  downloadSVG(evt:any) {
+  downloadSVG() {
     var svg:any = document.querySelector("#innerheatmapSVG");
     var svg_xml = (new XMLSerializer()).serializeToString(svg),
     blob = new Blob([svg_xml], {type:'image/svg+xml;charset=utf-8'}),
@@ -198,15 +193,11 @@ export default class Heatmap extends Vue {
     }
     this.legendHeight = this.chartHeight / 20
     this.height = Math.min(this.chartHeight);    
-    const border = this.border;
-    const margin = this.margin;
     
     d3.selectAll("#heatmapSVG").remove()
     d3.select("#overflowDiv").remove()
     d3.selectAll("#heatmapSliderSVG").remove()
     d3.selectAll("#heatmapLegend").selectAll("*").remove()
-    const proteins = ["HA", "M1", "NA", "NP"];
-    const $this = this;
     this.makeHeatmap(this.DataHandler.cells)
 
   }
@@ -280,7 +271,6 @@ export default class Heatmap extends Vue {
     for (let i = -5; i <= 0; i+=0.25) {
       legendVals.push(i)
     }
-    const legend_margin: number= this.legendWidth - this.legendPadding
     const boxWidth = this.legendWidth / 4 / legendVals.length
     const legend_BoxHeight = this.legendHeight - this.legendPadding
     d3.select('#heatmapLegend')
