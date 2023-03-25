@@ -46,12 +46,11 @@ import LocalDataHelper from "@/shared/LocalDataHelper";
 import * as d3 from "d3";
 import * as canvas from 'canvas'
 import DataHandler from "@/shared/DataHandler";
-@Component({
-  components: {
-    
-  }
 
+@Component({
+  components: {}
 })
+
 export default class Heatmap extends Vue {
 
   public isFlipped = true
@@ -68,63 +67,6 @@ export default class Heatmap extends Vue {
   public isSwitched!: any;
   @Prop({ required: false, default: true })
   public sortBy!: any;
-  @Watch("sortBy")
-  onSortByChanged(value: boolean, oldValue: boolean) {
-    this.updateHeatmap()
-  }
-  @Watch("isSwitched")
-  onSwitchChanged(value: boolean, oldValue: boolean) {
-    this.updateHeatmap()
-  }
- 
-  changeDataHandler(){
-    this.defineHeatmap()
-  }
-  @Watch("column_width")
-  onColWidthChanged(value: number, oldValue: number) {
-    this.updateHeatmap()
-  }
-
-  parseError(err: any){
-    console.log(err)
-    if (err.toJSON){
-      return err.toJSON().message
-    } else {
-      return  err
-    } 
-  }
-  downloadSVG() {
-    var svg:any = document.querySelector("#innerheatmapSVG");
-    var svg_xml = (new XMLSerializer()).serializeToString(svg),
-    blob = new Blob([svg_xml], {type:'image/svg+xml;charset=utf-8'}),
-    url = window.URL.createObjectURL(blob);
-    var img = new Image();
-    const w = this.oversize
-    const h = this.height
-    img.width = this.oversize;
-    img.height = h;
-    const $this = this
-    img.onload = function(){
-      var canvas:any = document.createElement('canvas');
-      d3.select('canvas').append("text").attr('transform', `translate(${w/2},${$this.margin.top/2})`).text("yyyyyyyyyyyyyyyyyyyyyyyyyy")
-      canvas.width = w;
-      canvas.height = h;
-
-      var ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, w, h);
-      ctx.font = "20px Arial";
-      ctx.fillText($this.DataHandler.protein, w / 2 , $this.margin.top / 2)
-      window.URL.revokeObjectURL(url);
-      var canvasdata = canvas.toDataURL('image/jpeg');
-      var a: any = document.getElementById('imgId');
-      a.download = "export_" + Date.now() + ".jpeg";
-      a.href=canvasdata;
-      a.click()  
-    }
-    img.src = url
-    
-  }
-
   
   customfile: any = null
   scrollDirection: string = "x"
@@ -177,43 +119,100 @@ export default class Heatmap extends Vue {
   };
   x: any = d3.scaleLinear()
     
+  // Watchers that will update heatmap when user changes settings
+  @Watch("sortBy")
+  onSortByChanged(value: boolean, oldValue: boolean) {
+    this.updateHeatmap()
+  }
+  @Watch("isSwitched")
+  onSwitchChanged(value: boolean, oldValue: boolean) {
+    this.updateHeatmap()
+  }
+ 
+  @Watch("column_width")
+  onColWidthChanged(value: number, oldValue: number) {
+    this.updateHeatmap()
+  }
 
+  // If user changes data used in heatmap
+  changeDataHandler(){
+    this.defineHeatmap()
+  }
+
+  parseError(err: any){
+    console.log(err)
+    if (err.toJSON){
+      return err.toJSON().message
+    } else {
+      return  err
+    } 
+  }
+
+  // Export button
+  downloadSVG() {
+    var svg:any = document.querySelector("#innerheatmapSVG");
+    var svg_xml = (new XMLSerializer()).serializeToString(svg),
+    blob = new Blob([svg_xml], {type:'image/svg+xml;charset=utf-8'}),
+    url = window.URL.createObjectURL(blob);
+    var img = new Image();
+    const w = this.oversize
+    const h = this.height
+    img.width = this.oversize;
+    img.height = h;
+    const $this = this
+    img.onload = function(){
+      var canvas:any = document.createElement('canvas');
+      d3.select('canvas').append("text").attr('transform', `translate(${w/2},${$this.margin.top/2})`).text("yyyyyyyyyyyyyyyyyyyyyyyyyy")
+      canvas.width = w;
+      canvas.height = h;
+
+      var ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      ctx.font = "20px Arial";
+      ctx.fillText($this.DataHandler.protein, w / 2 , $this.margin.top / 2)
+      window.URL.revokeObjectURL(url);
+      var canvasdata = canvas.toDataURL('image/jpeg');
+      var a: any = document.getElementById('imgId');
+      a.download = "export_" + Date.now() + ".jpeg";
+      a.href=canvasdata;
+      a.click()  
+    }
+    img.src = url
+    
+  }
+
+  // Vue lifecycle hook
   mounted() {
     if (this.DataHandler.cells){
       this.defineHeatmap()
     }
   }
 
+  // Heatmap initialization, must be called again when user changes the data displayed
   defineHeatmap() {
-    try {
-      this.legendWidth = Math.max(this.$refs.heatmapLegend.clientWidth, this.width);
-      this.width =  Math.max(this.$refs.heatmapDiv.clientWidth, this.width);
-    }catch (err){
-      console.log(err)
-    }
-    this.legendHeight = this.chartHeight / 20
-    this.height = Math.min(this.chartHeight);    
     
+    // Remove heatmap if it already exists
     d3.selectAll("#heatmapSVG").remove()
     d3.select("#overflowDiv").remove()
     d3.selectAll("#heatmapSliderSVG").remove()
     d3.selectAll("#heatmapLegend").selectAll("*").remove()
-    this.makeHeatmap(this.DataHandler.cells)
 
-  }
+    // Create heatmap
+
+    let cells = this.DataHandler.cells
   
-  makeHeatmap(cells: any) {
-    // Get unique positions in order to calculate positions axis
+    // Get unique positions in order to calculate x axis
     const position_max: any = d3.max(cells.map((d:any)=>{
       return d.position 
     }));
     this.position_max = position_max
+    this.position_ranges = [1, position_max]
+
     // Get unique preps in order to calculate y axis
     let preps: any = [...new Set(cells.map((d: any) => d.experiment))];
     this.preps = preps
-    const axisPadding = 10
     
-    this.position_ranges = [1, position_max]
+    // Create x axis
     if (this.scrollDirection == 'x'){
       this.x.domain([0, position_max])
       .range([this.margin.left, this.width * this.column_width - this.margin.right])
@@ -227,6 +226,8 @@ export default class Heatmap extends Vue {
       const maxD = this.x(position_max);
       this.oversize = maxD - minD + this.margin.top + this.margin.bottom;
     }
+
+    // Create heatmap svg
     const heatmapdiv = d3.select("#heatmapDiv")
     const svg = heatmapdiv.append("svg")
       .attr("id", "heatmapSVG")
@@ -239,25 +240,17 @@ export default class Heatmap extends Vue {
     const body = heatmapdiv.append("div").attr("id","overflowDiv")
       .style("overflow-x", "scroll")
       .style("height", this.chartHeight)
-      
-
     const innerSvg = body.append("svg")
-      // .style("fill", "white")
-      // .style("background", "black")
       .attr("id", "innerheatmapSVG")
       .style("display", "block")
-
     if (this.scrollDirection == 'x'){
       innerSvg.attr("height", this.chartHeight)
     } else {
       innerSvg.attr("width", this.width)
     }
-
     const g = innerSvg.append("g").attr("class", "svgG")
     this.g = g
     const $this = this;
-    
-    
     this.xAxisGT = g.append("g")
     .attr("class", "xAxis")
     .attr("id", "xAxisT")
@@ -266,6 +259,15 @@ export default class Heatmap extends Vue {
     
     this.yAxisG = g.append("g").attr("class", "yAxis").attr("id", "yAxis")
           
+    // Create color legend
+    try {
+      this.legendWidth = Math.max(this.$refs.heatmapLegend.clientWidth, this.width);
+      this.width =  Math.max(this.$refs.heatmapDiv.clientWidth, this.width);
+    }catch (err){
+      console.log(err)
+    }
+    this.legendHeight = this.chartHeight / 20
+    this.height = Math.min(this.chartHeight);    
 
     let legendVals = [];
     for (let i = -5; i <= 0; i+=0.25) {
@@ -356,7 +358,7 @@ export default class Heatmap extends Vue {
       .attr("font-size", "0.8em")
       .text("Relative Depth of Mutations")
     
-    //Now make the brushable 
+    // Create heatmap slider
     let contextheight = 70
     this.context = d3.select("#heatmapSlider")
     .append("svg").attr("id", "heatmapSliderSVG")
@@ -430,22 +432,23 @@ export default class Heatmap extends Vue {
       }
       $this.updateHeatmap()
     }
+
     this.updateHeatmap()
   }
 
+  // Heatmap update, should be called when user changes the heatmap settings
   updateHeatmap() {
-    // Add styling to the heatmap blocks
+
     console.log("updating heatmap")
     let scrollAttr: any  = { x: null, y: null, marginA: null, marginB: null }    
-    const g = this.g
     let protein = this.DataHandler.protein
     let organism = this.DataHandler.organism
     const $this = this
     let cells: any = this.DataHandler.cells
     this.position_ranges = this.DataHandler.position_ranges
- 
     this.positions_unique = this.DataHandler.protein_map[organism][protein].split("")
-    // this.positions = [1, this.positions_unique.length]
+ 
+    // Set y axis positions to discordants only if ui box is checked
     if (!this.DataHandler.discordantOnly){
       this.positions = d3.range(1, this.positions_unique.length)
     } else {
@@ -454,13 +457,11 @@ export default class Heatmap extends Vue {
       }))];
       this.positions = positions
     }
+
+    // Set y axis positions to a range if ui slider is set
     const positions_range = d3.extent(this.positions)
-    
     cells = cells.filter((d:any)=>{ return +d.position >= positions_range[0] && +d.position <= positions_range[1]  })
-
     let reference_seq = this.DataHandler.referenceSequence
-
-
     const min = Math.max(this.DataHandler.position_ranges[0], d3.min($this.positions))
     const max = Math.min(this.position_max, d3.max($this.positions))
     this.positions = this.positions.filter((d:any)=>{ return d <= max && d >= min}).sort(function(a, b) {
@@ -500,8 +501,9 @@ export default class Heatmap extends Vue {
       })
     }
     
+    // Set height of cells
     let boxHeight = (this.height - this.margin.top - this.margin.bottom )/ scrollAttr.y.length 
-    this.boxHeight = boxHeight;
+    // Set width of heatmap
     this.x.domain([min, max])
     .range([scrollAttr.marginA, ( scrollAttr.long ) * this.column_width - scrollAttr.marginB])
     const minD = this.x(min);
@@ -511,13 +513,19 @@ export default class Heatmap extends Vue {
       over = maxD - minD + scrollAttr.marginA + scrollAttr.marginB;
     }
     this.oversize = over
+
+    // Set width of cells
     const boxWidth = 
       (over - scrollAttr.marginA - scrollAttr.marginB) / (  this.positions.length > 0 ? scrollAttr[this.scrollDirection].length : 1) -
       this.border;
     this.boxWidth = boxWidth;
+
+    // Set distance between x axis labels
     this.scaleX
       .domain(this.positions)
       .range([scrollAttr.marginA, over - scrollAttr.marginB]);
+
+    // Sort y axis labels by date if not flipped or name if flipped
     if (! this.sortBy){
       try {
         scrollAttr.y = scrollAttr.y.sort((a: any, b:any) => {
@@ -532,6 +540,8 @@ export default class Heatmap extends Vue {
     } else {
       scrollAttr.y = scrollAttr.y.sort()
     }
+
+    // Set distance between y axis labels
     this.scaleY.domain(scrollAttr.y).range(
       scrollAttr['y'].map((d: any, i: number) => {
         const spacing = this.boxHeight / 2;
@@ -540,6 +550,8 @@ export default class Heatmap extends Vue {
     );
     this.yAxis = d3.axisLeft(this.scaleY)
           .ticks(scrollAttr.y.length+1);
+
+    // Set top x axis labels
     this.xAxisT = d3
       .axisTop(this.scaleX)
       .tickSizeOuter(0)
@@ -547,6 +559,8 @@ export default class Heatmap extends Vue {
       .tickFormat((interval:any,i:any) => {
         return i%2 !== 0 ? " ": seen_positions[interval];
       });
+
+    // Set bottom x axis labels
     this.xAxisB = d3
     .axisBottom(this.scaleX)
     .tickSizeOuter(0)
@@ -554,6 +568,8 @@ export default class Heatmap extends Vue {
     .tickFormat((interval:any,i:any) => {
       return i%2 !== 1 ? " ": seen_positions[interval];
     });
+
+    // Add styling to y axis
     let scaleYText: any = d3.select("#yAxis")
           .attr("transform", "translate(" + this.margin.left + "," + (this.boxHeight/2)+ ")")
           .style("stroke-width", 0)
@@ -565,6 +581,7 @@ export default class Heatmap extends Vue {
           .attr('transform', 'rotate(0)')
           .style("font-size", "14px")
     
+    // Add styling to top x axis
     let scaleXTestT: any = d3.select('#xAxisT')
           .attr("transform", "translate(" + (0) + "," + (this.margin.top) + ")")
           .style("fill", null)
@@ -577,6 +594,8 @@ export default class Heatmap extends Vue {
           .attr("transform", "rotate(45)")
           .style("text-anchor", "end")
           .style("font-size", "14px");
+    
+    // Add styling to bottom x axis
     let scaleXTestB: any = d3.select('#xAxisB')
           .attr("transform", "translate(" + (0) + "," + (this.chartHeight - this.margin.bottom) + ")")
           .style("fill", null)
@@ -591,7 +610,7 @@ export default class Heatmap extends Vue {
           .style("text-anchor", "start")
           .style("font-size", "16px");
     
-    
+    // Set x and y axis font size
     try {
       let maxYTick: any = d3.max(scaleXTestB.nodes().map((d:any)=>{
           return d.getBBox().height
@@ -614,10 +633,13 @@ export default class Heatmap extends Vue {
     } catch(err: any){
       console.error(err)
     }
+
     d3.select('#innerheatmapSVG')
     .attr("width", over)
     .style("fill", "white")
-    const blocks = g.selectAll(".block")
+
+    // Cell styling + event handlers
+    this.g.selectAll(".block")
     .data(cells, (d:any, i:any)=>{
         "_"+d.experiment.replaceAll(" ", "_").replaceAll("-", "_") + d.position +d.prep_id+ $this.DataHandler.protein + d.pdb_aa
     })
@@ -661,12 +683,14 @@ export default class Heatmap extends Vue {
           },
           function (update: any) {
             return update
-            .call((update: any)=>update.transition().duration(1000).attr("fill", (d: any) => {
+            .call((update: any) => {
+              update.transition().duration(1000).attr("fill", (d: any) => {
               return $this.calculateColor(d)
+              })
             })
             .attr("transform", (d: any) => {
               let x: any; let y: any
-              if ($this.scrollDirection == 'x'){
+              if ($this.scrollDirection == 'x') {
                 y = $this.scaleY(d.experiment);
                 x = $this.scaleX(d.position);
               } else {
@@ -676,13 +700,13 @@ export default class Heatmap extends Vue {
               return "translate(" + x + "," + y + ")";
             })
             .attr("width", $this.boxWidth )
-            )            
           },
           function (exit: any) {
             return exit.remove()
           }
-        )
-  }
+        )}
+
+  // Called when user mouses over a heatmap cell
   highlightCell(event: any, u: any){
     const $this = this
     d3.select(
@@ -727,6 +751,8 @@ export default class Heatmap extends Vue {
         return d
       })
   }
+
+  // Called when user's mouse leaves a heatmap cell
   unHighlight(event: any, u: any){
     const $this = this
     d3.select(
@@ -740,6 +766,8 @@ export default class Heatmap extends Vue {
     this.unfocusColumn(u.position)
     d3.select("#tooltipHeatmap").style("opacity", "0");
   }
+
+  // Called when user's mouse enters a heatmap column
   focusColumn(position: any, focus: boolean){
     let scaleXpost: any = this.scaleX(position)
     let listScales: any[] = [scaleXpost, scaleXpost + this.boxWidth] 
@@ -761,6 +789,8 @@ export default class Heatmap extends Vue {
       }
     }
   }
+
+  // Called when user's mouse leaves a heatmap column
   unfocusColumn(position:number){
     d3.selectAll(".focus").remove()
   }
@@ -778,6 +808,7 @@ export default class Heatmap extends Vue {
     return color
   }
 
+  // Helper function for calculateColor
   getFrac(d:any){
     const log_scale = 4
     // const max = d.max
@@ -788,6 +819,7 @@ export default class Heatmap extends Vue {
       return 0.9999999
     }
   }
+
   // pretty close to exactly Tom's color code
   calculateColor(d: any) {
 
