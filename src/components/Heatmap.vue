@@ -1,12 +1,13 @@
 <template>
   <div style="width: 100%; ">    
     <b-row>
-      <b-col class="col-lg-12 pb-1">
+      <b-col class="col-lg-12 pb-1 d-flex">
         <div v-if="!DataHandler || DataHandler.cells.length < 1">
           <hr>
           <strong class="text-danger" >No data available</strong>
         </div>
-        <div  id="heatmapDiv" ref="heatmapDiv">
+        <div id="heatmapLabels" ref="heatmapLabels"></div>
+        <div id="heatmapDiv" ref="heatmapDiv"  class="d-flex overflow-auto">
           <div class="tooltip"  id="tooltipHeatmap" style="opacity: 0; font-size: 16px; display:block">
             <div  id="tooltipcontent"></div>
             <b-table  striped hover :items="tooltiptable"
@@ -114,10 +115,11 @@ export default class Heatmap extends Vue {
   margin = {
     top: 0.13 * this.chartHeight,
     bottom: 0.095 * this.chartHeight,
-    left: 0.2 * this.width,
-    right: 0.05 * this.width,
+    left: 0.02 * this.width,
+    right: 0.02 * this.width,
   };
   x: any = d3.scaleLinear()
+  labelPaddingLeft: number = 15; // Bootstrap columns add 15px of padding which must be accounted for in yAxis transforms
     
   // Watchers that will update heatmap when user changes settings
   @Watch("sortBy")
@@ -196,6 +198,7 @@ export default class Heatmap extends Vue {
     d3.select("#overflowDiv").remove()
     d3.selectAll("#heatmapSliderSVG").remove()
     d3.selectAll("#heatmapLegend").selectAll("*").remove()
+    d3.select("#labelsSVG").remove()
 
     // Create heatmap
 
@@ -257,7 +260,16 @@ export default class Heatmap extends Vue {
     this.xAxisGB = g.append("g").attr("class", "xAxis")
     .attr("id", "xAxisB")
     
-    this.yAxisG = g.append("g").attr("class", "yAxis").attr("id", "yAxis")
+    // Create labels svg
+    const labelsDiv = d3.select("#heatmapLabels")
+    const labelsSVG =labelsDiv.append("svg")
+      .attr("id", "labelsSVG")
+      .attr("ref", "labelsSVG")
+      .style("pointer-events", "none")
+      .style("z-index", 1)
+      .style("height", "100%")
+    const labelsG = labelsSVG.append("g").attr("class", "svgG")
+    this.yAxisG = labelsG.append("g").attr("class", "yAxis").attr("id", "yAxis")
           
     // Create color legend
     try {
@@ -448,7 +460,7 @@ export default class Heatmap extends Vue {
     this.position_ranges = this.DataHandler.position_ranges
     this.positions_unique = this.DataHandler.protein_map[organism][protein].split("")
  
-    // Set y axis positions to discordants only if ui box is checked
+    // Set x axis positions to discordants only if ui box is checked
     if (!this.DataHandler.discordantOnly){
       this.positions = d3.range(1, this.positions_unique.length)
     } else {
@@ -458,7 +470,7 @@ export default class Heatmap extends Vue {
       this.positions = positions
     }
 
-    // Set y axis positions to a range if ui slider is set
+    // Set x axis positions to a range if ui slider is set
     const positions_range = d3.extent(this.positions)
     cells = cells.filter((d:any)=>{ return +d.position >= positions_range[0] && +d.position <= positions_range[1]  })
     let reference_seq = this.DataHandler.referenceSequence
@@ -571,13 +583,13 @@ export default class Heatmap extends Vue {
 
     // Add styling to y axis
     let scaleYText: any = d3.select("#yAxis")
-          .attr("transform", "translate(" + this.margin.left + "," + (this.boxHeight/2)+ ")")
+          .attr("transform", "translate(" + this.labelPaddingLeft + "," + (this.boxHeight/2)+ ")")
           .style("stroke-width", 0)
           .call(this.yAxis)
           .call(g => g.select(".domain").remove())
           .selectAll('text')
           .classed("scaleYText", true)
-          .style('text-anchor', 'end')
+          .style('text-anchor', 'start')
           .attr('transform', 'rotate(0)')
           .style("font-size", "14px")
     
@@ -634,6 +646,10 @@ export default class Heatmap extends Vue {
       console.error(err)
     }
 
+    // Set container of y axis to be width of svg
+    const scaleYTextWidth = scaleYText.node().getBBox().width + this.labelPaddingLeft
+    d3.select("#labelsSVG").attr("viewBox", `0 0 ${scaleYTextWidth} ${this.chartHeight}`)
+    
     d3.select('#innerheatmapSVG')
     .attr("width", over)
     .style("fill", "white")
