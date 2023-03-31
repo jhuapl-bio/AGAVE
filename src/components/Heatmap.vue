@@ -79,7 +79,8 @@ export default class Heatmap extends Vue {
   showMenu = false;
   msg = "Hello";
   tooltiptable: any = [];
-  height = 900;
+  height = 0;
+  maxHeight = 900;
   boxHeight = 0;
   width = 900;
   boxWidth = 0;
@@ -106,8 +107,8 @@ export default class Heatmap extends Vue {
   positions_unique: any[] = [];
   positions: any[] = [];
   preps: any  = null;
-  containerHeight = 800;
-  chartHeight = Math.min(this.containerHeight * 1);
+  defaultChartHeight = 800;
+  chartHeight = this.defaultChartHeight;
   legendWidth = 0;
   legendHeight = 0;
   legendPadding = 15;
@@ -130,7 +131,7 @@ export default class Heatmap extends Vue {
   onSwitchChanged(value: boolean, oldValue: boolean) {
     this.updateHeatmap()
   }
- 
+
   @Watch("column_width")
   onColWidthChanged(value: number, oldValue: number) {
     this.updateHeatmap()
@@ -203,7 +204,7 @@ export default class Heatmap extends Vue {
     // Create heatmap
 
     let cells = this.DataHandler.cells
-  
+
     // Get unique positions in order to calculate x axis
     const position_max: any = d3.max(cells.map((d:any)=>{
       return d.position 
@@ -214,6 +215,21 @@ export default class Heatmap extends Vue {
     // Get unique preps in order to calculate y axis
     let preps: any = [...new Set(cells.map((d: any) => d.experiment))];
     this.preps = preps
+
+    // Set height of cells assuming that the height will be the default
+    let boxHeight = (this.defaultChartHeight - this.margin.top - this.margin.bottom ) / this.preps.length 
+    // this.boxHeight = boxHeight;
+    let maxBoxHeight = 50
+    this.boxHeight = Math.min(boxHeight, maxBoxHeight);
+
+    // Reduce height of heatmap if cells will not fill its whole height
+    if (this.boxHeight === maxBoxHeight) {
+      this.height = this.margin.top + this.margin.bottom + (maxBoxHeight * this.preps.length)
+      this.chartHeight = this.margin.top + this.margin.bottom + (maxBoxHeight * this.preps.length)
+    } else {
+      this.height = this.maxHeight
+      this.chartHeight = this.defaultChartHeight
+    }
     
     // Create x axis
     if (this.scrollDirection == 'x'){
@@ -259,7 +275,7 @@ export default class Heatmap extends Vue {
     .attr("id", "xAxisT")
     this.xAxisGB = g.append("g").attr("class", "xAxis")
     .attr("id", "xAxisB")
-    
+
     // Create labels svg
     const labelsDiv = d3.select("#heatmapLabels")
     const labelsSVG =labelsDiv.append("svg")
@@ -278,7 +294,7 @@ export default class Heatmap extends Vue {
     }catch (err){
       console.log(err)
     }
-    this.legendHeight = this.chartHeight / 20
+    this.legendHeight = this.defaultChartHeight / 20
     this.height = Math.min(this.chartHeight);    
 
     let legendVals = [];
@@ -380,7 +396,7 @@ export default class Heatmap extends Vue {
     .attr("transform", `translate(${0},${0})`)
     let scaleX = d3.scaleLinear().domain([0, position_max])
     .range([0, this.width])
-    let boxHeight = contextheight / preps.length
+    let sliderBoxHeight = contextheight / preps.length
     let scaleY = d3.scaleOrdinal().domain(preps)
     .range(preps.map((d: any, i: number) => {
         const spacing = boxHeight / 2;
@@ -399,7 +415,7 @@ export default class Heatmap extends Vue {
              
         .style("cursor", "pointer")
         .attr("width", $this.width / position_max )
-        .attr("height",  boxHeight )
+        .attr("height",  sliderBoxHeight )
         .attr("fill", (d: any) => {
           return $this.calculateColor(d)
         })
@@ -499,7 +515,7 @@ export default class Heatmap extends Vue {
       if (!this.isSwitched){
         seen_positions[cell.position] = `${cell.consensus_aa}.${cell.position}`
       } else {
-        if (reference_seq){
+        if (reference_seq[cell.position]){
           cell.pdb_aa =`${reference_seq[cell.position]}`
         } else {
           seen_positions[cell.position] = `Unmapped.${cell.position}`
@@ -512,9 +528,7 @@ export default class Heatmap extends Vue {
         seen_positions[index] = `${reference_seq[index]}.${index}`
       })
     }
-    
-    // Set height of cells
-    let boxHeight = (this.height - this.margin.top - this.margin.bottom )/ scrollAttr.y.length 
+
     // Set width of heatmap
     this.x.domain([min, max])
     .range([scrollAttr.marginA, ( scrollAttr.long ) * this.column_width - scrollAttr.marginB])
@@ -592,7 +606,7 @@ export default class Heatmap extends Vue {
           .style('text-anchor', 'start')
           .attr('transform', 'rotate(0)')
           .style("font-size", "14px")
-    
+
     // Add styling to top x axis
     let scaleXTestT: any = d3.select('#xAxisT')
           .attr("transform", "translate(" + (0) + "," + (this.margin.top) + ")")
@@ -631,7 +645,7 @@ export default class Heatmap extends Vue {
       let scaleyMax: any = d3.max(scaleYText.nodes().map((d:any)=>{
           return d.getBBox().height
       }))
-      scaleYText.style("font-size", Math.min(scaleyMax, boxHeight))
+      scaleYText.style("font-size", Math.min(scaleyMax, this.boxHeight))
       let maxXTick: any = d3.max(scaleXTestB.nodes().map((d:any)=>{
         
           return d.getBBox().width
@@ -701,7 +715,7 @@ export default class Heatmap extends Vue {
             return update
             .call((update: any) => {
               update.transition().duration(1000).attr("fill", (d: any) => {
-              return $this.calculateColor(d)
+                return $this.calculateColor(d)
               })
             })
             .attr("transform", (d: any) => {
