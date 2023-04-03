@@ -116,7 +116,7 @@ export default class Heatmap extends Vue {
   margin = {
     top: 0.13 * this.chartHeight,
     bottom: 0.095 * this.chartHeight,
-    left: 0.02 * this.width,
+    left: 0.05 * this.width,
     right: 0.02 * this.width,
   };
   x: any = d3.scaleLinear()
@@ -399,8 +399,7 @@ export default class Heatmap extends Vue {
     let sliderBoxHeight = contextheight / preps.length
     let scaleY = d3.scaleOrdinal().domain(preps)
     .range(preps.map((d: any, i: number) => {
-        const spacing = boxHeight / 2;
-        return (i * boxHeight ) ;
+        return (i*sliderBoxHeight) ;
       })
     );    
     let subBars = this.context.selectAll(".subBar").data(this.DataHandler.cells)
