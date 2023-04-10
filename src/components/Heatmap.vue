@@ -219,7 +219,7 @@ export default class Heatmap extends Vue {
     // Set height of cells assuming that the height will be the default
     let boxHeight = (this.defaultChartHeight - this.margin.top - this.margin.bottom ) / this.preps.length 
     // this.boxHeight = boxHeight;
-    let maxBoxHeight = 50
+    let maxBoxHeight = 30
     this.boxHeight = Math.min(boxHeight, maxBoxHeight);
 
     // Reduce height of heatmap if cells will not fill its whole height
@@ -569,7 +569,6 @@ export default class Heatmap extends Vue {
     // Set distance between y axis labels
     this.scaleY.domain(scrollAttr.y).range(
       scrollAttr['y'].map((d: any, i: number) => {
-        const spacing = this.boxHeight / 2;
         return (i * this.boxHeight ) + this.margin.top;
       })
     );
@@ -661,7 +660,7 @@ export default class Heatmap extends Vue {
 
     // Set container of y axis to be width of svg
     const scaleYTextWidth = scaleYText.node().getBBox().width + this.labelPaddingLeft
-    d3.select("#labelsSVG").attr("viewBox", `0 0 ${scaleYTextWidth} ${this.chartHeight}`)
+    d3.select("#labelsSVG").attr("viewBox", `0 0 ${scaleYTextWidth} ${this.$refs.heatmapDiv.clientHeight}`)
     
     d3.select('#innerheatmapSVG')
     .attr("width", over)
