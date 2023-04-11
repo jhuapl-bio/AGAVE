@@ -55,7 +55,7 @@ export default class BindingSites extends Vue {
   containerHeight = 300;
   chartHeight = this.containerHeight
   width = 0
-  localPosition = 1
+  localPosition = this.DataHandler.position_min
   margin: any = {
     top: 0.045 * this.chartHeight,
     bottom: 0.45 * this.chartHeight,
