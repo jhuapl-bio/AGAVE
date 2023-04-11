@@ -24,8 +24,20 @@
           @changePosition="changePosition"
         >
         </Heatmap>
+        <div class="col-lg-12">
+          <hr class="solid">
+        </div>
+        <div class="pt-4">
+          <h3 class="title">Stacked Bar Chart</h3>
+          <h5 class="subtitle">Click a column in the heatmap to visualize its diversity</h5>
+          <BarPlot 
+            ref="barplot"
+            v-if="DataHandler.cells"
+            :DataHandler="DataHandler">
+          </BarPlot>
+        </div>
       </div>
-       <b-col class="col-lg-4 pb-1 big-top-margin">
+       <b-col class="col-lg-4 pb-1">
         <MoleculeViewer 
           :pdb=pdb
           :position=position
@@ -34,18 +46,6 @@
           @changeReferenceSequence="changeReferenceSequence"
           >
         </MoleculeViewer>
-      </b-col>
-      <div class="col-lg-12">
-        <hr class="solid">
-      </div>
-      <b-col class="col-lg-8 pb-1">
-        <h3 class="title">Stacked Bar Chart</h3>
-        <h5 class="subtitle">Click a column in the heatmap to visualize its diversity</h5>
-        <BarPlot 
-          ref="barplot"
-          v-if="DataHandler.cells"
-          :DataHandler="DataHandler">
-        </BarPlot>
       </b-col>
       <canvas id="mycanvas"></canvas>
     </b-row>
@@ -82,7 +82,7 @@ export default class Visualization extends Vue {
   public referenceSequence: any[] = [];
   private localDataHelper = new LocalDataHelper();
   public switchedViewer = true
-  private DataHandler = new DataHandler()
+  public DataHandler = new DataHandler()
   $refs!: {
     heatmap: any;
     barplot: any;
@@ -116,7 +116,7 @@ export default class Visualization extends Vue {
     this.DataHandler.updateCells()
     this.sliderUpdate({target: "DataHandler", value: this.DataHandler})
   }  
-  
+
 }
 
 </script>
