@@ -3,7 +3,9 @@
       <b-col lg="12">
         <h3 class="title">Settings</h3>
         <VisualizationOptions 
-           @sliderUpdate="sliderUpdate"/>
+           @sliderUpdate="sliderUpdate"
+           :column_width=column_width
+           />
          
       </b-col>
      <div class="col-lg-12">
@@ -16,7 +18,7 @@
       <div class="col-lg-8 pr-5" v-if="DataHandler.cells && DataHandler.cells.length >= 0">      
         <Heatmap 
           ref="heatmap"
-          :column_width=column_width 
+          :column_width.sync=column_width 
           :DataHandler=DataHandler
           :isSwitched=isSwitched  
           :sortBy=sortBy      

@@ -222,6 +222,9 @@ export default class Heatmap extends Vue {
     let maxBoxHeight = 30
     this.boxHeight = Math.min(boxHeight, maxBoxHeight);
 
+    this.boxWidth = maxBoxHeight
+    this.$emit('update:column_width', maxBoxHeight)
+
     // Reduce height of heatmap if cells will not fill its whole height
     if (this.boxHeight === maxBoxHeight) {
       this.height = this.margin.top + this.margin.bottom + (maxBoxHeight * this.preps.length)

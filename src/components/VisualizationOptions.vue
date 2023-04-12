@@ -82,7 +82,7 @@
           <!-- <b-numberinput v-model="frequency_threshold" :step=".05" :min="0" :max="1.0" controls-position="compact"></b-numberinput> -->
         <!-- </b-field> -->
         <b-field label="Column Width" class="column is-narrow">
-          <b-numberinput v-model="column_width" :step="1" :min="1" :max="100000" controls-position="compact"></b-numberinput>
+          <b-numberinput :value="column_width" :step="1" :min="1" :max="100000" controls-position="compact" @input="onColWidthChanged($event)"></b-numberinput>
         </b-field>
         <b-field label="Position Ranges" class="column is-2">
           <b-slider v-model="DataHandler.position_ranges" y :min="1" :max="DataHandler.position_max" @change="emitChange($event, { full: false, target: 'position_ranges' })" :step="1" ticks></b-slider>
@@ -130,7 +130,6 @@ export default class VisualizationOptions extends Vue {
   // Variables to track the input values
   public depth_threshold = 0
   public frequency_threshold = 0.2
-  public column_width = 9
   public data:any = null
   public cells: any = null
   public customfile: any = null
@@ -147,11 +146,13 @@ export default class VisualizationOptions extends Vue {
   position_max: any =1
   position_ranges: any = [this.minrange,this.maxrange]
   fetching_information = false
-
+ 
   @Prop({ required: false, default: null })
   public referenceSequence!: any;
-    
-  private DataHandler = new DataHandler()
+  @Prop({ required: false})
+  public column_width!: number;
+
+  public DataHandler = new DataHandler()
 
   activeTab = 0
 
@@ -191,8 +192,7 @@ export default class VisualizationOptions extends Vue {
     let text = reader.readAsText(value) // you could also read images and other binaries
   }
 
-  @Watch('column_width')
-  onColWidthChanged(value: number, oldValue: number) {
+  onColWidthChanged(value: number) {
     this.$emit('sliderUpdate', {value: value, target: 'column_width'})
   }
 
