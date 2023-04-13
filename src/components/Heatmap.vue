@@ -83,7 +83,6 @@ export default class Heatmap extends Vue {
   maxHeight = 900;
   boxHeight = 0;
   width = 900;
-  boxWidth = 0;
   oversize: number = 0;
   border = 0;
   svgs = {};
@@ -221,6 +220,8 @@ export default class Heatmap extends Vue {
     // this.boxHeight = boxHeight;
     let maxBoxHeight = 30
     this.boxHeight = Math.min(boxHeight, maxBoxHeight);
+
+    this.$emit('update:column_width', this.boxHeight)
 
     // Reduce height of heatmap if cells will not fill its whole height
     if (this.boxHeight === maxBoxHeight) {
@@ -529,26 +530,13 @@ export default class Heatmap extends Vue {
     }
 
     // Set width of heatmap
-    this.x.domain([min, max])
-    .range([scrollAttr.marginA, ( scrollAttr.long ) * this.column_width - scrollAttr.marginB])
-    const minD = this.x(min);
-    const maxD = this.x(max);
-    let over = this.width
-    if (this.positions.length  > 20){
-      over = maxD - minD + scrollAttr.marginA + scrollAttr.marginB;
-    }
-    this.oversize = over
+    this.oversize = this.positions.length * this.column_width + scrollAttr.marginA + scrollAttr.marginB
 
-    // Set width of cells
-    const boxWidth = 
-      (over - scrollAttr.marginA - scrollAttr.marginB) / (  this.positions.length > 0 ? scrollAttr[this.scrollDirection].length : 1) -
-      this.border;
-    this.boxWidth = boxWidth;
 
     // Set distance between x axis labels
     this.scaleX
       .domain(this.positions)
-      .range([scrollAttr.marginA, over - scrollAttr.marginB]);
+      .range([scrollAttr.marginA, this.oversize - scrollAttr.marginB]);
 
     // Sort y axis labels by date if not flipped or name if flipped
     if (! this.sortBy){
@@ -649,9 +637,9 @@ export default class Heatmap extends Vue {
           return d.getBBox().width
         })
       )
-      if (maxXTick > boxWidth){
-        scaleXTestB.style("font-size", Math.min(14, maxXTick, boxWidth))
-        scaleXTestT.style("font-size", Math.min(14, maxXTick, boxWidth))
+      if (maxXTick > this.column_width){
+        scaleXTestB.style("font-size", Math.min(14, maxXTick, this.column_width))
+        scaleXTestT.style("font-size", Math.min(14, maxXTick, this.column_width))
       }  
       
     } catch(err: any){
@@ -663,7 +651,7 @@ export default class Heatmap extends Vue {
     d3.select("#labelsSVG").attr("viewBox", `0 0 ${scaleYTextWidth} ${this.$refs.heatmapDiv.clientHeight}`)
     
     d3.select('#innerheatmapSVG')
-    .attr("width", over)
+    .attr("width", this.oversize)
     .style("fill", "white")
 
     // Cell styling + event handlers
@@ -696,7 +684,7 @@ export default class Heatmap extends Vue {
               })
               .attr("class", "block")
               .style("cursor", "pointer")
-              .attr("width", $this.boxWidth )
+              .attr("width", $this.column_width )
               .attr("height", $this.boxHeight)
               .on("click", (d:any, u:any)=>{
                 $this.DataHandler.selectedPosition = u.position
@@ -727,7 +715,7 @@ export default class Heatmap extends Vue {
               }
               return "translate(" + x + "," + y + ")";
             })
-            .attr("width", $this.boxWidth )
+            .attr("width", $this.column_width )
           },
           function (exit: any) {
             return exit.remove()
@@ -798,7 +786,7 @@ export default class Heatmap extends Vue {
   // Called when user's mouse enters a heatmap column
   focusColumn(position: any, focus: boolean){
     let scaleXpost: any = this.scaleX(position)
-    let listScales: any[] = [scaleXpost, scaleXpost + this.boxWidth] 
+    let listScales: any[] = [scaleXpost, scaleXpost + this.column_width] 
     d3.selectAll(".focus").remove()
     let minMax: any[] = d3.extent(this.scaleY.range())
     this.g.selectAll(".focus").data(listScales).enter().append("line")
