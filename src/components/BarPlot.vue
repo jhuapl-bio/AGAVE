@@ -65,6 +65,10 @@ export default class BindingSites extends Vue {
   oversize: any  = 0
   public scales = ['Linear', 'Sqrt', 'Log']
   public selected_scale = this.scales[0]
+  colors: string[] = ['#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe', '#008080', '#e6beff', '#9a6324', '#fffac8', '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080', 'red', '#000']
+  aas: string[]  = ["M", "K", "A", "I", "L", "V", "Y", "T", "F", "N", "D", "C", "G", "H", "S", "E", "P", "W", "R", "Q"]
+
+
   downloadSVG(evt:any) {
     var svg:any = document.querySelector("#innerheatmapSVGBarPlot");
     var svg_xml = (new XMLSerializer()).serializeToString(svg),
@@ -106,6 +110,31 @@ export default class BindingSites extends Vue {
     const $this = this
     d3.select("#barPlotDiv").selectAll("*").remove()
     d3.select('#barPlotLegend').selectAll("*").remove()
+
+    let preps: any = [...new Set(this.DataHandler.cells.map((d: any) => d.experiment))];
+    // let aas: any = [...new Set(this.DataHandler.cells.map((d: any) => d.aa))];
+    let data: any[] = d3.filter(this.DataHandler.cells, (d: any)=>{
+      return d.position == $this.localPosition
+    })
+    .map((d:any)=>{
+      let r: any = {prep: d.experiment}
+      d.unique.map((f:any)=>{
+        r[f.aa] = +f.proportion
+      })
+      this.aas.forEach((aa:any)=>{
+        if (! (aa in r ) ){
+          r[aa] = 0
+        }
+      })
+      return r
+    })
+    
+    let boxDim: any = (this.width - this.margin.right - this.margin.left) / preps.length
+    const minBoxWidth = 15
+    boxDim = Math.max(boxDim, minBoxWidth)
+    let chartWidth = boxDim * preps.length
+    this.width = chartWidth + this.margin.right + this.margin.left
+    this.chartHeight = this.containerHeight - this.margin.top - this.margin.bottom
     
     const barplotDiv = d3.select("#barPlotDiv")
     
@@ -136,31 +165,9 @@ export default class BindingSites extends Vue {
 
       
     let svgG: any = innerSvg.append("g").attr("id", "svgG")
-    let colors: string[] = ['#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe', '#008080', '#e6beff', '#9a6324', '#fffac8', '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080', 'red', '#000']
-    let aas: string[]  = ["M", "K", "A", "I", "L", "V", "Y", "T", "F", "N", "D", "C", "G", "H", "S", "E", "P", "W", "R", "Q"]
+    // let colors: string[] = ['#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe', '#008080', '#e6beff', '#9a6324', '#fffac8', '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080', 'red', '#000']
+    // let aas: string[]  = ["M", "K", "A", "I", "L", "V", "Y", "T", "F", "N", "D", "C", "G", "H", "S", "E", "P", "W", "R", "Q"]
     
-    let preps: any = [...new Set(this.DataHandler.cells.map((d: any) => d.experiment))];
-    // let aas: any = [...new Set(this.DataHandler.cells.map((d: any) => d.aa))];
-    let data: any[] = d3.filter(this.DataHandler.cells, (d: any)=>{
-      return d.position == $this.localPosition
-    })
-    .map((d:any)=>{
-      let r: any = {prep: d.experiment}
-      d.unique.map((f:any)=>{
-        r[f.aa] = +f.proportion
-      })
-      aas.forEach((aa:any)=>{
-        if (! (aa in r ) ){
-          r[aa] = 0
-        }
-      })
-      return r
-    })
-    
-    
-    let chartWidth = this.width - this.margin.right
-    let boxDim: any = (chartWidth - this.margin.left) / preps.length
-    this.chartHeight = this.containerHeight - this.margin.top - this.margin.bottom
     let scaleX: any = d3.scaleBand().domain(preps)
     .range([this.margin.left, chartWidth ])
     
@@ -177,7 +184,7 @@ export default class BindingSites extends Vue {
       .range([this.chartHeight, this.margin.top ])
     }
       
-    let scaleColor: any = d3.scaleOrdinal().domain(colors).range(colors);
+    let scaleColor: any = d3.scaleOrdinal().domain(this.colors).range(this.colors);
     
     let xAxisB: any = d3
       .axisBottom(scaleX)
@@ -210,7 +217,7 @@ export default class BindingSites extends Vue {
     .style("stroke-width", 0.2)
     .call(yAxisB)
 
-    let stacks: any = d3.stack().keys(aas)
+    let stacks: any = d3.stack().keys(this.aas)
     (data)
     .map((d:any)=>{
       d.forEach((v:any)=>{
@@ -265,7 +272,7 @@ export default class BindingSites extends Vue {
     }
     legendHeight  = legendHeight - legendMargin.top - legendMargin.bottom
     let legendBoxHeight: number = legendHeight * 0.5  
-    let legendBox: number = legendWidth  / aas.length
+    let legendBox: number = legendWidth  / this.aas.length
 
     let g: any = d3.select("#barPlotLegend")
     .append("svg")
@@ -274,11 +281,11 @@ export default class BindingSites extends Vue {
     .append("g")
 
 
-    scaleX = d3.scaleBand().domain(aas)
+    scaleX = d3.scaleBand().domain(this.aas)
     .range([0, legendWidth  ])
     
     g.selectAll(".posBarLegRect")
-    .data(aas)
+    .data(this.aas)
     .enter()
     .append("rect")
     .attr("transform", (d:any) =>{
@@ -332,7 +339,6 @@ export default class BindingSites extends Vue {
     this.width = this.$refs.barPlotDiv.clientWidth
     this.margin.right= 0.05 * this.width
     this.margin.left  = 0.1 * this.width
-    this.width = this.width * 2
     
     this.makeBarPlot()
   }
