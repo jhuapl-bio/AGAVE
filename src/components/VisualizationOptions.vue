@@ -16,10 +16,6 @@
       </b-col>
       <b-col sm="2">
           <b-field :label="(isDataSwitched ? 'Default Data' : 'Custom')" class="column is-narrow">
-            <!-- <b-switch :disabled="true" v-model="isDataSwitched" 
-            >
-              {{ ( isDataSwitched ? 'Sample' : 'Custom' ) }}
-            </b-switch> -->
             <b-select 
               placeholder="Data" 
               v-model="DataHandler.experiment"
@@ -92,10 +88,12 @@
             {{ ( sortBy ? 'Name' : 'Time' ) }}
           </b-switch>
         </b-field>
-        <b-field label="Axis labels" class="column is-narrow">
-          <b-switch v-model="isSwitched" >
-            {{ ( !isSwitched ? 'Consensus' : 'PDB Reference' ) }}
-          </b-switch>
+        <b-field label="Amino Acid Labels" class="column is-narrow">
+            <b-select :value="amino_acid_label_option" @input="onAminoAcidLabelChanged($event)">
+              <option v-for="option in amino_acid_label_options" :value="option" :key="option">
+                {{ option }}
+              </option>
+            </b-select>
         </b-field>
       </div>
     </b-tab>
@@ -138,7 +136,6 @@ export default class VisualizationOptions extends Vue {
   public proteins: Array<string> = []
   public group: any[] = []
   public groups: Array<any> = []
-  public isSwitched: boolean = true
   public isDataSwitched: boolean = true
   public sortBy: boolean = true
   minrange: number = 1
@@ -151,15 +148,15 @@ export default class VisualizationOptions extends Vue {
   public referenceSequence!: any;
   @Prop({ required: false})
   public column_width!: number;
+  @Prop({ required: false})
+  public amino_acid_label_option!: string;
 
   public DataHandler = new DataHandler()
 
+  amino_acid_label_options = ["None", "Consensus amino acids", "Reference amino acids"]
+
   activeTab = 0
 
-  @Watch("isSwitched")
-  onSwitchedChange(value: boolean, oldValue: boolean) {
-    this.$emit('sliderUpdate', {value: value, target: 'isSwitched'})
-  }
   @Watch("isDataSwitched")
   onSwitchedChangeDataType(value: boolean, oldValue: boolean) {
     this.emitChange(value, { full: true, target: 'data_type_selected' })
@@ -194,6 +191,10 @@ export default class VisualizationOptions extends Vue {
 
   onColWidthChanged(value: number) {
     this.$emit('sliderUpdate', {value: value, target: 'column_width'})
+  }
+
+  onAminoAcidLabelChanged(value: string) {
+    this.$emit('sliderUpdate', {value: value, target: 'amino_acid_label_option'})
   }
 
   @Watch('depth_threshold')

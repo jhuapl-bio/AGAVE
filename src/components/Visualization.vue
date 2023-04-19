@@ -5,6 +5,7 @@
         <VisualizationOptions 
            @sliderUpdate="sliderUpdate"
            :column_width=column_width
+           :amino_acid_label_option=amino_acid_label_option
            />
          
       </b-col>
@@ -20,9 +21,8 @@
           ref="heatmap"
           :column_width.sync=column_width 
           :DataHandler=DataHandler
-          :isSwitched=isSwitched  
           :sortBy=sortBy      
-          
+          :amino_acid_label_option=amino_acid_label_option
           @changePosition="changePosition"
         >
         </Heatmap>
@@ -79,12 +79,13 @@ export default class Visualization extends Vue {
   public cells:any = null
   public group: any[] = []
   public customfile: any = null
-  public isSwitched: boolean = true
   public sortBy: boolean = true
   public referenceSequence: any[] = [];
   private localDataHelper = new LocalDataHelper();
   public switchedViewer = true
   public DataHandler = new DataHandler()
+  public amino_acid_label_option = "None"
+  
   $refs!: {
     heatmap: any;
     barplot: any;

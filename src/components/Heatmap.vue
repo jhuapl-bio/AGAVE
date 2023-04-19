@@ -65,9 +65,9 @@ export default class Heatmap extends Vue {
   @Prop({ required: true, default: null })
   public DataHandler!: DataHandler;
   @Prop({ required: false, default: true })
-  public isSwitched!: any;
-  @Prop({ required: false, default: true })
   public sortBy!: any;
+  @Prop({ required: false, default: true })
+  public amino_acid_label_option!: any;
   
   customfile: any = null
   scrollDirection: string = "x"
@@ -113,9 +113,9 @@ export default class Heatmap extends Vue {
   legendPadding = 15;
   svg:any = null
   margin = {
-    top: 0.13 * this.chartHeight,
-    bottom: 0.095 * this.chartHeight,
-    left: 0.05 * this.width,
+    top: 0.075 * this.chartHeight,
+    bottom: 0.075 * this.chartHeight,
+    left: 0.02 * this.width,
     right: 0.02 * this.width,
   };
   x: any = d3.scaleLinear()
@@ -126,13 +126,12 @@ export default class Heatmap extends Vue {
   onSortByChanged(value: boolean, oldValue: boolean) {
     this.updateHeatmap()
   }
-  @Watch("isSwitched")
-  onSwitchChanged(value: boolean, oldValue: boolean) {
-    this.updateHeatmap()
-  }
-
   @Watch("column_width")
   onColWidthChanged(value: number, oldValue: number) {
+    this.updateHeatmap()
+  }
+  @Watch("amino_acid_label_option")
+  onAminoAcidLabelOptionChanged(value: number, oldValue: number) {
     this.updateHeatmap()
   }
 
@@ -192,7 +191,7 @@ export default class Heatmap extends Vue {
 
   // Heatmap initialization, must be called again when user changes the data displayed
   defineHeatmap() {
-    
+
     // Remove heatmap if it already exists
     d3.selectAll("#heatmapSVG").remove()
     d3.select("#overflowDiv").remove()
@@ -512,20 +511,16 @@ export default class Heatmap extends Vue {
     }
     let seen_positions: any = {}
     cells.forEach((cell:any, i:number)=>{
-      if (!this.isSwitched){
-        seen_positions[cell.position] = `${cell.consensus_aa}.${cell.position}`
+      seen_positions[cell.position] = `${cell.position}`
+      if (reference_seq[cell.position]){
+        cell.pdb_aa =`${reference_seq[cell.position]}`
       } else {
-        if (reference_seq[cell.position]){
-          cell.pdb_aa =`${reference_seq[cell.position]}`
-        } else {
-          seen_positions[cell.position] = `Unmapped.${cell.position}`
-          cell.pdb_aa =`Unmapped`
-        }
+        cell.pdb_aa =`Unmapped`
       }
     })
     if (reference_seq) {
       Object.keys(reference_seq).forEach((index: any) => {
-        seen_positions[index] = `${reference_seq[index]}.${index}`
+        seen_positions[index] = `${index}`
       })
     }
 
@@ -661,7 +656,7 @@ export default class Heatmap extends Vue {
     })
     .join(
       function (enter: any) {
-            return enter
+            enter
               .append("rect")
               .attr("id", (d: any) => {
                 return (
@@ -696,6 +691,21 @@ export default class Heatmap extends Vue {
               .on("mouseleave", (d: any, u: any) => {
                 $this.unHighlight(event, u)
               });
+            if ($this.amino_acid_label_option != "None") {
+              enter.append("text")
+                .text((d: any) => {
+                  if ($this.amino_acid_label_option == "Consensus amino acids") {
+                    return d.consensus_aa
+                  } else if ($this.amino_acid_label_option == "Reference amino acids") {
+                    return d.aa
+                  }
+                })
+                .attr("fill", "currentColor")
+                .attr("class", "block")
+                .attr("x", (d: any) => $this.scaleX(d.position) + $this.column_width / 3)
+                .attr("y", (d: any) => $this.scaleY(d.experiment) + $this.boxHeight / 1.5)
+              return;
+            }
           },
           function (update: any) {
             return update
@@ -757,7 +767,7 @@ export default class Heatmap extends Vue {
       Protein: ${u.protein}<br>
       PDB Residue: ${u.pdb_aa}<br>
       Consensus Residue: ${u.consensus_aa}<br>
-      Consensus / Total: ${ratio.toFixed(3)} ${( !$this.isSwitched ? `<br>Ref. Residue: ${$this.positions_unique[$this.positions.indexOf(u.position)]}`: '')} `)
+      Consensus / Total: ${ratio.toFixed(3)} ${( `<br>Ref. Residue: ${$this.positions_unique[$this.positions.indexOf(u.position)]}`)} `)
       $this.tooltiptable = u.unique.map((d:any)=>{
         if (d.aa == u.aa){
           d._rowVariant = 'info'
