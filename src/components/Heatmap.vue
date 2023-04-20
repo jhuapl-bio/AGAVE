@@ -67,7 +67,7 @@ export default class Heatmap extends Vue {
   @Prop({ required: false, default: true })
   public sortBy!: any;
   @Prop({ required: false, default: true })
-  public amino_acid_label_option!: any;
+  public amino_acid_label_option!: string;
   
   customfile: any = null
   scrollDirection: string = "x"
@@ -131,7 +131,7 @@ export default class Heatmap extends Vue {
     this.updateHeatmap()
   }
   @Watch("amino_acid_label_option")
-  onAminoAcidLabelOptionChanged(value: number, oldValue: number) {
+  onAminoAcidLabelOptionChanged(value: string, oldValue: string) {
     this.updateHeatmap()
   }
 
@@ -221,6 +221,9 @@ export default class Heatmap extends Vue {
     this.boxHeight = Math.min(boxHeight, maxBoxHeight);
 
     this.$emit('update:column_width', this.boxHeight)
+    if (this.column_width <= 20) {
+      this.$emit('update:amino_acid_label_option', "None")
+    }
 
     // Reduce height of heatmap if cells will not fill its whole height
     if (this.boxHeight === maxBoxHeight) {

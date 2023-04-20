@@ -22,7 +22,7 @@
           :column_width.sync=column_width 
           :DataHandler=DataHandler
           :sortBy=sortBy      
-          :amino_acid_label_option=amino_acid_label_option
+          :amino_acid_label_option.sync=amino_acid_label_option
           @changePosition="changePosition"
         >
         </Heatmap>
