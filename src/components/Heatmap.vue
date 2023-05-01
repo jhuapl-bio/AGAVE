@@ -192,6 +192,11 @@ export default class Heatmap extends Vue {
   // Heatmap initialization, must be called again when user changes the data displayed
   defineHeatmap() {
 
+    let cells = this.DataHandler.cells
+    if( cells.length < 1 ) {
+      return
+    }
+
     // Remove heatmap if it already exists
     d3.selectAll("#heatmapSVG").remove()
     d3.select("#overflowDiv").remove()
@@ -200,8 +205,6 @@ export default class Heatmap extends Vue {
     d3.select("#labelsSVG").remove()
 
     // Create heatmap
-
-    let cells = this.DataHandler.cells
 
     // Get unique positions in order to calculate x axis
     const position_max: any = d3.max(cells.map((d:any)=>{
@@ -469,14 +472,18 @@ export default class Heatmap extends Vue {
   // Heatmap update, should be called when user changes the heatmap settings
   updateHeatmap() {
 
+    let cells = this.DataHandler.cells
+    if( cells.length < 1 ) {
+      return
+    }
+
     console.log("updating heatmap")
     let scrollAttr: any  = { x: null, y: null, marginA: null, marginB: null }    
     let protein = this.DataHandler.protein
     let organism = this.DataHandler.organism
     const $this = this
-    let cells: any = this.DataHandler.cells
     this.position_ranges = this.DataHandler.position_ranges
-    this.positions_unique = this.DataHandler.protein_map[organism][protein].split("")
+    this.positions_unique = this.DataHandler.protein_map[organism[0]][protein].split("")
  
     // Set x axis positions to discordants only if ui box is checked
     if (!this.DataHandler.discordantOnly){
@@ -659,8 +666,21 @@ export default class Heatmap extends Vue {
     })
     .join(
       function (enter: any) {
-            enter
-              .append("rect")
+            let g = enter.append("g")
+            g.on("click", (d:any, u:any)=>{
+                $this.DataHandler.selectedPosition = u.position
+                $this.$emit("changePosition", u.position)
+              })
+              .on("mousemove", (event: any, u: any, n:any, i:number) => {
+                $this.highlightCell(event, u)
+              })
+              .on("mouseleave", (d: any, u: any) => {
+                $this.unHighlight(event, u)
+              })
+              .style("cursor", "pointer")
+              .attr("class", "block")
+
+            g.append("rect")
               .attr("id", (d: any) => {
                 return (
                   "_"+d.experiment.replaceAll(" ", "_").replaceAll("-", "_") + d.position
@@ -680,22 +700,11 @@ export default class Heatmap extends Vue {
                 }
                 return "translate(" + x + "," + y + ")";
               })
-              .attr("class", "block")
-              .style("cursor", "pointer")
               .attr("width", $this.column_width )
               .attr("height", $this.boxHeight)
-              .on("click", (d:any, u:any)=>{
-                $this.DataHandler.selectedPosition = u.position
-                $this.$emit("changePosition", u.position)
-              })
-              .on("mousemove", (event: any, u: any, n:any, i:number) => {
-                $this.highlightCell(event, u)
-              })
-              .on("mouseleave", (d: any, u: any) => {
-                $this.unHighlight(event, u)
-              });
+
             if ($this.amino_acid_label_option != "None") {
-              enter.append("text")
+              g.append("text")
                 .text((d: any) => {
                   if ($this.amino_acid_label_option == "Consensus amino acids") {
                     return d.consensus_aa
@@ -704,7 +713,7 @@ export default class Heatmap extends Vue {
                   }
                 })
                 .attr("fill", "currentColor")
-                .attr("class", "block")
+                // .attr("class", "block")
                 .attr("x", (d: any) => $this.scaleX(d.position) + $this.column_width / 3)
                 .attr("y", (d: any) => $this.scaleY(d.experiment) + $this.boxHeight / 1.5)
               return;

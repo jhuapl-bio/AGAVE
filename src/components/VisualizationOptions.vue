@@ -54,15 +54,12 @@
         <b-col sm="2">
           <b-field label="Organism" class="column is-narrow">
             <b-select 
-            placeholder="Organism"   :disabled="DataHandler.changing"
-            v-model="DataHandler.organism" 
+            placeholder="Organism" :disabled="DataHandler.changing"
+            v-if="DataHandler.organism" 
+            v-model="DataHandler.organism"
+            multiple
+            :options="DataHandler.organisms"
             @change="emitChange($event, { full: true, target: 'organism' })">
-              <option
-              v-for="option in DataHandler.organisms"
-              :value="option"
-              :key="option">
-                {{ option }}
-              </option>
             </b-select>
           </b-field>
         </b-col>
@@ -131,11 +128,7 @@ export default class VisualizationOptions extends Vue {
   public data:any = null
   public cells: any = null
   public customfile: any = null
-  public protein: string = ""
   public showDiscordantOnly: boolean = true
-  public proteins: Array<string> = []
-  public group: any[] = []
-  public groups: Array<any> = []
   public isDataSwitched: boolean = true
   public sortBy: boolean = true
   minrange: number = 1

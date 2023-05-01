@@ -169,10 +169,14 @@ export default class MoleculeViewer extends Vue {
   proteinChange(value: string){
     this.chain_focus = null
     const options: any= {
-      moleculeId: value,
       assemblyId: this.assemblyId,
       hideControls: true,
       bgColor: {r:255, g:255, b:255}
+    }
+    if(value === null) {
+      options.customData = { url: 'empty.pdb', format: 'mmcif'}
+    } else {
+      options.moleculeId = value
     }
     this.queryAPI(options)
     this.viewer.visual.update(options)

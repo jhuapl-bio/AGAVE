@@ -69,7 +69,7 @@ export default class BindingSites extends Vue {
   aas: string[]  = ["M", "K", "A", "I", "L", "V", "Y", "T", "F", "N", "D", "C", "G", "H", "S", "E", "P", "W", "R", "Q"]
 
 
-  downloadSVG(evt:any) {
+  downloadSVG() {
     var svg:any = document.querySelector("#innerheatmapSVGBarPlot");
     var svg_xml = (new XMLSerializer()).serializeToString(svg),
     blob = new Blob([svg_xml], {type:'image/svg+xml;charset=utf-8'}),
@@ -107,6 +107,11 @@ export default class BindingSites extends Vue {
   }
 
   makeBarPlot(){
+
+    if( this.DataHandler.cells.length < 1 ) {
+      return
+    }
+
     const $this = this
     d3.select("#barPlotDiv").selectAll("*").remove()
     d3.select('#barPlotLegend').selectAll("*").remove()
@@ -165,8 +170,6 @@ export default class BindingSites extends Vue {
 
       
     let svgG: any = innerSvg.append("g").attr("id", "svgG")
-    // let colors: string[] = ['#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe', '#008080', '#e6beff', '#9a6324', '#fffac8', '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080', 'red', '#000']
-    // let aas: string[]  = ["M", "K", "A", "I", "L", "V", "Y", "T", "F", "N", "D", "C", "G", "H", "S", "E", "P", "W", "R", "Q"]
     
     let scaleX: any = d3.scaleBand().domain(preps)
     .range([this.margin.left, chartWidth ])
