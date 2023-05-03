@@ -713,7 +713,6 @@ export default class Heatmap extends Vue {
                   }
                 })
                 .attr("fill", "currentColor")
-                // .attr("class", "block")
                 .attr("x", (d: any) => $this.scaleX(d.position) + $this.column_width / 3)
                 .attr("y", (d: any) => $this.scaleY(d.experiment) + $this.boxHeight / 1.5)
               return;

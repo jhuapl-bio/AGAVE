@@ -41,8 +41,8 @@ export default class DataHandler {
     pdb_map: any  = {}
     selected_consensus: any = null
     public changing: boolean = false
-    public defaultDataListFile: any = path.join("data", "SecondExampleInputVariantsIVAR.json")
-    public defaultDataListFiles: any[] = [path.join("data", "SecondExampleInputVariantsIVAR.json"), path.join("data", "default.json"), path.join("data", "Gaydos.json")];
+    public defaultDataListFile: any = path.join("data", "ivar2 (1).json")
+    public defaultDataListFiles: any[] = [path.join("data", "SecondExampleInputVariantsIVAR.json"), path.join("data", "default.json"), path.join("data", "Gaydos.json"), path.join("data", "ivar2 (1).json")];
     data_selected: any  = null
     public  constructor() {
         this.data_selected = this.defaultDataListFile
@@ -63,8 +63,6 @@ export default class DataHandler {
     public updateProtein(protein: any)
     {
         this.protein = protein
-        // this.pdb = this.pdb_map[this.organism[0]][protein]
-        this.updateData()
     }
     public changeExperiment(experiment: any )
     {
@@ -117,6 +115,7 @@ export default class DataHandler {
         const $this = this
         this.changing = true
         let genes = this.filter()
+        if (genes.length === 0) return
         let cells: any = []
         let seen_positions:any  = {}
         genes.forEach((gene:any)=>{
@@ -205,9 +204,6 @@ export default class DataHandler {
         const max: any = d3.max(cells.map((d:any)=>{return +d.position}))
         this.position_max = max
         this.position_min = min
-        // console.log(Object.keys(this.pdb_map))
-        // console.log(this.organism[0])
-        // console.log(this.pdb_map[this.organism[0]])
         this.position_ranges = [1, this.protein_map[this.organism[0]][this.protein].length]
         if (this.organism[0] in this.pdb_map && this.protein in this.pdb_map[this.organism[0]]) {
             this.pdb = this.pdb_map[this.organism[0]][this.protein]
@@ -278,14 +274,12 @@ export default class DataHandler {
             // })
         )
         $this.organisms = [ ... new Set(data_filtered.map((d:any)=>{return d.organism}))]
-        if (!$this.organism || $this.organisms.indexOf($this.organism) == -1 ) { $this.organism = $this.organisms } 
+        if (!$this.organism || $this.organism.length === 0) { $this.organism = $this.organisms } 
         $this.samples = [ ...new Set(data_filtered.map((d: any) => {return d.sample}))];
         $this.groups = [...new Set(data_filtered.map((d: any) => {return  d.group}))];
        
-        if (!this.sample || this.sample.length == 0) { this.sample = this.samples }
-        // if (!this.organism  ) { this.organism = this.organisms[0] }
-        if (!this.organism || this.organisms.length == 0 ) { 
-            this.organism = this.organisms
+        if (!this.sample || this.sample.length === 0) { this.sample = this.samples }
+        if (!$this.organism || $this.organisms.length === 0 ) { 
             if (! ($this.protein in $this.protein_map[$this.organism[0]])){
                 $this.organisms.forEach((organism)=>{
                     if ($this.protein in $this.protein_map[organism]){
