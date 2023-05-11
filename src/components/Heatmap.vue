@@ -120,6 +120,7 @@ export default class Heatmap extends Vue {
   };
   x: any = d3.scaleLinear()
   labelPaddingLeft: number = 15; // Bootstrap columns add 15px of padding which must be accounted for in yAxis transforms
+  yAxisLabels: any;
     
   // Watchers that will update heatmap when user changes settings
   @Watch("sortBy")
@@ -216,6 +217,7 @@ export default class Heatmap extends Vue {
     // Get unique preps in order to calculate y axis
     let preps: any = [...new Set(cells.map((d: any) => d.experiment))];
     this.preps = preps
+    this.yAxisLabels = [...new Set(cells.map((d: any) => `${d.organism}\t\t${d.experiment}`))];
 
     // Set height of cells assuming that the height will be the default
     let boxHeight = (this.defaultChartHeight - this.margin.top - this.margin.bottom ) / this.preps.length 
@@ -507,7 +509,8 @@ export default class Heatmap extends Vue {
     if (this.scrollDirection == 'x'){
       scrollAttr['x'] = this.positions
       scrollAttr.xTicks = this.positions_unique;
-      scrollAttr['y'] = this.preps
+      scrollAttr['y'] = this.yAxisLabels
+      // scrollAttr['y'] = this.preps
       scrollAttr.marginA = this.margin.left
       scrollAttr.marginB = this.margin.right
       scrollAttr.long =  this.width     
