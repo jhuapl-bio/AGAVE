@@ -64,8 +64,8 @@ export default class Heatmap extends Vue {
   public column_width!: number;
   @Prop({ required: true, default: null })
   public DataHandler!: DataHandler;
-  @Prop({ required: false, default: true })
-  public sortBy!: any;
+  // @Prop({ required: false, default: true })
+  // public sortBy!: any;
   @Prop({ required: false, default: true })
   public amino_acid_label_option!: string;
   
@@ -123,10 +123,10 @@ export default class Heatmap extends Vue {
   yAxisLabels: any[] = []
     
   // Watchers that will update heatmap when user changes settings
-  @Watch("sortBy")
-  onSortByChanged(value: boolean, oldValue: boolean) {
-    this.updateHeatmap()
-  }
+  // @Watch("sortBy")
+  // onSortByChanged(value: boolean, oldValue: boolean) {
+  //   this.updateHeatmap()
+  // }
   @Watch("column_width")
   onColWidthChanged(value: number, oldValue: number) {
     this.updateHeatmap()

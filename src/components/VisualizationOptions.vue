@@ -80,11 +80,11 @@
         <b-field label="Position Ranges" class="column is-2">
           <b-slider v-model="DataHandler.position_ranges" y :min="1" :max="DataHandler.position_max" @change="emitChange($event, { full: false, target: 'position_ranges' })" :step="1" ticks></b-slider>
         </b-field>
-        <b-field label="Sort" class="column is-narrow">
+        <!-- <b-field label="Sort" class="column is-narrow">
           <b-switch v-model="sortBy" >
             {{ ( sortBy ? 'Name' : 'Time' ) }}
           </b-switch>
-        </b-field>
+        </b-field> -->
         <b-field label="Amino Acid Labels" class="column is-narrow">
             <b-select :value="amino_acid_label_option" @input="onAminoAcidLabelChanged($event)">
               <option v-for="option in amino_acid_label_options" :value="option" :key="option">
@@ -130,7 +130,7 @@ export default class VisualizationOptions extends Vue {
   public customfile: any = null
   public showDiscordantOnly: boolean = true
   public isDataSwitched: boolean = true
-  public sortBy: boolean = true
+  // public sortBy: boolean = true
   minrange: number = 1
   maxrange: number = 1
   position_max: any =1
@@ -154,10 +154,10 @@ export default class VisualizationOptions extends Vue {
   onSwitchedChangeDataType(value: boolean, oldValue: boolean) {
     this.emitChange(value, { full: true, target: 'data_type_selected' })
   }
-  @Watch("sortBy")
-  onSortByChange(value: boolean, oldValue: boolean) {
-    this.$emit('sliderUpdate', {value: value, target: 'sortBy'})
-  }
+  // @Watch("sortBy")
+  // onSortByChange(value: boolean, oldValue: boolean) {
+  //   this.$emit('sliderUpdate', {value: value, target: 'sortBy'})
+  // }
 
   @Watch("customfile")
   async onChangeFile(value: any, oldValue: any) {

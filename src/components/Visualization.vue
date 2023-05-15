@@ -21,7 +21,6 @@
           ref="heatmap"
           :column_width.sync=column_width 
           :DataHandler=DataHandler
-          :sortBy=sortBy      
           :amino_acid_label_option.sync=amino_acid_label_option
           @changePosition="changePosition"
         >
@@ -79,7 +78,7 @@ export default class Visualization extends Vue {
   public cells:any = null
   public group: any[] = []
   public customfile: any = null
-  public sortBy: boolean = true
+  // public sortBy: boolean = true
   public referenceSequence: any[] = [];
   private localDataHelper = new LocalDataHelper();
   public switchedViewer = true
