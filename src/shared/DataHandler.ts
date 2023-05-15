@@ -292,7 +292,6 @@ export default class DataHandler {
         data_filtered.sort( (a:any, b:any) => {
             return (a.yAxisLabel > b.yAxisLabel) ? 1 : ((b.yAxisLabel > a.yAxisLabel) ? -1 : 0)
         })
-        console.log(data_filtered)
             
 
         return data_filtered

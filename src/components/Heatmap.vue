@@ -86,7 +86,7 @@ export default class Heatmap extends Vue {
   oversize: number = 0;
   border = 0;
   svgs = {};
-  scaleX = d3.scaleBand();
+  scaleX: any = d3.scaleBand();
   scaleColor = d3.scaleLinear();
   colors = { start: "#fff", end: "#666699" };
   xAxisInner = {};
