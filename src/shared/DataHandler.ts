@@ -163,7 +163,9 @@ export default class DataHandler {
                     aa: residue.reference_aa,
                     aa_count: aa_count,
                     consensus_aa: residue.consensus_aa, 
-                    consensus_count: residue.consensus_aa_count 
+                    consensus_count: residue.consensus_aa_count,
+                    pdb: gene.pdb,
+                    yAxisLabel: gene.yAxisLabel
                 })
             })
             let positions = depths.map((d:any, i:any)=>{
@@ -193,7 +195,9 @@ export default class DataHandler {
                             aa: aa,
                             aa_count: depth,
                             consensus_aa: aa, 
-                            consensus_count: depth
+                            consensus_count: depth,
+                            pdb: this.pdb_map[organism][gene.gene],
+                            yAxisLabel: gene.yAxisLabel,
                         })
                     }
                 } 
@@ -210,9 +214,11 @@ export default class DataHandler {
         } else {
             this.pdb = null
         }
+        
+
         this.cells_full = cells
         this.changing = false
-        
+
     }
     private parseGroups(group: any, groups: any){
         let grp
@@ -255,6 +261,7 @@ export default class DataHandler {
                 item.experiment = d.experiment;
                 item.group = d.group;
                 item.sample = d.sample 
+                item.yAxisLabel = `${item.organism}\t${d.sample}`
                 return item
             })
         }))
@@ -262,17 +269,7 @@ export default class DataHandler {
         if (!$this.protein || $this.proteins.indexOf($this.protein) == -1){ $this.protein = $this.proteins[0] }
         data_filtered  = [].concat.apply([], data_filtered.filter((d:any)=>{
             return d.gene== $this.protein
-        })
-            // .map((d:any)=>{
-            //     return d.genes.map((gene:any)=>{
-            //         gene.experiment = d.experiment;
-            //         gene.group = d.group;
-            //         gene.sample = d.sample;
-            //         gene.organism = d.organism
-            //         return gene
-            //     })
-            // })
-        )
+        }))
         $this.organisms = [ ... new Set(data_filtered.map((d:any)=>{return d.organism}))]
         if (!$this.organism || $this.organism.length === 0) { $this.organism = $this.organisms } 
         $this.samples = [ ...new Set(data_filtered.map((d: any) => {return d.sample}))];
@@ -292,6 +289,10 @@ export default class DataHandler {
         data_filtered = data_filtered.filter((d:any)=>{
             return $this.group.indexOf(d.group) > - 1  && $this.organism.includes(d.organism) && $this.sample.indexOf(d.sample) > -1
         })
+        data_filtered.sort( (a:any, b:any) => {
+            return (a.yAxisLabel > b.yAxisLabel) ? 1 : ((b.yAxisLabel > a.yAxisLabel) ? -1 : 0)
+        })
+        console.log(data_filtered)
             
 
         return data_filtered

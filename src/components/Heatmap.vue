@@ -120,7 +120,7 @@ export default class Heatmap extends Vue {
   };
   x: any = d3.scaleLinear()
   labelPaddingLeft: number = 15; // Bootstrap columns add 15px of padding which must be accounted for in yAxis transforms
-  yAxisLabels: any;
+  yAxisLabels: any[] = []
     
   // Watchers that will update heatmap when user changes settings
   @Watch("sortBy")
@@ -217,7 +217,7 @@ export default class Heatmap extends Vue {
     // Get unique preps in order to calculate y axis
     let preps: any = [...new Set(cells.map((d: any) => d.experiment))];
     this.preps = preps
-    this.yAxisLabels = [...new Set(cells.map((d: any) => `${d.organism}\t\t${d.experiment}`))];
+    this.yAxisLabels = [...new Set(cells.map((d: any) => d.yAxisLabel))];
 
     // Set height of cells assuming that the height will be the default
     let boxHeight = (this.defaultChartHeight - this.margin.top - this.margin.bottom ) / this.preps.length 
@@ -510,7 +510,6 @@ export default class Heatmap extends Vue {
       scrollAttr['x'] = this.positions
       scrollAttr.xTicks = this.positions_unique;
       scrollAttr['y'] = this.yAxisLabels
-      // scrollAttr['y'] = this.preps
       scrollAttr.marginA = this.margin.left
       scrollAttr.marginB = this.margin.right
       scrollAttr.long =  this.width     
@@ -547,20 +546,20 @@ export default class Heatmap extends Vue {
       .range([scrollAttr.marginA, this.oversize - scrollAttr.marginB]);
 
     // Sort y axis labels by date if not flipped or name if flipped
-    if (! this.sortBy){
-      try {
-        scrollAttr.y = scrollAttr.y.sort((a: any, b:any) => {
-          let datea = a.split("-")
-          let dateb = b.split("-")
-          return datea[datea.length -1].localeCompare(dateb[dateb.length -1])
-        })
-      } catch(err){
-        console.log(err)
-        scrollAttr.y = scrollAttr.y.sort()
-      }
-    } else {
-      scrollAttr.y = scrollAttr.y.sort()
-    }
+    // if (! this.sortBy){
+    //   try {
+    //     scrollAttr.y = scrollAttr.y.sort((a: any, b:any) => {
+    //       let datea = a.split("-")
+    //       let dateb = b.split("-")
+    //       return datea[datea.length -1].localeCompare(dateb[dateb.length -1])
+    //     })
+    //   } catch(err){
+    //     console.log(err)
+    //     scrollAttr.y = scrollAttr.y.sort()
+    //   }
+    // } else {
+    //   scrollAttr.y = scrollAttr.y.sort()
+    // }
 
     // Set distance between y axis labels
     this.scaleY.domain(scrollAttr.y).range(
