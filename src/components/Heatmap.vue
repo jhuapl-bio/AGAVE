@@ -672,6 +672,7 @@ export default class Heatmap extends Vue {
             g.on("click", (d:any, u:any)=>{
                 $this.DataHandler.selectedPosition = u.position
                 $this.$emit("changePosition", u.position)
+                $this.$emit("changePdb", u.pdb)
               })
               .on("mousemove", (event: any, u: any, n:any, i:number) => {
                 $this.highlightCell(event, u)

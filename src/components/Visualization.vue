@@ -23,6 +23,7 @@
           :DataHandler=DataHandler
           :amino_acid_label_option.sync=amino_acid_label_option
           @changePosition="changePosition"
+          @changePdb="changePdb"
         >
         </Heatmap>
         <div class="col-lg-12">
@@ -73,7 +74,7 @@ export default class Visualization extends Vue {
   public depth_threshold = 0
   public frequency_threshold = 0.2
   public column_width = 9
-  public pdb = null
+  public pdb:string|null = null
   public position = 54
   public cells:any = null
   public group: any[] = []
@@ -118,6 +119,9 @@ export default class Visualization extends Vue {
     this.DataHandler.updateCells()
     this.sliderUpdate({target: "DataHandler", value: this.DataHandler})
   }  
+  changePdb(value: string) {
+    this.pdb = value
+  }
 
 }
 
