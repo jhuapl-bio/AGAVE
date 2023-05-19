@@ -85,9 +85,16 @@
             {{ ( sortBy ? 'Name' : 'Time' ) }}
           </b-switch>
         </b-field> -->
-        <b-field label="Amino Acid Labels" class="column is-narrow">
+        <b-field label="Cell Labels" class="column is-narrow">
             <b-select :value="amino_acid_label_option" @input="onAminoAcidLabelChanged($event)">
               <option v-for="option in amino_acid_label_options" :value="option" :key="option">
+                {{ option }}
+              </option>
+            </b-select>
+        </b-field>
+        <b-field label="Axis Labels" class="column is-narrow">
+            <b-select :value="axis_label_option" @input="onAxisLabelChanged($event)">
+              <option v-for="option in amino_acid_label_options" :value="option" :key="option" :disabled="(DataHandler.organism.length > 1 && option !== 'None') ? true : false">
                 {{ option }}
               </option>
             </b-select>
@@ -143,6 +150,8 @@ export default class VisualizationOptions extends Vue {
   public column_width!: number;
   @Prop({ required: false})
   public amino_acid_label_option!: string;
+  @Prop({ required: false})
+  public axis_label_option!: string;
 
   public DataHandler = new DataHandler()
 
@@ -188,6 +197,10 @@ export default class VisualizationOptions extends Vue {
 
   onAminoAcidLabelChanged(value: string) {
     this.$emit('sliderUpdate', {value: value, target: 'amino_acid_label_option'})
+  }
+
+  onAxisLabelChanged(value: string) {
+    this.$emit('sliderUpdate', {value: value, target: 'axis_label_option'})
   }
 
   @Watch('depth_threshold')
