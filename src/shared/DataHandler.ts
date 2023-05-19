@@ -41,8 +41,8 @@ export default class DataHandler {
     pdb_map: any  = {}
     selected_consensus: any = null
     public changing: boolean = false
-    public defaultDataListFile: any = path.join("data", "ivar2 (1).json")
-    public defaultDataListFiles: any[] = [path.join("data", "SecondExampleInputVariantsIVAR.json"), path.join("data", "default.json"), path.join("data", "Gaydos.json"), path.join("data", "ivar2 (1).json")];
+    public defaultDataListFile: any = path.join("data", "SecondExampleInputVariantsIVAR.json")
+    public defaultDataListFiles: any[] = [path.join("data", "SecondExampleInputVariantsIVAR.json"), path.join("data", "default.json"), path.join("data", "BARDA_New.json"), path.join("data", "Gaydos.json")];
     data_selected: any  = null
     public  constructor() {
         this.data_selected = this.defaultDataListFile
