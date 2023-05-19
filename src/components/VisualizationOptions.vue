@@ -94,7 +94,7 @@
         </b-field>
         <b-field label="Axis Labels" class="column is-narrow">
             <b-select :value="axis_label_option" @input="onAxisLabelChanged($event)">
-              <option v-for="option in amino_acid_label_options" :value="option" :key="option">
+              <option v-for="option in amino_acid_label_options" :value="option" :key="option" :disabled="(DataHandler.organism.length > 1 && option !== 'None') ? true : false">
                 {{ option }}
               </option>
             </b-select>
