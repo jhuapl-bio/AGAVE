@@ -69,7 +69,7 @@ export default class BindingSites extends Vue {
   aas: string[]  = ["M", "K", "A", "I", "L", "V", "Y", "T", "F", "N", "D", "C", "G", "H", "S", "E", "P", "W", "R", "Q"]
 
 
-  downloadSVG(evt:any) {
+  downloadSVG() {
     var svg:any = document.querySelector("#innerheatmapSVGBarPlot");
     var svg_xml = (new XMLSerializer()).serializeToString(svg),
     blob = new Blob([svg_xml], {type:'image/svg+xml;charset=utf-8'}),
@@ -107,10 +107,18 @@ export default class BindingSites extends Vue {
   }
 
   makeBarPlot(){
+
+    // If no data, return
+    if( this.DataHandler.cells.length < 1 ) {
+      return
+    }
+
+    // Remove old plots
     const $this = this
     d3.select("#barPlotDiv").selectAll("*").remove()
     d3.select('#barPlotLegend').selectAll("*").remove()
 
+    // Prepare data
     let preps: any = [...new Set(this.DataHandler.cells.map((d: any) => d.experiment))];
     // let aas: any = [...new Set(this.DataHandler.cells.map((d: any) => d.aa))];
     let data: any[] = d3.filter(this.DataHandler.cells, (d: any)=>{
@@ -129,13 +137,15 @@ export default class BindingSites extends Vue {
       return r
     })
     
-    let boxDim: any = (this.width - this.margin.right - this.margin.left) / preps.length
+    // Calculate dimensions of components
+    let boxDim: any = (this.$refs.barPlotDiv.clientWidth - this.margin.right - this.margin.left) / preps.length
     const minBoxWidth = 15
     boxDim = Math.max(boxDim, minBoxWidth)
     let chartWidth = boxDim * preps.length
     this.width = chartWidth + this.margin.right + this.margin.left
     this.chartHeight = this.containerHeight - this.margin.top - this.margin.bottom
     
+    // Create bar plot
     const barplotDiv = d3.select("#barPlotDiv")
     
     this.svg = barplotDiv.append("svg")
@@ -165,26 +175,10 @@ export default class BindingSites extends Vue {
 
       
     let svgG: any = innerSvg.append("g").attr("id", "svgG")
-    // let colors: string[] = ['#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe', '#008080', '#e6beff', '#9a6324', '#fffac8', '#800000', '#aaffc3', '#808000', '#ffd8b1', '#000075', '#808080', 'red', '#000']
-    // let aas: string[]  = ["M", "K", "A", "I", "L", "V", "Y", "T", "F", "N", "D", "C", "G", "H", "S", "E", "P", "W", "R", "Q"]
     
+    // Create x axis for samples
     let scaleX: any = d3.scaleBand().domain(preps)
-    .range([this.margin.left, chartWidth ])
-    
-    let scaleY: any = null
-    if (this.selected_scale == 'Linear'){
-      scaleY = d3.scaleLinear().domain([0, 1])
-      .range([this.chartHeight, this.margin.top ])
-    } else if (this.selected_scale == 'Sqrt' ){
-      scaleY = d3.scaleSqrt().domain([0,1])
-      .range([this.chartHeight, this.margin.top ])
-    }
-    else {
-      scaleY = d3.scaleSymlog().clamp(true).domain([0,1])
-      .range([this.chartHeight, this.margin.top ])
-    }
-      
-    let scaleColor: any = d3.scaleOrdinal().domain(this.colors).range(this.colors);
+    .range([this.margin.left, this.width ])
     
     let xAxisB: any = d3
       .axisBottom(scaleX)
@@ -202,6 +196,20 @@ export default class BindingSites extends Vue {
     .style('text-anchor', 'start')
     .attr('transform', 'rotate(45)').style("font-size", "1em")
 
+    // Create y axis with different scales
+    let scaleY: any = null
+    if (this.selected_scale == 'Linear'){
+      scaleY = d3.scaleLinear().domain([0, 1])
+      .range([this.chartHeight, this.margin.top ])
+    } else if (this.selected_scale == 'Sqrt' ){
+      scaleY = d3.scaleSqrt().domain([0,1])
+      .range([this.chartHeight, this.margin.top ])
+    }
+    else {
+      scaleY = d3.scaleSymlog().clamp(true).domain([0,1])
+      .range([this.chartHeight, this.margin.top ])
+    }
+    
     let yAxisB: any = d3
       .axisLeft(scaleY)
       .ticks(5)
@@ -216,7 +224,10 @@ export default class BindingSites extends Vue {
     .style("fill", null)
     .style("stroke-width", 0.2)
     .call(yAxisB)
+      
+    let scaleColor: any = d3.scaleOrdinal().domain(this.colors).range(this.colors);
 
+    // Create stacked bars
     let stacks: any = d3.stack().keys(this.aas)
     (data)
     .map((d:any)=>{
@@ -261,7 +272,8 @@ export default class BindingSites extends Vue {
     )
 
 
-    let legendHeight: number = $this.chartHeight   * 1
+    // Create legend
+    let legendHeight: number = $this.chartHeight * 1
     let legendWidth: number = this.width
     
     let legendMargin: any = {

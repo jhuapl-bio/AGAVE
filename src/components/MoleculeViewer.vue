@@ -2,7 +2,7 @@
   <b-row> 
     <b-col class="col-lg-12 pb-1">
       <div class="">
-        <b-field :label="this.title"></b-field>
+        <b-field :label="title"></b-field>
         <div >
           <b-input-group prepend="PDB ID" class="mt-3">
             <b-form-input type="text" v-model="pdb_local" ></b-form-input>
@@ -22,7 +22,7 @@
         </b-field>
         <b-field v-if="queryingReferenceSequence" label="Querying Reference Sequence..."></b-field>
         <b-field v-if="queryingResidueMapping" label="Querying Residue Mapping.."></b-field>
-        <b-field v-if="chain_focus" :label="'Chains at '+this.localPosition" class="column is-narrow">
+        <b-field v-if="chain_focus" :label="'Chains at '+localPosition" class="column is-narrow">
           <b-select placeholder="Chain" @change="focus()"  v-model="chain_focus" :options="available_focus_chains">
           </b-select>
         </b-field>
@@ -102,8 +102,8 @@ export default class MoleculeViewer extends Vue {
   
   @Prop({ required: true, default: 55 })
   public position!: string;
-  @Prop({ required: true, default: "5r7y" })
-  public pdb!: string;
+  @Prop({ required: true, default: null })
+  public pdb!: string|null;
 
   @Prop({ required: true, default: null })
   public DataHandler!: DataHandler
@@ -120,21 +120,17 @@ export default class MoleculeViewer extends Vue {
   CustomPDBFile(value: any, oldValue: any) {
     console.log(value)
   }
-  
   @Watch('referenceSequence', { immediate: true, deep: true })
   onRefSeqChange(value: any, oldValue: any) {
     if (value && Object.keys(value).length > 0){
       this.$emit("changeReferenceSequence", value)
     }
   }
-
-
   @Watch('DataHandler.pdb')
   onDataChanged(value: any, oldValue: any){
     this.pdb_local = value
     this.proteinChange(value)
   }
-
   @Watch('isSwitched')
   onSwitchToggled(value: any, oldValue: any) {
     if(value === true) {
@@ -143,6 +139,14 @@ export default class MoleculeViewer extends Vue {
       this.assemblyId = "preffered"
     }
     this.proteinChange(this.pdb)
+  }
+  @Watch('pdb')
+  onPdbChanged(value: any, oldValue:any) {
+    if (value === null || value === "") {
+      this.proteinChange(null)
+    } else {
+      this.proteinChange(value)
+    }
   }
 
 
@@ -166,13 +170,17 @@ export default class MoleculeViewer extends Vue {
     } 
   }
 
-  proteinChange(value: string){
+  proteinChange(value: string|null){
     this.chain_focus = null
     const options: any= {
-      moleculeId: value,
       assemblyId: this.assemblyId,
       hideControls: true,
       bgColor: {r:255, g:255, b:255}
+    }
+    if(value === null) {
+      options.customData = { url: 'empty.pdb', format: 'mmcif'}
+    } else {
+      options.moleculeId = value
     }
     this.queryAPI(options)
     this.viewer.visual.update(options)
@@ -277,7 +285,6 @@ export default class MoleculeViewer extends Vue {
                   
                 }
               }
-              this.referenceSequence = ref_seq
             }
           })
         }
@@ -330,9 +337,10 @@ export default class MoleculeViewer extends Vue {
     return localPosition - mapPosition
   }
 
-  // Example of focus ability. In the future let's rig this to the d3 heatmap so that when an amino acid is clicked, the molecule focuses on it
   focus() {
-    this.viewer.visual.clearSelection();
+    // try {
+    //   this.viewer.visual.clearSelection();
+    // } catch(e) {}
     let residue: Residue =  { chain: '', entity: '', position: 0 };
     let found: boolean = false
     for(let d of Object.keys(this.map_positions).sort().filter((e:any)=>{return e != 'total'})) {

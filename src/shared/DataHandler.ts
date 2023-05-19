@@ -26,7 +26,7 @@ export default class DataHandler {
     protein: any = null
     proteins: any[] = []
     protein_map: any = {}
-    organism: any = null
+    organism: any[] = []
     organisms: any[] = []
     experiments: any[] = []
     isSwitched: boolean = true
@@ -63,7 +63,6 @@ export default class DataHandler {
     public updateProtein(protein: any)
     {
         this.protein = protein
-        this.pdb = this.pdb_map[this.organism][protein]
     }
     public changeExperiment(experiment: any )
     {
@@ -87,7 +86,7 @@ export default class DataHandler {
         let cells_filtered= this.cells_full.filter((d:any)=>{
             return d.position >= this.position_ranges[0] && 
                 d.position <= this.position_ranges[1] && 
-                d.organism == this.organism && this.protein == d.protein
+                this.organism.includes(d.organism) && this.protein == d.protein
         })
         if (this.discordantOnly){
             cells_filtered = cells_filtered.filter((cell:any)=>{
@@ -116,6 +115,7 @@ export default class DataHandler {
         const $this = this
         this.changing = true
         let genes = this.filter()
+        if (genes.length === 0) return
         let cells: any = []
         let seen_positions:any  = {}
         genes.forEach((gene:any)=>{
@@ -163,7 +163,9 @@ export default class DataHandler {
                     aa: residue.reference_aa,
                     aa_count: aa_count,
                     consensus_aa: residue.consensus_aa, 
-                    consensus_count: residue.consensus_aa_count 
+                    consensus_count: residue.consensus_aa_count,
+                    pdb: gene.pdb,
+                    yAxisLabel: gene.yAxisLabel
                 })
             })
             let positions = depths.map((d:any, i:any)=>{
@@ -193,7 +195,9 @@ export default class DataHandler {
                             aa: aa,
                             aa_count: depth,
                             consensus_aa: aa, 
-                            consensus_count: depth
+                            consensus_count: depth,
+                            pdb: this.pdb_map[organism][gene.gene],
+                            yAxisLabel: gene.yAxisLabel,
                         })
                     }
                 } 
@@ -204,11 +208,17 @@ export default class DataHandler {
         const max: any = d3.max(cells.map((d:any)=>{return +d.position}))
         this.position_max = max
         this.position_min = min
-        this.position_ranges = [1, this.protein_map[this.organism][this.protein].length]
-        this.pdb = this.pdb_map[this.organism][this.protein]
+        this.position_ranges = [1, this.protein_map[this.organism[0]][this.protein].length]
+        if (this.organism[0] in this.pdb_map && this.protein in this.pdb_map[this.organism[0]]) {
+            this.pdb = this.pdb_map[this.organism[0]][this.protein]
+        } else {
+            this.pdb = null
+        }
+        
+
         this.cells_full = cells
         this.changing = false
-        
+
     }
     private parseGroups(group: any, groups: any){
         let grp
@@ -233,7 +243,6 @@ export default class DataHandler {
         const $this =this;
         let data =  $this.selected_data
         
-        console.log(data)
         let organisms: any = Object.entries(data.proteins)
         for (const [ organismId, organismProts ] of organisms ){
             let proteins:any= Object.entries(organismProts)
@@ -252,6 +261,7 @@ export default class DataHandler {
                 item.experiment = d.experiment;
                 item.group = d.group;
                 item.sample = d.sample 
+                item.yAxisLabel = `${item.organism}\t${d.sample}`
                 return item
             })
         }))
@@ -259,39 +269,29 @@ export default class DataHandler {
         if (!$this.protein || $this.proteins.indexOf($this.protein) == -1){ $this.protein = $this.proteins[0] }
         data_filtered  = [].concat.apply([], data_filtered.filter((d:any)=>{
             return d.gene== $this.protein
-        })
-            // .map((d:any)=>{
-            //     return d.genes.map((gene:any)=>{
-            //         gene.experiment = d.experiment;
-            //         gene.group = d.group;
-            //         gene.sample = d.sample;
-            //         gene.organism = d.organism
-            //         return gene
-            //     })
-            // })
-        )
+        }))
         $this.organisms = [ ... new Set(data_filtered.map((d:any)=>{return d.organism}))]
-        if (!$this.organism || $this.organisms.indexOf($this.organism) == -1 ) { $this.organism = $this.organisms[0] } 
+        if (!$this.organism || $this.organism.length === 0) { $this.organism = $this.organisms } 
         $this.samples = [ ...new Set(data_filtered.map((d: any) => {return d.sample}))];
-        let sample: any  = $this.samples
         $this.groups = [...new Set(data_filtered.map((d: any) => {return  d.group}))];
-        let group: any  = $this.parseGroups($this.group, $this.groups)
        
-        if (!this.sample || this.sample.length == 0) { this.sample = this.samples }
-        if (!this.organism  ) { this.organism = this.organisms[0] }
+        if (!this.sample || this.sample.length === 0) { this.sample = this.samples }
+        if (!$this.organism || $this.organisms.length === 0 ) { 
+            if (! ($this.protein in $this.protein_map[$this.organism[0]])){
+                $this.organisms.forEach((organism)=>{
+                    if ($this.protein in $this.protein_map[organism]){
+                        $this.organism.push(organism)
+                    }
+                })
+            }
+        }
         if (!this.group|| this.group.length == 0 ) { this.group= this.groups}
         data_filtered = data_filtered.filter((d:any)=>{
-            return $this.group.indexOf(d.group) > - 1  && $this.organism == d.organism && $this.sample.indexOf(d.sample) > -1
+            return $this.group.indexOf(d.group) > - 1  && $this.organism.includes(d.organism) && $this.sample.indexOf(d.sample) > -1
         })
-        if (! ($this.protein in $this.protein_map[$this.organism])){
-            $this.organisms.forEach((organism)=>{
-                if ($this.protein in $this.protein_map[organism]){
-                    $this.organism = organism
-                }
-            })
-        }else {
-        }
-
+        data_filtered.sort( (a:any, b:any) => {
+            return (a.yAxisLabel > b.yAxisLabel) ? 1 : ((b.yAxisLabel > a.yAxisLabel) ? -1 : 0)
+        })
             
 
         return data_filtered

@@ -5,6 +5,7 @@
         <VisualizationOptions 
            @sliderUpdate="sliderUpdate"
            :column_width=column_width
+           :amino_acid_label_option=amino_acid_label_option
            />
          
       </b-col>
@@ -20,10 +21,9 @@
           ref="heatmap"
           :column_width.sync=column_width 
           :DataHandler=DataHandler
-          :isSwitched=isSwitched  
-          :sortBy=sortBy      
-          
+          :amino_acid_label_option.sync=amino_acid_label_option
           @changePosition="changePosition"
+          @changePdb="changePdb"
         >
         </Heatmap>
         <div class="col-lg-12">
@@ -74,17 +74,18 @@ export default class Visualization extends Vue {
   public depth_threshold = 0
   public frequency_threshold = 0.2
   public column_width = 9
-  public pdb = null
+  public pdb:string|null = null
   public position = 54
   public cells:any = null
   public group: any[] = []
   public customfile: any = null
-  public isSwitched: boolean = true
-  public sortBy: boolean = true
+  // public sortBy: boolean = true
   public referenceSequence: any[] = [];
   private localDataHelper = new LocalDataHelper();
   public switchedViewer = true
   public DataHandler = new DataHandler()
+  public amino_acid_label_option = "None"
+  
   $refs!: {
     heatmap: any;
     barplot: any;
@@ -118,6 +119,9 @@ export default class Visualization extends Vue {
     this.DataHandler.updateCells()
     this.sliderUpdate({target: "DataHandler", value: this.DataHandler})
   }  
+  changePdb(value: string) {
+    this.pdb = value
+  }
 
 }
 

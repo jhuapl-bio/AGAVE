@@ -64,10 +64,10 @@ export default class Heatmap extends Vue {
   public column_width!: number;
   @Prop({ required: true, default: null })
   public DataHandler!: DataHandler;
+  // @Prop({ required: false, default: true })
+  // public sortBy!: any;
   @Prop({ required: false, default: true })
-  public isSwitched!: any;
-  @Prop({ required: false, default: true })
-  public sortBy!: any;
+  public amino_acid_label_option!: string;
   
   customfile: any = null
   scrollDirection: string = "x"
@@ -86,7 +86,7 @@ export default class Heatmap extends Vue {
   oversize: number = 0;
   border = 0;
   svgs = {};
-  scaleX = d3.scaleBand();
+  scaleX: any = d3.scaleBand();
   scaleColor = d3.scaleLinear();
   colors = { start: "#fff", end: "#666699" };
   xAxisInner = {};
@@ -113,26 +113,26 @@ export default class Heatmap extends Vue {
   legendPadding = 15;
   svg:any = null
   margin = {
-    top: 0.13 * this.chartHeight,
-    bottom: 0.095 * this.chartHeight,
-    left: 0.05 * this.width,
+    top: 0.075 * this.chartHeight,
+    bottom: 0.075 * this.chartHeight,
+    left: 0.02 * this.width,
     right: 0.02 * this.width,
   };
   x: any = d3.scaleLinear()
   labelPaddingLeft: number = 15; // Bootstrap columns add 15px of padding which must be accounted for in yAxis transforms
+  yAxisLabels: any[] = []
     
   // Watchers that will update heatmap when user changes settings
-  @Watch("sortBy")
-  onSortByChanged(value: boolean, oldValue: boolean) {
-    this.updateHeatmap()
-  }
-  @Watch("isSwitched")
-  onSwitchChanged(value: boolean, oldValue: boolean) {
-    this.updateHeatmap()
-  }
-
+  // @Watch("sortBy")
+  // onSortByChanged(value: boolean, oldValue: boolean) {
+  //   this.updateHeatmap()
+  // }
   @Watch("column_width")
   onColWidthChanged(value: number, oldValue: number) {
+    this.updateHeatmap()
+  }
+  @Watch("amino_acid_label_option")
+  onAminoAcidLabelOptionChanged(value: string, oldValue: string) {
     this.updateHeatmap()
   }
 
@@ -192,7 +192,12 @@ export default class Heatmap extends Vue {
 
   // Heatmap initialization, must be called again when user changes the data displayed
   defineHeatmap() {
-    
+
+    let cells = this.DataHandler.cells
+    if( cells.length < 1 ) {
+      return
+    }
+
     // Remove heatmap if it already exists
     d3.selectAll("#heatmapSVG").remove()
     d3.select("#overflowDiv").remove()
@@ -201,8 +206,6 @@ export default class Heatmap extends Vue {
     d3.select("#labelsSVG").remove()
 
     // Create heatmap
-
-    let cells = this.DataHandler.cells
 
     // Get unique positions in order to calculate x axis
     const position_max: any = d3.max(cells.map((d:any)=>{
@@ -214,6 +217,7 @@ export default class Heatmap extends Vue {
     // Get unique preps in order to calculate y axis
     let preps: any = [...new Set(cells.map((d: any) => d.experiment))];
     this.preps = preps
+    this.yAxisLabels = [...new Set(cells.map((d: any) => d.yAxisLabel))];
 
     // Set height of cells assuming that the height will be the default
     let boxHeight = (this.defaultChartHeight - this.margin.top - this.margin.bottom ) / this.preps.length 
@@ -222,6 +226,9 @@ export default class Heatmap extends Vue {
     this.boxHeight = Math.min(boxHeight, maxBoxHeight);
 
     this.$emit('update:column_width', this.boxHeight)
+    if (this.column_width <= 20) {
+      this.$emit('update:amino_acid_label_option', "None")
+    }
 
     // Reduce height of heatmap if cells will not fill its whole height
     if (this.boxHeight === maxBoxHeight) {
@@ -467,14 +474,18 @@ export default class Heatmap extends Vue {
   // Heatmap update, should be called when user changes the heatmap settings
   updateHeatmap() {
 
+    let cells = this.DataHandler.cells
+    if( cells.length < 1 ) {
+      return
+    }
+
     console.log("updating heatmap")
     let scrollAttr: any  = { x: null, y: null, marginA: null, marginB: null }    
     let protein = this.DataHandler.protein
     let organism = this.DataHandler.organism
     const $this = this
-    let cells: any = this.DataHandler.cells
     this.position_ranges = this.DataHandler.position_ranges
-    this.positions_unique = this.DataHandler.protein_map[organism][protein].split("")
+    this.positions_unique = this.DataHandler.protein_map[organism[0]][protein].split("")
  
     // Set x axis positions to discordants only if ui box is checked
     if (!this.DataHandler.discordantOnly){
@@ -498,7 +509,7 @@ export default class Heatmap extends Vue {
     if (this.scrollDirection == 'x'){
       scrollAttr['x'] = this.positions
       scrollAttr.xTicks = this.positions_unique;
-      scrollAttr['y'] = this.preps
+      scrollAttr['y'] = this.yAxisLabels
       scrollAttr.marginA = this.margin.left
       scrollAttr.marginB = this.margin.right
       scrollAttr.long =  this.width     
@@ -512,20 +523,16 @@ export default class Heatmap extends Vue {
     }
     let seen_positions: any = {}
     cells.forEach((cell:any, i:number)=>{
-      if (!this.isSwitched){
-        seen_positions[cell.position] = `${cell.consensus_aa}.${cell.position}`
+      seen_positions[cell.position] = `${cell.position}`
+      if (reference_seq[cell.position]){
+        cell.pdb_aa =`${reference_seq[cell.position]}`
       } else {
-        if (reference_seq[cell.position]){
-          cell.pdb_aa =`${reference_seq[cell.position]}`
-        } else {
-          seen_positions[cell.position] = `Unmapped.${cell.position}`
-          cell.pdb_aa =`Unmapped`
-        }
+        cell.pdb_aa =`Unmapped`
       }
     })
     if (reference_seq) {
       Object.keys(reference_seq).forEach((index: any) => {
-        seen_positions[index] = `${reference_seq[index]}.${index}`
+        seen_positions[index] = `${index}`
       })
     }
 
@@ -539,20 +546,20 @@ export default class Heatmap extends Vue {
       .range([scrollAttr.marginA, this.oversize - scrollAttr.marginB]);
 
     // Sort y axis labels by date if not flipped or name if flipped
-    if (! this.sortBy){
-      try {
-        scrollAttr.y = scrollAttr.y.sort((a: any, b:any) => {
-          let datea = a.split("-")
-          let dateb = b.split("-")
-          return datea[datea.length -1].localeCompare(dateb[dateb.length -1])
-        })
-      } catch(err){
-        console.log(err)
-        scrollAttr.y = scrollAttr.y.sort()
-      }
-    } else {
-      scrollAttr.y = scrollAttr.y.sort()
-    }
+    // if (! this.sortBy){
+    //   try {
+    //     scrollAttr.y = scrollAttr.y.sort((a: any, b:any) => {
+    //       let datea = a.split("-")
+    //       let dateb = b.split("-")
+    //       return datea[datea.length -1].localeCompare(dateb[dateb.length -1])
+    //     })
+    //   } catch(err){
+    //     console.log(err)
+    //     scrollAttr.y = scrollAttr.y.sort()
+    //   }
+    // } else {
+    //   scrollAttr.y = scrollAttr.y.sort()
+    // }
 
     // Set distance between y axis labels
     this.scaleY.domain(scrollAttr.y).range(
@@ -661,8 +668,22 @@ export default class Heatmap extends Vue {
     })
     .join(
       function (enter: any) {
-            return enter
-              .append("rect")
+            let g = enter.append("g")
+            g.on("click", (d:any, u:any)=>{
+                $this.DataHandler.selectedPosition = u.position
+                $this.$emit("changePosition", u.position)
+                $this.$emit("changePdb", u.pdb)
+              })
+              .on("mousemove", (event: any, u: any, n:any, i:number) => {
+                $this.highlightCell(event, u)
+              })
+              .on("mouseleave", (d: any, u: any) => {
+                $this.unHighlight(event, u)
+              })
+              .style("cursor", "pointer")
+              .attr("class", "block")
+
+            g.append("rect")
               .attr("id", (d: any) => {
                 return (
                   "_"+d.experiment.replaceAll(" ", "_").replaceAll("-", "_") + d.position
@@ -682,20 +703,23 @@ export default class Heatmap extends Vue {
                 }
                 return "translate(" + x + "," + y + ")";
               })
-              .attr("class", "block")
-              .style("cursor", "pointer")
               .attr("width", $this.column_width )
               .attr("height", $this.boxHeight)
-              .on("click", (d:any, u:any)=>{
-                $this.DataHandler.selectedPosition = u.position
-                $this.$emit("changePosition", u.position)
-              })
-              .on("mousemove", (event: any, u: any, n:any, i:number) => {
-                $this.highlightCell(event, u)
-              })
-              .on("mouseleave", (d: any, u: any) => {
-                $this.unHighlight(event, u)
-              });
+
+            if ($this.amino_acid_label_option != "None") {
+              g.append("text")
+                .text((d: any) => {
+                  if ($this.amino_acid_label_option == "Consensus amino acids") {
+                    return d.consensus_aa
+                  } else if ($this.amino_acid_label_option == "Reference amino acids") {
+                    return d.aa
+                  }
+                })
+                .attr("fill", "currentColor")
+                .attr("x", (d: any) => $this.scaleX(d.position) + $this.column_width / 3)
+                .attr("y", (d: any) => $this.scaleY(d.experiment) + $this.boxHeight / 1.5)
+              return;
+            }
           },
           function (update: any) {
             return update
@@ -757,7 +781,7 @@ export default class Heatmap extends Vue {
       Protein: ${u.protein}<br>
       PDB Residue: ${u.pdb_aa}<br>
       Consensus Residue: ${u.consensus_aa}<br>
-      Consensus / Total: ${ratio.toFixed(3)} ${( !$this.isSwitched ? `<br>Ref. Residue: ${$this.positions_unique[$this.positions.indexOf(u.position)]}`: '')} `)
+      Consensus / Total: ${ratio.toFixed(3)} ${( `<br>Ref. Residue: ${$this.positions_unique[$this.positions.indexOf(u.position)]}`)} `)
       $this.tooltiptable = u.unique.map((d:any)=>{
         if (d.aa == u.aa){
           d._rowVariant = 'info'
