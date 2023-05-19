@@ -6,6 +6,7 @@
            @sliderUpdate="sliderUpdate"
            :column_width=column_width
            :amino_acid_label_option=amino_acid_label_option
+           :axis_label_option=axis_label_option
            />
          
       </b-col>
@@ -22,6 +23,7 @@
           :column_width.sync=column_width 
           :DataHandler=DataHandler
           :amino_acid_label_option.sync=amino_acid_label_option
+          :axis_label_option.sync=axis_label_option
           @changePosition="changePosition"
           @changePdb="changePdb"
         >
@@ -85,6 +87,7 @@ export default class Visualization extends Vue {
   public switchedViewer = true
   public DataHandler = new DataHandler()
   public amino_acid_label_option = "None"
+  public axis_label_option = "None"
   
   $refs!: {
     heatmap: any;

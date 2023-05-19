@@ -68,6 +68,8 @@ export default class Heatmap extends Vue {
   // public sortBy!: any;
   @Prop({ required: false, default: true })
   public amino_acid_label_option!: string;
+  @Prop({ required: false, default: true })
+  public axis_label_option!: string;
   
   customfile: any = null
   scrollDirection: string = "x"
@@ -133,6 +135,10 @@ export default class Heatmap extends Vue {
   }
   @Watch("amino_acid_label_option")
   onAminoAcidLabelOptionChanged(value: string, oldValue: string) {
+    this.updateHeatmap()
+  }
+  @Watch("axis_label_option")
+  onAxisLabelOptionChanged(value: string, oldValue: string) {
     this.updateHeatmap()
   }
 
@@ -523,16 +529,18 @@ export default class Heatmap extends Vue {
     }
     let seen_positions: any = {}
     cells.forEach((cell:any, i:number)=>{
-      seen_positions[cell.position] = `${cell.position}`
-      if (reference_seq[cell.position]){
-        cell.pdb_aa =`${reference_seq[cell.position]}`
+      if (this.axis_label_option === "Consensus amino acids"){
+        seen_positions[cell.position] = `${cell.consensus_aa}.${cell.position}`
+      } else if (this.axis_label_option === "Reference amino acids") {
+        seen_positions[cell.position] =`${cell.aa}.${cell.position}`
       } else {
-        cell.pdb_aa =`Unmapped`
+        seen_positions[cell.position] = `${cell.position}`
+        // cell.pdb_aa =`Unmapped`
       }
     })
     if (reference_seq) {
       Object.keys(reference_seq).forEach((index: any) => {
-        seen_positions[index] = `${index}`
+        seen_positions[index] = `${reference_seq[index]}.${index}`
       })
     }
 
