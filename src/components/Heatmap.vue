@@ -730,12 +730,7 @@ export default class Heatmap extends Vue {
             }
           },
           function (update: any) {
-            return update
-            .call((update: any) => {
-              update.transition().duration(1000).attr("fill", (d: any) => {
-                return $this.calculateColor(d)
-              })
-            })
+            update.select("rect")
             .attr("transform", (d: any) => {
               let x: any; let y: any
               if ($this.scrollDirection == 'x') {
@@ -748,6 +743,28 @@ export default class Heatmap extends Vue {
               return "translate(" + x + "," + y + ")";
             })
             .attr("width", $this.column_width )
+
+            update.selectAll("text").remove()
+
+            return update
+            .call((update: any) => {
+              update.transition().duration(1000).attr("fill", (d: any) => {
+                return $this.calculateColor(d)
+              })
+            })
+            .append("text")
+              .text((d: any) => {
+                if ($this.amino_acid_label_option == "Consensus amino acids") {
+                  return d.consensus_aa
+                } else if ($this.amino_acid_label_option == "Reference amino acids") {
+                  return d.aa
+                } else {
+                  return ""
+                }
+              })
+            .attr("fill", "currentColor")
+            .attr("x", (d: any) => $this.scaleX(d.position) + $this.column_width / 3)
+            .attr("y", (d: any) => $this.scaleY(d.experiment) + $this.boxHeight / 1.5)
           },
           function (exit: any) {
             return exit.remove()
