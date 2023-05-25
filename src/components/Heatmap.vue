@@ -123,6 +123,7 @@ export default class Heatmap extends Vue {
   x: any = d3.scaleLinear()
   labelPaddingLeft: number = 15; // Bootstrap columns add 15px of padding which must be accounted for in yAxis transforms
   yAxisLabels: any[] = []
+  scaleYTextWidth = 100
     
   // Watchers that will update heatmap when user changes settings
   // @Watch("sortBy")
@@ -158,35 +159,24 @@ export default class Heatmap extends Vue {
 
   // Export button
   downloadSVG() {
-    var svg:any = document.querySelector("#innerheatmapSVG");
-    var svg_xml = (new XMLSerializer()).serializeToString(svg),
-    blob = new Blob([svg_xml], {type:'image/svg+xml;charset=utf-8'}),
-    url = window.URL.createObjectURL(blob);
-    var img = new Image();
-    const w = this.oversize
-    const h = this.height
-    img.width = this.oversize;
-    img.height = h;
-    const $this = this
-    img.onload = function(){
-      var canvas:any = document.createElement('canvas');
-      d3.select('canvas').append("text").attr('transform', `translate(${w/2},${$this.margin.top/2})`).text("yyyyyyyyyyyyyyyyyyyyyyyyyy")
-      canvas.width = w;
-      canvas.height = h;
+    // Combine svgs for heatmap and labels
+    const heatmap_svg: any = document.querySelector("#innerheatmapSVG")?.cloneNode(true);
+    const heatmap_g = heatmap_svg.firstChild
+    heatmap_g.setAttribute("transform", "translate(" + this.scaleYTextWidth + ", 0)")
+    const labels_svg:any = document.querySelector("#labelsSVG")?.cloneNode(true);
+    labels_svg.appendChild(heatmap_g)
+    labels_svg.setAttribute("viewBox", "0 0 " + (this.scaleYTextWidth+this.oversize) + " " + this.height)
 
-      var ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, w, h);
-      ctx.font = "20px Arial";
-      ctx.fillText($this.DataHandler.protein, w / 2 , $this.margin.top / 2)
-      window.URL.revokeObjectURL(url);
-      var canvasdata = canvas.toDataURL('image/jpeg');
-      var a: any = document.getElementById('imgId');
-      a.download = "export_" + Date.now() + ".jpeg";
-      a.href=canvasdata;
-      a.click()  
-    }
-    img.src = url
-    
+    // Export
+    const xml = (new XMLSerializer()).serializeToString(labels_svg)
+    const blob = new Blob([xml], {type:'image/svg+xml;charset=utf-8'})
+    const url = window.URL.createObjectURL(blob)
+    const a: any = document.getElementById('imgId');
+    a.href = url
+    a.download = "export_" + Date.now() + ".svg";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   }
 
   // Vue lifecycle hook
@@ -662,8 +652,8 @@ export default class Heatmap extends Vue {
     }
 
     // Set container of y axis to be width of svg
-    const scaleYTextWidth = scaleYText.node().getBBox().width + this.labelPaddingLeft
-    d3.select("#labelsSVG").attr("viewBox", `0 0 ${scaleYTextWidth} ${this.$refs.heatmapDiv.clientHeight}`)
+    this.scaleYTextWidth = scaleYText.node().getBBox().width + this.labelPaddingLeft
+    d3.select("#labelsSVG").attr("viewBox", `0 0 ${this.scaleYTextWidth} ${this.$refs.heatmapDiv.clientHeight}`)
     
     d3.select('#innerheatmapSVG')
     .attr("width", this.oversize)
